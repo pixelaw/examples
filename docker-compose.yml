@@ -1,0 +1,17 @@
+services:
+  pixelaw-core:
+    image: oostvoort/pixelaw-core:v0.0.7
+    container_name: pixelaw-core
+    ports:
+      - "5050:5050"
+      - "3000:3000"
+      - "8080:8080"
+      - "50051"
+    restart: unless-stopped
+    networks:
+      - pixelaw
+
+networks:
+  pixelaw:
+    driver: bridge
+
