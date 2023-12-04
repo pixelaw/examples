@@ -1,6 +1,6 @@
 services:
   pixelaw-core:
-    image: oostvoort/pixelaw-core:v0.0.7
+    image: oostvoort/pixelaw-core:v0.0.9
     container_name: pixelaw-core
     ports:
       - "5050:5050"
