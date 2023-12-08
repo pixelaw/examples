@@ -42,9 +42,9 @@ impl MoveIntoFelt252 of Into<Move, felt252> {
 #[derive(Model, Copy, Drop, Serde, SerdeLen)]
 struct Game {
     #[key]
-    x: u64,
+    x: u32,
     #[key]
-    y: u64,
+    y: u32,
     id: u32,
     state: State,
     player1: ContractAddress,
@@ -91,6 +91,7 @@ mod rps_actions {
     // use super::{STATE_NONE, State::Created, State::Joined, State::Finished};
 
     use zeroable::Zeroable;
+    use dojo::database::introspect::Introspect;
 
     #[derive(Drop, starknet::Event)]
     struct GameCreated {
@@ -172,7 +173,6 @@ mod rps_actions {
                         x: position.x,
                         y: position.y,
                         color: Option::Some(default_params.color),
-                        alert: Option::None, // TODO figure out how we use alert
                         timestamp: Option::None,
                         text: Option::Some(
                             'U+2753'
@@ -226,7 +226,6 @@ mod rps_actions {
                         x: position.x,
                         y: position.y,
                         color: Option::None,
-                        alert: Option::Some('!'), // TODO figure out how we use alert
                         timestamp: Option::None,
                         text: Option::Some(
                             'U+2757'
@@ -281,7 +280,6 @@ mod rps_actions {
                             x: position.x,
                             y: position.y,
                             color: Option::None,
-                            alert: Option::Some(0),
                             timestamp: Option::None,
                             text: Option::Some(0),
                             app: Option::Some(Zeroable::zero()),
@@ -306,7 +304,6 @@ mod rps_actions {
                                 x: position.x,
                                 y: position.y,
                                 color: Option::None,
-                                alert: Option::Some(0),
                                 timestamp: Option::None,
                                 text: Option::Some(get_unicode_for_rps(game.player2_move)),
                                 app: Option::None,
@@ -323,7 +320,6 @@ mod rps_actions {
                                 x: position.x,
                                 y: position.y,
                                 color: Option::None,
-                                alert: Option::Some(0),
                                 timestamp: Option::None,
                                 text: Option::Some(get_unicode_for_rps(game.player1_move)),
                                 app: Option::None,
@@ -353,7 +349,9 @@ mod rps_actions {
             assert(pixel.owner == player, 'player doesnt own pixel');
 
             let game_id_felt: felt252 = game.id.into();
-            world.delete_entity('Game'.into(), array![game_id_felt.into()].span());
+            let mut layout = array![];
+            Introspect::<Game>::layout(ref layout);
+            world.delete_entity('Game'.into(), array![game_id_felt.into()].span(), layout.span());
 
             core_actions
                 .update_pixel(
@@ -363,7 +361,6 @@ mod rps_actions {
                         x: position.x,
                         y: position.y,
                         color: Option::Some(0),
-                        alert: Option::Some(Zeroable::zero()),
                         timestamp: Option::None,
                         text: Option::Some(Zeroable::zero()),
                         app: Option::Some(Zeroable::zero()),

@@ -3,15 +3,16 @@ version = 1
 
 [[package]]
 name = "dojo"
-version = "0.3.10"
-source = "git+https://github.com/dojoengine/dojo?tag=v0.3.10#be1676252c41f8188465741edcbcb381d2c12080"
+version = "0.3.15"
+source = "git+https://github.com/dojoengine/dojo?tag=v0.3.15#cdbaca4121b1642e1a8ca40d6831bad73d28ed26"
 dependencies = [
  "dojo_plugin",
 ]
 
 [[package]]
 name = "dojo_plugin"
-version = "0.3.10"
+version = "0.3.11"
+source = "git+https://github.com/dojoengine/dojo?tag=v0.3.11#1e651b5d4d3b79b14a7d8aa29a92062fcb9e6659"
 
 [[package]]
 name = "minesweeper"
@@ -23,7 +24,7 @@ dependencies = [
 [[package]]
 name = "pixelaw"
 version = "0.1.0"
-source = "git+https://github.com/pixelaw/core?tag=v0.0.9#caa0a6cb91edd8710ebb42ae0ffdff00b1cbdf6c"
+source = "git+https://github.com/pixelaw/core?tag=v0.0.19#d51af08a4849f058ace01ca23a4f87f35a30ea4a"
 dependencies = [
  "dojo",
 ]

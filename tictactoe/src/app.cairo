@@ -9,7 +9,7 @@ const APP_KEY: felt252 = 'tictactoe';
 const APP_ICON: felt252 = 'U+2B55';
 const GAME_MAX_DURATION: u64 = 20000;
 const APP_MANIFEST: felt252 = 'BASE/manifests/tictactoe';
-const GAME_GRIDSIZE: u64 = 3;
+const GAME_GRIDSIZE: u32 = 3;
 
 
 #[derive(Model, Copy, Drop, Serde, SerdeLen)]
@@ -18,17 +18,17 @@ struct TicTacToeGame {
     id: u32,
     player1: ContractAddress,
     started_time: u64,
-    x: u64,
-    y: u64,
+    x: u32,
+    y: u32,
     moves_left: u8
 }
 
 #[derive(Model, Copy, Drop, Serde, SerdeLen)]
 struct TicTacToeGameField {
     #[key]
-    x: u64,
+    x: u32,
     #[key]
-    y: u64,
+    y: u32,
     id: u32,
     index: u8,
     state: u8
@@ -156,7 +156,6 @@ pixel.app.print();
                         x: position.x,
                         y: position.y,
                         color: Option::Some(0xffff0000),
-                        alert: Option::None,
                         timestamp: Option::None,
                         text: Option::Some('U+0058'),
                         app: Option::None,
@@ -220,7 +219,6 @@ pixel.app.print();
                         x: ai_position.x,
                         y: ai_position.y,
                         color: Option::Some(0xff00ff00),
-                        alert: Option::None,
                         timestamp: Option::None,
                         text: Option::Some('U+004F'),
                         app: Option::None,
@@ -352,10 +350,10 @@ pixel.app.print();
         result
     }
 
-    fn determine_game_state(world: IWorldDispatcher, x: u64, y: u64) -> Array<u8> {
+    fn determine_game_state(world: IWorldDispatcher, x: u32, y: u32) -> Array<u8> {
         let mut result = array![];
-        let mut i: u64 = 0;
-        let mut j: u64 = 0;
+        let mut i: u32 = 0;
+        let mut j: u32 = 0;
         loop {
             if i >= GAME_GRIDSIZE {
                 break;
@@ -385,8 +383,8 @@ pixel.app.print();
         position: Position,
         color: u32
     ) {
-        let mut x: u64 = 0;
-        let mut y: u64 = 0;
+        let mut x: u32 = 0;
+        let mut y: u32 = 0;
         loop {
             if x >= GAME_GRIDSIZE {
                 break;
@@ -427,7 +425,6 @@ pixel.app.print();
                             x: position.x + x,
                             y: position.y + y,
                             color: Option::Some(color),
-                            alert: Option::None,
                             timestamp: Option::None,
                             text: Option::None,
                             app: Option::Some(system),

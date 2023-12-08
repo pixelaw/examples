@@ -115,7 +115,6 @@ mod hunter_actions {
                         x: position.x,
                         y: position.y,
                         color: Option::Some(default_params.color),
-                        alert: Option::Some(''),    // TODO a notification?
                         timestamp: Option::None,
                         text: text,   // Star emoji
                         app: Option::Some(system),

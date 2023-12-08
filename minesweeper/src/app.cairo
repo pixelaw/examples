@@ -21,14 +21,14 @@ enum State {
 #[derive(Model, Copy, Drop, Serde, SerdeLen)]
 struct MinesweeperGame {
     #[key]
-    x: u64,
+    x: u32,
     #[key]
-    y: u64,
+    y: u32,
     id: u32,
     creator: ContractAddress,
     state: State,
-    size: u64,
-    mines_amount: u64,
+    size: u32,
+    mines_amount: u32,
     started_timestamp: u64
 }
 
@@ -62,7 +62,7 @@ trait IMinesweeperActions<TContractState> {
 
     //6. set the mines
 
-    fn interact(self: @TContractState, default_params: DefaultParameters, size: u64, mines_amount: u64);
+    fn interact(self: @TContractState, default_params: DefaultParameters, size: u32, mines_amount: u32);
 
     //1. Load relevant pixels
     //- check if pixel is a mine or not.
@@ -76,7 +76,7 @@ trait IMinesweeperActions<TContractState> {
 
 
     //fn fade(self: @TContractState, default_params: DefaultParameters, size: u64);
-	fn ownerless_space(self: @TContractState, default_params: DefaultParameters, size: u64) -> bool;
+	fn ownerless_space(self: @TContractState, default_params: DefaultParameters, size: u32) -> bool;
 }
 
 #[dojo::contract]
@@ -118,7 +118,6 @@ mod minesweeper_actions {
 
             core_actions.update_permission('snake',
                 Permission {
-                    alert: false,
                     app: false,
                     color: true,
                     owner: false,
@@ -128,7 +127,6 @@ mod minesweeper_actions {
                 });
             core_actions.update_permission('paint',
                 Permission {
-                    alert: false,
                     app: false,
                     color: true,
                     owner: false,
@@ -138,7 +136,7 @@ mod minesweeper_actions {
                 });
         }
 
-        fn interact(self: @ContractState, default_params: DefaultParameters, size: u64, mines_amount: u64) {
+        fn interact(self: @ContractState, default_params: DefaultParameters, size: u32, mines_amount: u32) {
             let world = self.world_dispatcher.read();
             let core_actions = get_core_actions(world);
             let position = default_params.position;
@@ -150,13 +148,13 @@ mod minesweeper_actions {
 			let mut game = get!(world, (position.x, position.y), MinesweeperGame);
 			let timestamp = starknet::get_block_timestamp();
 
-			//if pixel.app == caller_app.system && game.state == State::Open && pixel.alert == 'reveal'
-			if pixel.alert == 'reveal'
+			//if pixel.app == caller_app.system && game.state == State::Open && pixel.action == 'reveal'
+			if pixel.action == 'reveal'
 			{
 				self.reveal(default_params);
 			}
-			//else if pixel.app == caller_app.system && game.state == State::Open && pixel.alert == 'explode'
-			else if pixel.alert == 'explode'
+			//else if pixel.app == caller_app.system && game.state == State::Open && pixel.action == 'explode'
+			else if pixel.action == 'explode'
 			{
 				self.explode(default_params);
 			}
@@ -179,8 +177,8 @@ mod minesweeper_actions {
 
                 set!(world, (game));
 
-                let mut i: u64 = 0;
-				let mut j: u64 = 0;
+                let mut i: u32 = 0;
+				let mut j: u32 = 0;
                 loop {
 					if i >= size {
 						break;
@@ -198,12 +196,11 @@ mod minesweeper_actions {
 								x: position.x + j,
 								y: position.y + i,
 								color: Option::Some(default_params.color), //should I pass in a color to define the minesweepers field color?
-								alert: Option::Some('reveal'),
 								timestamp: Option::None,
 								text: Option::None,
 								app: Option::Some(system),
 								owner: Option::Some(player),
-								action: Option::None,
+								action: Option::Some('reveal'),
 								}
 							);
 							j += 1;
@@ -211,15 +208,16 @@ mod minesweeper_actions {
 					i += 1;
 				};
 
-				let mut random: u64 = 0;
-				let mut random_number: u64 = 0;
+				let mut random: u32 = 0;
+				let mut random_number: u32 = 0;
 
 				i = 0;
 				loop {
 					if i >= mines_amount {
 						break;
 					}
-					random = (timestamp + i) + position.x.into() + position.y.into();
+			/// FIXME did not account for more than u64 timestamps yet
+					random = (timestamp.try_into().unwrap() + i) + position.x + position.y;
 					random_number = random % (size * size);
 					core_actions
 					.update_pixel(
@@ -229,12 +227,11 @@ mod minesweeper_actions {
 							x: random_number / size,
 							y: random_number % size,
 							color: Option::Some(default_params.color),
-							alert: Option::Some('explode'),
 							timestamp: Option::None,
 							text: Option::None,
 							app: Option::Some(system),
 							owner: Option::Some(player),
-							action: Option::None,
+							action: Option::Some('explode'),
 						}
 					);
 					i += 1;
@@ -311,7 +308,6 @@ mod minesweeper_actions {
 						x: position.x,
 						y: position.y,
 						color: Option::Some(default_params.color),
-						alert: Option::None,
 						timestamp: Option::None,
 						text: Option::Some('U+1F30E'),
 						app: Option::None,
@@ -337,7 +333,6 @@ mod minesweeper_actions {
 						x: position.x,
 						y: position.y,
 						color: Option::Some(default_params.color),
-						alert: Option::None,
 						timestamp: Option::None,
 						text: Option::Some('U+1F4A3'),
 						app: Option::None,
@@ -347,14 +342,14 @@ mod minesweeper_actions {
 				);
         }
 
-		fn ownerless_space(self: @ContractState, default_params: DefaultParameters, size: u64) -> bool {
+		fn ownerless_space(self: @ContractState, default_params: DefaultParameters, size: u32) -> bool {
 			let world = self.world_dispatcher.read();
             let core_actions = get_core_actions(world);
             let position = default_params.position;
             let mut pixel = get!(world, (position.x, position.y), (Pixel));
 
-			let mut i: u64 = 0;
-			let mut j: u64 = 0;
+			let mut i: u32 = 0;
+			let mut j: u32 = 0;
 			let mut check_test: bool = true;
 
 			let check = loop {
