@@ -1,6 +1,6 @@
 services:
   pixelaw-core:
-    image: oostvoort/pixelaw-core:v0.0.19
+    image: oostvoort/pixelaw-core:v0.0.20
     container_name: pixelaw-core
     ports:
       - "5050:5050"
@@ -10,6 +10,8 @@ services:
     restart: unless-stopped
     networks:
       - pixelaw
+    environment:
+      - INVOKE_MAX_STEPS=4000000
 
 networks:
   pixelaw:

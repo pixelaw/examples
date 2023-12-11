@@ -19,7 +19,3 @@ To stop it, simply run this command:
 ````console
 make stop
 ````
-
-## Known Issues
-Due to the calculation needed for tictactoe, it needs a katana with a much larger max-invoke steps. An argument
-for accepting Katana Args will be added on later on to accommodate this.
