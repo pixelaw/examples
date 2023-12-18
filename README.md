@@ -19,3 +19,7 @@ To stop it, simply run this command:
 ````console
 make stop
 ````
+
+# Current Issues
+1. The Dojo Version upgrade caused building issues for the TicTacToe contract. This is still being investigated by the team.
+2. The Dojo Version caused issues with running RPS. The team is still investigating the issues

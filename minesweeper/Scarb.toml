@@ -1,5 +1,5 @@
 [package]
-cairo-version = "2.3.0"
+cairo-version = "2.4.0"
 name = "minesweeper"
 version = "0.0.1"
 
@@ -7,16 +7,10 @@ version = "0.0.1"
 sierra-replace-ids = true
 
 [dependencies]
-pixelaw = { git = "https://github.com/pixelaw/core", tag = "v0.0.33" }
+pixelaw = { git = "https://github.com/pixelaw/core", tag = "v0.0.45" }
 
 [[target.dojo]]
-build-external-contracts = [
-    "pixelaw::core::models::pixel::{pixel, Pixel, PixelUpdate}",
-    "pixelaw::core::models::registry::{app, app_name, core_actions_address}",
-    "pixelaw::core::models::permissions::{permissions}",
-    "pixelaw::core::utils::{get_core_actions, Direction, Position, DefaultParameters}",
-    "pixelaw::core::actions::{actions, IActionsDispatcher, IActionsDispatcherTrait}"
-]
+build-external-contracts = []
 
 [tool.dojo]
 initializer_class_hash = "0xbeef"

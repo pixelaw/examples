@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Extract ACTIONS_NAME from manifest.json
-export ACTIONS_NAME=$(cat ./target/dev/manifest.json | jq -r '.contracts | first | .name' | sed 's/_actions$//')
+export ACTIONS_NAME=$(cat ./target/dev/manifest.json | jq -r '.contracts | first | .name' | sed 's/_actions$//' | sed 's/.*:://')
 
 # Define default URL and JSON file path
 DEFAULT_URL="http://localhost:3000/manifests/"
@@ -13,6 +13,12 @@ URL=${1:-$DEFAULT_URL}
 # Append ACTIONS_NAME to the URL
 URL+="$ACTIONS_NAME"
 
+echo "---------------------------------------------------------------------------"
+echo URL : $URL
+echo "---------------------------------------------------------------------------"
+
 # Send a POST request to the URL with the contents of the JSON file
 echo "Uploading $JSON_FILE to $URL"
+echo " "
 curl -X POST -H "Content-Type: application/json" -d @"$JSON_FILE" "$URL"
+echo " "
