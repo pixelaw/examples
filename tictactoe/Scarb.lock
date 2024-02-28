@@ -42,8 +42,8 @@ source = "git+https://github.com/akhercha/cubit.git?rev=d3869a3#d3869a3f0c47e5ed
 
 [[package]]
 name = "dojo"
-version = "0.4.1"
-source = "git+https://github.com/dojoengine/dojo?tag=v0.4.1#e0a16635d1b833e0f5b89a9bdf358d784751c1b4"
+version = "0.5.1"
+source = "git+https://github.com/dojoengine/dojo?tag=v0.6.0-alpha.2#db0c4d783c3626a8d69d5035e2ae352595d86763"
 dependencies = [
  "dojo_plugin",
 ]
@@ -66,8 +66,8 @@ dependencies = [
 
 [[package]]
 name = "pixelaw"
-version = "0.0.45"
-source = "git+https://github.com/pixelaw/core?tag=v0.0.45#ccf35b53b29a97087d4366568fc158c6d6734a9d"
+version = "0.1.24"
+source = "git+https://github.com/pixelaw/core?tag=v0.1.24#764afbcbcbb57027493d072de93b174c81417e87"
 dependencies = [
  "dojo",
 ]

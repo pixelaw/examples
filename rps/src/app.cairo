@@ -77,7 +77,6 @@ mod rps_actions {
     use poseidon::poseidon_hash_span;
     use debug::PrintTrait;
     use starknet::{ContractAddress, get_caller_address, ClassHash, get_contract_address};
-    use dojo::executor::{IExecutorDispatcher, IExecutorDispatcherTrait};
 
 
     use pixelaw::core::models::pixel::{Pixel, PixelUpdate};

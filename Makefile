@@ -11,7 +11,7 @@ build_apps:
 	sozo build --manifest-path ./tictactoe/Scarb.toml;
 
 migrate_apps:
-	cd hunter; scarb run ready_for_deployment;
+	# cd hunter; scarb run ready_for_deployment;
 	sozo migrate --name pixelaw --manifest-path ./hunter/Scarb.toml;
 	sozo migrate --name pixelaw --manifest-path ./minesweeper/Scarb.toml;
 	sozo migrate --name pixelaw --manifest-path ./rps/Scarb.toml;

@@ -38,7 +38,7 @@ if [ ${#COMPONENTS[@]} -eq 0 ]; then
 else
     for component in ${COMPONENTS[@]}; do
         echo "For $component"
-        sozo auth writer $component $ACTIONS_ADDRESS --world $WORLD_ADDRESS --rpc-url $RPC_URL
+        sozo auth writer $component,$ACTIONS_ADDRESS --world $WORLD_ADDRESS --rpc-url $RPC_URL
     done
 fi
 echo "Write permissions for ACTIONS: Done"
