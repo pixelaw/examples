@@ -34,48 +34,10 @@ struct MinesweeperGame {
 
 #[starknet::interface]
 trait IMinesweeperActions<TContractState> {
-
-    //1. read the world state
-    //2. get_core_actions to call the `update_app_name` function and add the minesweeper app to the world.
-    //3. update permissions to other apps (if wanted).
     fn init(self: @TContractState);
-
-    //1. the interact function is a must of any pixelaw app. This is what the front-end calls.
-    //- If you add an optional third parameter, your can allow for additional user input.
-
-    //2. Load important variables
-    //- world: any system that impacts the world needs to
-    //- core_actions:
-    //- position: the position clicked by the player. (part of default parameter utils)
-    //- player: get_player_address
-    //- system: get_system_address
-    //- pixel: get the state of selected pixel.
-
-    //3. check if 10x10 pixel field around the pixel is ownerless.  && has to check if the selected pixel is inside an open minesweeper.
-
-    //4. load the game
-    //- create a game struct(key x, key y, id, state, size, mines_amount, player address, started _timestamp)
-    //- create minesweeper game
-
-    //5. add game to world State
-    //- update properties of affected pixels.
-
-    //6. set the mines
-
     fn interact(self: @TContractState, default_params: DefaultParameters, size: u32, mines_amount: u32);
-
-    //1. Load relevant pixels
-    //- check if pixel is a mine or not.
-    //fn explore(self: @TContractState, default_params: DefaultParameters);
-
 	fn reveal(self: @TContractState, default_params: DefaultParameters);
 	fn explode(self: @TContractState, default_params: DefaultParameters);
-
-
-
-
-
-    //fn fade(self: @TContractState, default_params: DefaultParameters, size: u64);
 	fn ownerless_space(self: @TContractState, default_params: DefaultParameters, size: u32) -> bool;
 }
 
@@ -94,6 +56,7 @@ mod minesweeper_actions {
     use pixelaw::core::utils::{get_core_actions, Position, DefaultParameters};
 	use pixelaw::core::models::registry::{App, AppName, CoreActionsAddress};
     use debug::PrintTrait;
+    use poseidon::poseidon_hash_span;
 
     #[derive(Drop, starknet::Event)]
     struct GameOpened {
@@ -148,19 +111,17 @@ mod minesweeper_actions {
 			let mut game = get!(world, (position.x, position.y), MinesweeperGame);
 			let timestamp = starknet::get_block_timestamp();
 
-			//if pixel.app == caller_app.system && game.state == State::Open && pixel.action == 'reveal'
 			if pixel.action == 'reveal'
 			{
 				self.reveal(default_params);
 			}
-			//else if pixel.app == caller_app.system && game.state == State::Open && pixel.action == 'explode'
 			else if pixel.action == 'explode'
 			{
 				self.explode(default_params);
 			}
 			else if self.ownerless_space(default_params, size: size) == true //check if size grid ownerless;
 			{
-				let mut id = world.uuid(); //do we need this in this condition?
+				let mut id = world.uuid();
                 game =
                     MinesweeperGame {
                         x: position.x,
@@ -195,7 +156,7 @@ mod minesweeper_actions {
 							PixelUpdate {
 								x: position.x + j,
 								y: position.y + i,
-								color: Option::Some(default_params.color), //should I pass in a color to define the minesweepers field color?
+								color: Option::Some(default_params.color),
 								timestamp: Option::None,
 								text: Option::None,
 								app: Option::Some(system),
@@ -208,89 +169,40 @@ mod minesweeper_actions {
 					i += 1;
 				};
 
-				let mut random: u32 = 0;
-				let mut random_number: u32 = 0;
+				let mut random_number: u256 = 0;
 
 				i = 0;
 				loop {
 					if i >= mines_amount {
 						break;
 					}
-			/// FIXME did not account for more than u64 timestamps yet
-					random = (timestamp.try_into().unwrap() + i) + position.x + position.y;
-					random_number = random % (size * size);
-					core_actions
-					.update_pixel(
-						player,
-						system,
-						PixelUpdate {
-							x: random_number / size,
-							y: random_number % size,
-							color: Option::Some(default_params.color),
-							timestamp: Option::None,
-							text: Option::None,
-							app: Option::Some(system),
-							owner: Option::Some(player),
-							action: Option::Some('explode'),
-						}
-					);
+					let timestamp_felt252 = timestamp.into();
+					let x_felt252 = position.x.into();
+					let y_felt252 = position.y.into();
+					let i_felt252 = i.into();
+					let hash: u256 = poseidon_hash_span(array![timestamp_felt252, x_felt252, y_felt252, i_felt252].span()).into();
+					random_number = hash % (size * size).into();
+						core_actions
+							.update_pixel(
+								player,
+								system,
+								PixelUpdate {
+									x: position.x + (random_number / size.into()).try_into().unwrap(),
+									y: position.y + (random_number % size.into()).try_into().unwrap(),
+									color: Option::Some(default_params.color),
+									timestamp: Option::None,
+									text: Option::None,
+									app: Option::Some(system),
+									owner: Option::Some(player),
+									action: Option::Some('explode'),
+								}
+							);
 					i += 1;
 				};
 			} else {
 				'find a free area'.print();
 			}
-			// self.fade(DefaultParameters {
-			// 		for_player: player,
-			// 		for_system: system,
-			// 		position: position,
-			// 		color: default_params.color,
-			// }, size: size);
 		}
-
-		// fn explore(self: @ContractState, default_params: DefaultParameters) {
-		// 	let world = self.world_dispatcher.read();
-        //     let core_actions = get_core_actions(world);
-        //     let position = default_params.position;
-        //     let player = core_actions.get_player_address(default_params.for_player);
-        //     let system = core_actions.get_system_address(default_params.for_system);
-        //     let mut pixel = get!(world, (position.x, position.y), (Pixel));
-
-		// 	if pixel.action == 'reveal' {
-		// 		core_actions
-		// 			.update_pixel(
-		// 				player,
-		// 				system,
-		// 				PixelUpdate {
-		// 					x: position.x,
-		// 					y: position.y,
-		// 					color: Option::Some(default_params.color),
-		// 					alert: Option::None,
-		// 					timestamp: Option::None,
-		// 					text: Option::Some('U+1F30E'),
-		// 					app: Option::None,
-		// 					owner: Option::None,
-		// 					action: Option::None,
-		// 				}
-		// 			);
-		// 	} else if pixel.action == 'explode' {
-		// 		core_actions
-		// 			.update_pixel(
-		// 				player,
-		// 				system,
-		// 				PixelUpdate {
-		// 					x: position.x,
-		// 					y: position.y,
-		// 					color: Option::Some(default_params.color),
-		// 					alert: Option::None,
-		// 					timestamp: Option::None,
-		// 					text: Option::Some('U+1F4A3'),
-		// 					app: Option::None,
-		// 					owner: Option::None,
-		// 					action: Option::None,
-		// 				}
-		// 			);
-		// 	}
-        // }
 
 		fn reveal(self: @ContractState, default_params: DefaultParameters) {
 			let world = self.world_dispatcher.read();
@@ -372,58 +284,5 @@ mod minesweeper_actions {
 			};
 			check
 		}
-
-		// this might have to wait due to overloading server.
-		// fn fade(self: @ContractState, default_params: DefaultParameters, size: u64) {
-		// 	let world = self.world_dispatcher.read();
-        //     let core_actions = get_core_actions(world);
-        //     let position = default_params.position;
-        //     let player = core_actions.get_player_address(default_params.for_player);
-        //     let system = core_actions.get_system_address(default_params.for_system);
-        //     let mut pixel = get!(world, (position.x, position.y), (Pixel));
-
-		// 	//schedule queue to end game
-		// 	let queue_timestamp = starknet::get_block_timestamp() + GAME_MAX_DURATION;
-		// 	let mut calldata: Array<felt252> = ArrayTrait::new();
-
-        //     let THIS_CONTRACT_ADDRESS = get_contract_address();
-
-        //     // Calldata[0]: Calling player
-        //     calldata.append(player.into());
-
-        //     // Calldata[1]: Calling system
-        //     calldata.append(THIS_CONTRACT_ADDRESS.into());
-
-		// 	let mut i: u64 = 0;
-		// 	let mut j: u64 = 0;
-		// 	loop {
-		// 		if i > size {
-		// 			break;
-		// 			}
-		// 			j = 0;
-		// 			loop {
-		// 				if j > size {
-		// 					break;
-		// 				}
-		// 				// Calldata[2,3] : Position[x,y]
-		// 				calldata.append((position.x + j).into());
-		// 				calldata.append((position.y + i).into());
-
-		// 				// Calldata[4] : Color
-		// 				calldata.append(default_params.color.into());
-
-		// 				core_actions
-		// 					.schedule_queue(
-		// 						queue_timestamp,
-		// 						THIS_CONTRACT_ADDRESS,
-		// 						get_execution_info().unbox().entry_point_selector, // This selector
-		// 						calldata.span() // The calldata prepared
-		// 					);
-		// 				j += 1;
-		// 			};
-		// 			i += 1;
-		// 		};
-		// 	'Game ending initiated'.print(); //Clarify how to work with the queue.
-		// }
 	}
 }
