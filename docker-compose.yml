@@ -1,10 +1,11 @@
 services:
   pixelaw-core:
-    image: ghcr.io/pixelaw/core:0.1.24
+    image: ghcr.io/pixelaw/core:0.1.26
     platform: linux/x86_64
     container_name: pixelaw-core
     environment:
       - DISABLE_FEE=true
+      - DISABLE_VALIDATE=true
     ports:
       - "127.0.0.1:5050:5050"
       - "127.0.0.1:3000:3000"
