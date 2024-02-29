@@ -10,7 +10,6 @@ trait IHunterActions<TContractState> {
     fn interact(self: @TContractState, default_params: DefaultParameters);
 }
 
-
 #[derive(Model, Copy, Drop, Serde, SerdeLen)]
 struct LastAttempt {
     #[key]
@@ -45,7 +44,7 @@ mod hunter_actions {
 
 
     // impl: implement functions specified in trait
-    #[external(v0)]
+    #[abi(embed_v0)]
     impl HunterActionsImpl of IHunterActions<ContractState> {
         /// Initialize the Hunter App
         fn init(self: @ContractState) {
@@ -75,10 +74,10 @@ mod hunter_actions {
             let mut pixel = get!(world, (position.x, position.y), (Pixel));
 
             // Check if we have a winner
+            let mut last_attempt = get!(world, (player), LastAttempt);
             let timestamp = starknet::get_block_timestamp();
 
 
-            let mut last_attempt = get!(world, (player), LastAttempt);
 
             // assert(timestamp - last_attempt.timestamp > COOLDOWN_SEC, 'Not so fast'); 
             assert(pixel.owner.is_zero(), 'Hunt only empty pixels');

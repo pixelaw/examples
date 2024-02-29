@@ -3,26 +3,17 @@ set -euo pipefail
 pushd $(dirname "$0")/..
 
 
-# Check if a command line argument is supplied
-if [ $# -gt 0 ]; then
-    # If an argument is supplied, use it as the RPC_URL
-    RPC_URL=$1
-fi
-
-export WORLD_ADDRESS=$(cat ./target/dev/manifest.json | jq -r '.world.address')
-export DOJO_WORLD_ADDRESS=$WORLD_ADDRESS
-export STARKNET_RPC="http://localhost:5050/"
-
+export APP_NAME=$(grep "^name" Scarb.toml | awk -F' = ' '{print $2}' | tr -d '"')
 export ACTIONS_ADDRESS=$(cat ./target/dev/manifest.json | jq -r '.contracts | first | .address')
 
 echo "---------------------------------------------------------------------------"
-echo world : $WORLD_ADDRESS
+echo app : $APP_NAME
 echo " "
 echo actions : $ACTIONS_ADDRESS
 echo "---------------------------------------------------------------------------"
 
 # enable system -> component authorizations
-COMPONENTS=($(cat ./target/dev/manifest.json | jq -r '.models[] | .name'))
+COMPONENTS=($(jq -r --arg APP_NAME "$APP_NAME" '.models[] | select(.name | contains($APP_NAME)) | .name' ./target/dev/manifest.json))
 
 for index in "${!COMPONENTS[@]}"; do
     IFS='::' read -ra NAMES <<< "${COMPONENTS[index]}"
@@ -38,14 +29,14 @@ if [ ${#COMPONENTS[@]} -eq 0 ]; then
 else
     for component in ${COMPONENTS[@]}; do
         echo "For $component"
-        sozo auth grant writer $component,$ACTIONS_ADDRESS
+        sozo --profile $SCARB_PROFILE auth grant writer $component,$ACTIONS_ADDRESS
     done
 fi
 echo "Write permissions for ACTIONS: Done"
 
-echo "Initialize ACTIONS: Done"
+echo "Initialize ACTIONS: (sozo --profile $SCARB_PROFILE execute -vw $ACTIONS_ADDRESS init)"
 sleep 0.1
-sozo execute $ACTIONS_ADDRESS init
+sozo --profile $SCARB_PROFILE execute -vw $ACTIONS_ADDRESS init
 echo "Initialize ACTIONS: Done"
 
 

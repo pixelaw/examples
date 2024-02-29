@@ -1,39 +1,45 @@
+PROFILE ?= dev
+
 start_core:
-	docker compose up --force-recreate -d
+	docker compose up -d
 
 stop_core:
 	docker compose down
 
 build_apps:
-	sozo build --manifest-path ./hunter/Scarb.toml;
-	sozo build --manifest-path ./minesweeper/Scarb.toml;
-	sozo build --manifest-path ./rps/Scarb.toml;
-	sozo build --manifest-path ./tictactoe/Scarb.toml;
+	cd hunter && sozo  build;
+	cd minesweeper && sozo  build;
+	cd rps && sozo  build;
+	cd tictactoe && sozo  build;
 
 migrate_apps:
-	# cd hunter; scarb run ready_for_deployment;
-	sozo migrate --name pixelaw --manifest-path ./hunter/Scarb.toml;
-	sozo migrate --name pixelaw --manifest-path ./minesweeper/Scarb.toml;
-	sozo migrate --name pixelaw --manifest-path ./rps/Scarb.toml;
-	sozo migrate --name pixelaw --manifest-path ./tictactoe/Scarb.toml;
+	cd hunter && sozo --profile $(PROFILE) migrate;
+	cd minesweeper && sozo --profile $(PROFILE) migrate;
+	cd rps && sozo --profile $(PROFILE) migrate;
+	cd tictactoe && sozo --profile $(PROFILE) migrate;
 
 initialize_apps:
-	cd hunter; scarb run initialize;
-	cd minesweeper; scarb run initialize;
-	cd rps; scarb run initialize;
-	cd tictactoe; scarb run initialize;
+	cd hunter; scarb --profile $(PROFILE) run initialize;
+	cd minesweeper; scarb --profile $(PROFILE) run initialize;
+	cd rps; scarb --profile $(PROFILE) run initialize;
+	cd tictactoe; scarb --profile $(PROFILE) run initialize;
 
 upload_manifests:
-	cd hunter; scarb run upload_manifest;
-	cd minesweeper; scarb run upload_manifest;
-	cd rps; scarb run upload_manifest;
-	cd tictactoe; scarb run upload_manifest;
+	cd hunter; scarb --profile $(PROFILE) run upload_manifest;
+	cd minesweeper; scarb --profile $(PROFILE) run upload_manifest;
+	cd rps; scarb --profile $(PROFILE) run upload_manifest;
+	cd tictactoe; scarb --profile $(PROFILE) run upload_manifest;
+
+deploy_demo:
+	$(MAKE)  migrate_apps PROFILE=demo;
+	$(MAKE)   initialize_apps PROFILE=demo;
+	$(MAKE)   upload_manifests PROFILE=demo;
 
 start:
-	make start_core;
-	make build_apps;
-	make migrate_apps;
-	make initialize_apps;
-	make upload_manifests;
+	$(MAKE)  start_core;
+	$(MAKE)  build_apps;
+	$(MAKE)  migrate_apps;
+	$(MAKE)  initialize_apps;
+	$(MAKE)  upload_manifests;
 
 stop: stop_core

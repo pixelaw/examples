@@ -1,24 +1,17 @@
 #!/bin/bash
 
-# Extract ACTIONS_NAME from manifest.json
-export ACTIONS_NAME=$(cat ./target/dev/manifest.json | jq -r '.contracts | first | .name' | sed 's/_actions$//' | sed 's/.*:://')
+APP_NAME=$(grep "^name" Scarb.toml | awk -F' = ' '{print $2}' | tr -d '"')
 
-# Define default URL and JSON file path
-DEFAULT_URL="http://localhost:3000/manifests/"
-JSON_FILE="./target/dev/manifest.json"
+MANIFEST_URL=$(scarb metadata --format-version 1 | jq -r --arg APP_NAME "$APP_NAME" '.packages[] | select(.name | index($APP_NAME)) | .tool.dojo.env.manifest_url')
+MANIFEST_URL="$MANIFEST_URL/$APP_NAME"
+JSON_FILE="./target/demo/manifest.json"
 
-# Use the first argument as the URL if provided, otherwise use the default URL
-URL=${1:-$DEFAULT_URL}
-
-# Append ACTIONS_NAME to the URL
-URL+="$ACTIONS_NAME"
 
 echo "---------------------------------------------------------------------------"
-echo URL : $URL
+echo URL : $MANIFEST_URL
 echo "---------------------------------------------------------------------------"
 
 # Send a POST request to the URL with the contents of the JSON file
-echo "Uploading $JSON_FILE to $URL"
-echo " "
-curl -X POST -H "Content-Type: application/json" -d @"$JSON_FILE" "$URL"
+echo "Uploading $JSON_FILE to $MANIFEST_URL"
+curl -X POST -H "Content-Type: application/json" -d @"$JSON_FILE" "$MANIFEST_URL"
 echo " "
