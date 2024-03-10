@@ -32,8 +32,8 @@ upload_manifests:
 
 deploy_demo:
 	$(MAKE)  migrate_apps PROFILE=demo;
-	$(MAKE)   initialize_apps PROFILE=demo;
-	$(MAKE)   upload_manifests PROFILE=demo;
+	$(MAKE)  initialize_apps PROFILE=demo;
+	$(MAKE)  upload_manifests PROFILE=demo;
 
 start:
 	$(MAKE)  start_core;
