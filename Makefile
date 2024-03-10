@@ -42,4 +42,8 @@ start:
 	$(MAKE)  initialize_apps;
 	$(MAKE)  upload_manifests;
 
+reset:
+	docker compose down -v
+	docker compose up -d
+
 stop: stop_core
