@@ -47,3 +47,16 @@ reset:
 	docker compose up -d
 
 stop: stop_core
+
+
+shell:
+	docker compose exec pixelaw-core bash;
+
+log_katana:
+	docker compose exec pixelaw-core tail -f /keiko/log/katana.log.json
+
+log_torii:
+	docker compose exec pixelaw-core tail -f /keiko/log/torii.log
+
+log_bots:
+	docker compose exec pixelaw-core tail -f /keiko/log/bots.log
