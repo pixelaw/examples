@@ -1,6 +1,6 @@
 services:
   pixelaw-core:
-    image: ghcr.io/pixelaw/core:0.1.29
+    image: ghcr.io/pixelaw/core:0.1.30
     platform: linux/x86_64
     container_name: pixelaw-core
     environment:
