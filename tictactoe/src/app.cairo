@@ -83,7 +83,8 @@ mod tictactoe_actions {
         GameOpened: GameOpened
     }
 
-    #[external(v0)]
+    // impl: implement functions specified in trait
+    #[abi(embed_v0)]
     impl TicTacToeActionsImpl of ITicTacToeActions<ContractState> {
         fn init(self: @ContractState) {
             let world = self.world_dispatcher.read();

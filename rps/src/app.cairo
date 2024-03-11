@@ -105,7 +105,8 @@ mod rps_actions {
     }
 
 
-    #[external(v0)]
+    // impl: implement functions specified in trait
+    #[abi(embed_v0)]
     impl RpsActionsImpl of IRpsActions<ContractState> {
         /// Initialize the Paint App (TODO I think, do we need this??)
         fn init(self: @ContractState) {
