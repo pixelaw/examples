@@ -1,4 +1,5 @@
 PROFILE ?= dev
+APP ?= paint
 
 start_core:
 	docker compose up -d
@@ -41,6 +42,13 @@ start:
 	$(MAKE)  migrate_apps;
 	$(MAKE)  initialize_apps;
 	$(MAKE)  upload_manifests;
+
+# starts only one app
+start_app:
+	cd $(APP) && sozo build;
+	cd $(APP) && sozo --profile $(PROFILE) migrate;
+	cd $(APP); scarb --profile $(PROFILE) run initialize;
+	cd $(APP); scarb --profile $(PROFILE) run upload_manifest;
 
 reset:
 	docker compose down -v
