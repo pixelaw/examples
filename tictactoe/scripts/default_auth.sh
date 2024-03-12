@@ -34,9 +34,9 @@ else
 fi
 echo "Write permissions for ACTIONS: Done"
 
-echo "Initialize ACTIONS: (sozo --profile $SCARB_PROFILE execute -vw $ACTIONS_ADDRESS init)"
+echo "Initialize ACTIONS: (sozo --profile $SCARB_PROFILE execute -v $ACTIONS_ADDRESS init)"
 sleep 0.1
-sozo --profile $SCARB_PROFILE execute -vw $ACTIONS_ADDRESS init
+sozo --profile $SCARB_PROFILE execute -v $ACTIONS_ADDRESS init
 echo "Initialize ACTIONS: Done"
 
 
