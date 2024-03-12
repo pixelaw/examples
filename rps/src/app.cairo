@@ -146,7 +146,6 @@ mod rps_actions {
             let core_actions = get_core_actions(world);
             let position = default_params.position;
             let player = core_actions.get_player_address(default_params.for_player);
-            let system = core_actions.get_system_address(default_params.for_system);
 
             let pixel = get!(world, (position.x, position.y), Pixel);
 
@@ -215,9 +214,6 @@ mod rps_actions {
             let core_actions = get_core_actions(world);
             let position = default_params.position;
             let player = core_actions.get_player_address(default_params.for_player);
-            let system = core_actions.get_system_address( default_params.for_system);
-
-            let pixel = get!(world, (position.x, position.y), Pixel);
 
             // Load the game
             let mut game = get!(world, (position.x, position.y), Game);
@@ -270,9 +266,6 @@ mod rps_actions {
             let core_actions = get_core_actions(world);
             let position = default_params.position;
             let player = core_actions.get_player_address(default_params.for_player);
-            let system = core_actions.get_system_address( default_params.for_system);
-
-            let pixel = get!(world, (position.x, position.y), Pixel);
 
             // Load the game
             let mut game = get!(world, (position.x, position.y), Game);
@@ -364,7 +357,6 @@ mod rps_actions {
             let core_actions = get_core_actions(world);
             let position = default_params.position;
             let player = core_actions.get_player_address(default_params.for_player);
-            let system = core_actions.get_system_address( default_params.for_system);
             let pixel = get!(world, (position.x, position.y), Pixel);
             let game = get!(world, (position.x, position.y), Game);
 
@@ -397,7 +389,7 @@ mod rps_actions {
     }
 
     fn get_unicode_for_rps(move: Move) -> felt252 {
-        let mut result = 'U+1FAA8';
+
         match move {
             Move::None => '',
             Move::Rock => 'U+1FAA8',
