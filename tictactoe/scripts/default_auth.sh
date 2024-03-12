@@ -4,7 +4,7 @@ pushd $(dirname "$0")/..
 
 
 export APP_NAME=$(grep "^name" Scarb.toml | awk -F' = ' '{print $2}' | tr -d '"')
-export ACTIONS_ADDRESS=$(cat ./target/dev/manifest.json | jq -r '.contracts | first | .address')
+export ACTIONS_ADDRESS=$(cat ./target/dev/manifest.json | jq -r --arg APP_NAME "$APP_NAME" '.contracts[] | select(.name | contains($APP_NAME)) | .address')
 
 echo "---------------------------------------------------------------------------"
 echo app : $APP_NAME
@@ -30,6 +30,7 @@ else
     for component in ${COMPONENTS[@]}; do
         echo "For $component"
         sozo --profile $SCARB_PROFILE auth grant writer $component,$ACTIONS_ADDRESS
+        sleep 0.1
     done
 fi
 echo "Write permissions for ACTIONS: Done"
