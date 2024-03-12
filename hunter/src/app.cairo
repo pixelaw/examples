@@ -86,7 +86,7 @@ mod hunter_actions {
         fn interact(self: @ContractState, default_params: DefaultParameters) {
             'interact'.print();
 
-            let COOLDOWN_SEC = 3;
+            // let COOLDOWN_SEC = 3;
 
             // Load important variables
             let world = self.world_dispatcher.read();
