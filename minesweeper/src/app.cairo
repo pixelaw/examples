@@ -57,6 +57,7 @@ mod minesweeper_actions {
 	use pixelaw::core::models::registry::{App, AppName, CoreActionsAddress};
     use debug::PrintTrait;
     use poseidon::poseidon_hash_span;
+	use pixelaw::core::traits::IInteroperability;
 
     #[derive(Drop, starknet::Event)]
     struct GameOpened {
@@ -70,7 +71,28 @@ mod minesweeper_actions {
         GameOpened: GameOpened
     }
 
-    #[external(v0)]
+	#[abi(embed_v0)]
+	impl ActionsInteroperability of IInteroperability<ContractState> {
+		fn on_pre_update(
+			self: @ContractState,
+			pixel_update: PixelUpdate,
+			app_caller: App,
+			player_caller: ContractAddress
+		) {
+		// do nothing
+		}
+
+		fn on_post_update(
+			self: @ContractState,
+			pixel_update: PixelUpdate,
+			app_caller: App,
+			player_caller: ContractAddress
+		){
+		// do nothing
+		}
+	}
+
+	#[abi(embed_v0)]
     impl MinesweeperActionsImpl of IMinesweeperActions<ContractState> {
 
         fn init(self: @ContractState) {

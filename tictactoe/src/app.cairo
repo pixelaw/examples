@@ -70,6 +70,7 @@ mod tictactoe_actions {
     use orion::operators::tensor::{TensorTrait, FP16x16Tensor, Tensor, FP16x16TensorAdd};
     use orion::operators::nn::{NNTrait, FP16x16NN};
     use orion::numbers::{FP16x16, FixedTrait};
+    use pixelaw::core::traits::IInteroperability;
 
     #[derive(Drop, starknet::Event)]
     struct GameOpened {
@@ -81,6 +82,27 @@ mod tictactoe_actions {
     #[derive(Drop, starknet::Event)]
     enum Event {
         GameOpened: GameOpened
+    }
+
+    #[abi(embed_v0)]
+    impl ActionsInteroperability of IInteroperability<ContractState> {
+        fn on_pre_update(
+            self: @ContractState,
+            pixel_update: PixelUpdate,
+            app_caller: App,
+            player_caller: ContractAddress
+        ) {
+        // do nothing
+        }
+
+        fn on_post_update(
+            self: @ContractState,
+            pixel_update: PixelUpdate,
+            app_caller: App,
+            player_caller: ContractAddress
+        ){
+        // do nothing
+        }
     }
 
     // impl: implement functions specified in trait

@@ -39,8 +39,31 @@ mod hunter_actions {
     };
     use super::{APP_KEY, APP_ICON, APP_MANIFEST};
     use pixelaw::core::utils::{get_core_actions, Direction, Position, DefaultParameters};
+    use pixelaw::core::models::registry::{App};
 
     use debug::PrintTrait;
+    use pixelaw::core::traits::IInteroperability;
+
+    #[abi(embed_v0)]
+    impl ActionsInteroperability of IInteroperability<ContractState> {
+        fn on_pre_update(
+            self: @ContractState,
+            pixel_update: PixelUpdate,
+            app_caller: App,
+            player_caller: ContractAddress
+        ) {
+        // do nothing
+        }
+
+        fn on_post_update(
+            self: @ContractState,
+            pixel_update: PixelUpdate,
+            app_caller: App,
+            player_caller: ContractAddress
+        ){
+        // do nothing
+        }
+    }
 
 
     // impl: implement functions specified in trait

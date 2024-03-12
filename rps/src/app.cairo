@@ -91,6 +91,8 @@ mod rps_actions {
 
     use zeroable::Zeroable;
     use dojo::database::introspect::Introspect;
+    use pixelaw::core::traits::IInteroperability;
+    use pixelaw::core::models::registry::{App};
 
     #[derive(Drop, starknet::Event)]
     struct GameCreated {
@@ -102,6 +104,27 @@ mod rps_actions {
     #[derive(Drop, starknet::Event)]
     enum Event {
         GameCreated: GameCreated
+    }
+
+    #[abi(embed_v0)]
+    impl ActionsInteroperability of IInteroperability<ContractState> {
+        fn on_pre_update(
+            self: @ContractState,
+            pixel_update: PixelUpdate,
+            app_caller: App,
+            player_caller: ContractAddress
+        ) {
+        // do nothing
+        }
+
+        fn on_post_update(
+            self: @ContractState,
+            pixel_update: PixelUpdate,
+            app_caller: App,
+            player_caller: ContractAddress
+        ){
+        // do nothing
+        }
     }
 
 
