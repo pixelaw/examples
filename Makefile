@@ -61,7 +61,7 @@ shell:
 	docker compose exec pixelaw-core bash;
 
 log_katana:
-	docker compose exec pixelaw-core tail -f /keiko/log/katana.log.json
+	docker compose exec pixelaw-core tail -n 200 -f /keiko/log/katana.log.json
 
 log_torii:
 	docker compose exec pixelaw-core tail -f /keiko/log/torii.log
