@@ -19,9 +19,11 @@ deploy_local() {
   deploy $APP_NAME $PROFILE
 }
 
+
+
 # Function to start app
 deploy() {
-    echo "Starting $1"
+    echo "Deploying $1 to $2"
     APP_NAME=$1
     PROFILE=$2
     pushd $APP_NAME
