@@ -1,8 +1,14 @@
 # PixeLAW Examples
-This is a list of app examples developed using PixeLAW's [app_template](https://github.com/pixelaw/app_template).
-Each app can stand alone and can be deployed individually. Again, read the app_template to
-understand how to do so. Inversely, all apps can be deployed to the PixeLAW core via a
-make instruction.
+This is a list of app examples that demonstrate PixeLAW's capability.
+Each app can stand alone and can be deployed individually. Here are the list of apps currently available:
+
+| Name       | Description                                                                                              |
+|------------|----------------------------------------------------------------------------------------------------------|
+| hunter     | A game of chance where any player can pick a random pixel that could either be a winning or losing pixel |
+| minsweeper | A classic minesweeper with a limited amount of pixels in a board                                         |
+| rps        | Stands for rock-paper-scissors, where two players can play on the same pixel                             |
+| tictactoe  | A classic game of tictactoe against a machine learning opponent                                          |
+
 
 ## Prerequisites
 1. [Make](https://www.gnu.org/software/make/#download)
@@ -10,12 +16,40 @@ make instruction.
 3. [Docker Compose plugin](https://docs.docker.com/compose/install/)
 
 ## Getting Started
+There are two recommended ways to get PixeLAW started. The simplest method is getting everything started with
+all the apps in this repo and the other method is individually deploying them.
+
+### Deploying all Apps
 Run this command to start up PixeLAW core and deploy all apps in the directory.
-````console
+````shell
 make start
 ````
 
 To stop it, simply run this command:
-````console
+````shell
 make stop
 ````
+
+### Deploying an app individually
+To start up PixeLAW, you can either:
+````shell
+docker compose up -d
+````
+or 
+````shell
+make start_core
+````
+
+Afterwards, to deploy an app to your local PixeLAW, you can either:
+````shell
+./local_deploy.sh <replace_this_with_any_app_name>
+````
+or
+````shell
+make deploy_app APP=<replace_this_with_any_app_name>
+````
+
+## Contributing an app
+If you'd like to contribute your app to PixeLAW, feel free to do a pull request for this repo
+and add your app in the table above.
+
