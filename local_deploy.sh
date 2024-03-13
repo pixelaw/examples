@@ -6,7 +6,7 @@ wait_for_local_katana() {
     if [ "$response" -eq 200 ]; then
       break
     else
-      echo "Waiting for katana at http://localhost:5050"
+      echo "Waiting for katana at http://localhost:5050 - on MacOS this can take a while"
       sleep 2
     fi
   done
