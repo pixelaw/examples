@@ -26,6 +26,7 @@ deploy() {
     PROFILE=$2
     pushd $APP_NAME
 
+    sozo --profile $PROFILE build
     sozo --profile $PROFILE migrate
 
     export ACTIONS_ADDRESS=$(cat ./target/dev/manifest.json | jq -r --arg APP_NAME "$APP_NAME" '.contracts[] | select(.name | contains($APP_NAME)) | .address')
