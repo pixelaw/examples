@@ -17,7 +17,7 @@ deploy_local() {
   PROFILE=dev
   wait_for_local_katana
   MANIFEST_URL="http://localhost:3000/manifests"
-  deploy $APP_NAME $PROFILE
+  deploy $APP_NAME $PROFILE $MANIFEST_URL
 }
 
 deploy_dojo() {
