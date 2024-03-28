@@ -58,3 +58,11 @@ account_address = "0x003c4dd268780ef738920c801edc3a75b6337bc17558c74795b530c0ff5
 private_key = "0x2bbf4f9fd0bbb2e60b0316c1fe0b76cf7a4d0198bd493ced9b8df2a3a24d68a"
 world_address = "0x608cc3b3f4cf88e180bd3222dbf4af8afc1f0dbe93b2c30cd58f86ea6ccdbbf"
 manifest_url="https://demo.pixelaw.xyz/manifests"
+
+# dojo.pixelaw.xyz
+[profile.dojo.tool.dojo.env]
+rpc_url = "https://katana.dojo.pixelaw.xyz/"
+account_address = "0x003c4dd268780ef738920c801edc3a75b6337bc17558c74795b530c0ff502486"
+private_key = "0x2bbf4f9fd0bbb2e60b0316c1fe0b76cf7a4d0198bd493ced9b8df2a3a24d68a"
+world_address = "0x608cc3b3f4cf88e180bd3222dbf4af8afc1f0dbe93b2c30cd58f86ea6ccdbbf"
+manifest_url="https://dojo.pixelaw.xyz/manifests"

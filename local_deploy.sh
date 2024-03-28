@@ -16,7 +16,15 @@ deploy_local() {
   APP_NAME=$1
   PROFILE=dev
   wait_for_local_katana
+  MANIFEST_URL="http://localhost:3000/manifests"
   deploy $APP_NAME $PROFILE
+}
+
+deploy_dojo() {
+  APP_NAME=$1
+  PROFILE=dojo
+  MANIFEST_URL="https://dojo.pixelaw.xyz/manifests"
+  deploy $APP_NAME $PROFILE $MANIFEST_URL
 }
 
 # Function to start app
@@ -24,12 +32,13 @@ deploy() {
     echo "Starting $1"
     APP_NAME=$1
     PROFILE=$2
+    MANIFEST_URL=$3
     pushd $APP_NAME
 
     sozo --profile $PROFILE build
     sozo --profile $PROFILE migrate
 
-    export ACTIONS_ADDRESS=$(cat ./target/dev/manifest.json | jq -r --arg APP_NAME "$APP_NAME" '.contracts[] | select(.name | contains($APP_NAME)) | .address')
+    export ACTIONS_ADDRESS=$(cat ./target/$PROFILE/manifest.json | jq -r --arg APP_NAME "$APP_NAME" '.contracts[] | select(.name | contains($APP_NAME)) | .address')
 
     echo "---------------------------------------------------------------------------"
     echo app : $APP_NAME
@@ -38,7 +47,7 @@ deploy() {
     echo "---------------------------------------------------------------------------"
 
     # enable system -> component authorizations
-    COMPONENTS=($(jq -r --arg APP_NAME "$APP_NAME" '.models[] | select(.name | contains($APP_NAME)) | .name' ./target/dev/manifest.json))
+    COMPONENTS=($(jq -r --arg APP_NAME "$APP_NAME" '.models[] | select(.name | contains($APP_NAME)) | .name' ./target/$PROFILE/manifest.json))
 
     for index in "${!COMPONENTS[@]}"; do
         IFS='::' read -ra NAMES <<< "${COMPONENTS[index]}"
@@ -67,7 +76,6 @@ deploy() {
 
     echo "Default authorizations have been successfully set."
 
-    MANIFEST_URL="http://localhost:3000/manifests"
     MANIFEST_URL="$MANIFEST_URL/$APP_NAME"
     JSON_FILE="./target/$PROFILE/manifest.json"
 
