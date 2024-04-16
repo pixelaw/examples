@@ -2,12 +2,14 @@
 This is a list of app examples that demonstrate PixeLAW's capability.
 Each app can stand alone and can be deployed individually. Here are the list of apps currently available:
 
-| Name       | Description                                                                                              |
-|------------|----------------------------------------------------------------------------------------------------------|
-| hunter     | A game of chance where any player can pick a random pixel that could either be a winning or losing pixel |
-| minsweeper | A classic minesweeper with a limited amount of pixels in a board                                         |
-| rps        | Stands for rock-paper-scissors, where two players can play on the same pixel                             |
-| tictactoe  | A classic game of tictactoe against a machine learning opponent                                          |
+| Name       | Description                                                                                                 |
+|------------|-------------------------------------------------------------------------------------------------------------|
+| hunter     | A game of chance where any player can pick a random pixel that could either be a winning or losing pixel    |
+| minsweeper | A classic minesweeper with a limited amount of pixels in a board                                            |
+| rps        | Stands for rock-paper-scissors, where two players can play on the same pixel                                |
+| tictactoe  | A classic game of tictactoe against a machine learning opponent                                             |
+| brc2048    | A fully on-chain 2048 based on PixeLAW(a pixel-based Autonomous World built on @Starknet using @ohayo_dojo) |
+| pix2048    | A fully on-chain 2048 based on PixeLAW(a pixel-based Autonomous World built on @Starknet using @ohayo_dojo) |
 
 
 ## Prerequisites
@@ -52,4 +54,12 @@ make deploy_app APP=<replace_this_with_any_app_name>
 ## Contributing an app
 If you'd like to contribute your app to PixeLAW, feel free to do a pull request for this repo
 and add your app in the table above.
+
+## Credits
+
+| Contribution                                               | Developer                                |
+|------------------------------------------------------------|------------------------------------------|
+| App - [brc2048](https://github.com/themetacat/PixeLAW2048) | [MetaCat](https://github.com/themetacat) |
+| App - [pix2048](https://github.com/themetacat/PixeLAW2048) | [MetaCat](https://github.com/themetacat) |
+
 
