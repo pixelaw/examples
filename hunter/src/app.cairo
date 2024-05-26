@@ -4,11 +4,6 @@ use pixelaw::core::utils::{Position, DefaultParameters};
 use starknet::{get_caller_address, get_contract_address, get_execution_info, ContractAddress};
 
 
-#[starknet::interface]
-trait IHunterActions<TContractState> {
-    fn init(self: @TContractState);
-    fn interact(self: @TContractState, default_params: DefaultParameters);
-}
 
 #[derive(Model, Copy, Drop, Serde, SerdeLen)]
 struct LastAttempt {
@@ -21,6 +16,13 @@ const APP_KEY: felt252 = 'hunter';
 const APP_ICON: felt252 = 'U+27B6';
 /// BASE means using the server's default manifest.json handler
 const APP_MANIFEST: felt252 = 'BASE/manifests/hunter';
+
+#[dojo::interface]
+trait IHunterActions<TContractState> {
+    fn init(self: @TContractState);
+    fn interact(self: @TContractState, default_params: DefaultParameters);
+}
+
 
 #[dojo::contract]
 mod hunter_actions {

@@ -1,13 +1,13 @@
 [package]
-cairo-version = "2.4.0"
+cairo-version = "2.6.3"
 name = "minesweeper"
-version = "0.0.1"
+version = "0.0.0"
 
 [cairo]
 sierra-replace-ids = true
 
 [dependencies]
-pixelaw = { git = "https://github.com/pixelaw/core", tag = "v0.1.30" }
+pixelaw = { git = "https://github.com/pixelaw/core", tag = "v0.3.5" }
 
 [[target.dojo]]
 build-external-contracts = [
@@ -36,19 +36,12 @@ build-external-contracts = [
 [tool.dojo]
 initializer_class_hash = "0xbeef"
 
-[scripts]
-ready_for_deployment = "bash ./scripts/ready_for_deployment.sh"
-initialize = "bash ./scripts/default_auth.sh"
-upload_manifest = "bash ./scripts/upload_manifest.sh"
-migrate = "bash ./scripts/migrate.sh"
-
 # Dev: http://localhost:3000
 [tool.dojo.env]
 rpc_url = "http://localhost:5050/"
 account_address = "0x003c4dd268780ef738920c801edc3a75b6337bc17558c74795b530c0ff502486"
 private_key = "0x2bbf4f9fd0bbb2e60b0316c1fe0b76cf7a4d0198bd493ced9b8df2a3a24d68a"
-world_address = "0x608cc3b3f4cf88e180bd3222dbf4af8afc1f0dbe93b2c30cd58f86ea6ccdbbf"
-manifest_url="http://localhost:3000/manifests"
+world_address= "0x60916a73fe631fcba3b2a930e21c6f7bb2533ea398c7bfa75c72f71a8709fc2"
 
 # demo.pixelaw.xyz
 [profile.demo.tool.dojo.env]

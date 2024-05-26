@@ -16,8 +16,7 @@ deploy_local() {
   APP_NAME=$1
   PROFILE=dev
   wait_for_local_katana
-  MANIFEST_URL="http://localhost:3000/manifests"
-  deploy $APP_NAME $PROFILE $MANIFEST_URL
+  deploy $APP_NAME $PROFILE
 }
 
 deploy_dojo() {
@@ -34,13 +33,13 @@ deploy() {
     echo "Deploying $1 to $2"
     APP_NAME=$1
     PROFILE=$2
-    MANIFEST_URL=$3
     pushd $APP_NAME
 
     sozo --profile $PROFILE build
-    sozo --profile $PROFILE migrate
+    sozo --profile $PROFILE migrate plan
+    sozo --profile $PROFILE migrate apply
 
-    export ACTIONS_ADDRESS=$(cat ./target/$PROFILE/manifest.json | jq -r --arg APP_NAME "$APP_NAME" '.contracts[] | select(.name | contains($APP_NAME)) | .address')
+    export ACTIONS_ADDRESS=$(cat ./manifests/$PROFILE/manifest.json | jq -r --arg APP_NAME "$APP_NAME" '.contracts[] | select(.name | contains($APP_NAME)) | .address')
 
     echo "---------------------------------------------------------------------------"
     echo app : $APP_NAME
@@ -49,7 +48,7 @@ deploy() {
     echo "---------------------------------------------------------------------------"
 
     # enable system -> component authorizations
-    COMPONENTS=($(jq -r --arg APP_NAME "$APP_NAME" '.models[] | select(.name | contains($APP_NAME)) | .name' ./target/$PROFILE/manifest.json))
+    COMPONENTS=($(jq -r --arg APP_NAME "$APP_NAME" '.models[] | select(.name | contains($APP_NAME)) | .name' ./manifests/$PROFILE/manifest.json))
 
     for index in "${!COMPONENTS[@]}"; do
         IFS='::' read -ra NAMES <<< "${COMPONENTS[index]}"
@@ -65,31 +64,16 @@ deploy() {
     else
         for component in ${COMPONENTS[@]}; do
             echo "For $component"
-            sozo --profile $PROFILE auth grant writer $component,$ACTIONS_ADDRESS
-            sleep 0.1
+            sozo --profile $PROFILE auth grant --wait writer $component,$ACTIONS_ADDRESS
         done
     fi
     echo "Write permissions for ACTIONS: Done"
 
     echo "Initialize ACTIONS: (sozo --profile $PROFILE execute -v $ACTIONS_ADDRESS init)"
-    sleep 0.1
-    sozo --profile $PROFILE execute -v $ACTIONS_ADDRESS init
+    sozo --profile $PROFILE execute --wait -v $ACTIONS_ADDRESS init
     echo "Initialize ACTIONS: Done"
 
     echo "Default authorizations have been successfully set."
-
-    MANIFEST_URL="$MANIFEST_URL/$APP_NAME"
-    JSON_FILE="./target/$PROFILE/manifest.json"
-
-
-    echo "---------------------------------------------------------------------------"
-    echo URL : $MANIFEST_URL
-    echo "---------------------------------------------------------------------------"
-
-    # Send a POST request to the URL with the contents of the JSON file
-    echo "Uploading $JSON_FILE to $MANIFEST_URL"
-    curl -X POST -H "Content-Type: application/json" -d @"$JSON_FILE" "$MANIFEST_URL"
-    echo " "
 
     popd
 }
