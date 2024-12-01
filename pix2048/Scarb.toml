@@ -7,10 +7,13 @@ version = "0.0.0"
 sierra-replace-ids = true
 
 [dependencies]
-pixelaw = { git = "https://github.com/pixelaw/core", tag = "v0.3.5" }
+pixelaw = { git = "https://github.com/pixelaw/core", branch = "feat/up-v12" }
+# Added explicitly for https://github.com/dojoengine/dojo/issues/2430
+dojo = { git = "https://github.com/dojoengine/dojo", tag = "v1.0.0-alpha.13" }
 
 [[target.dojo]]
 build-external-contracts = [
+    "pixelaw::apps::paint::app::paint",
     "pixelaw::apps::snake::app::snake",
     "pixelaw::apps::snake::app::snake_segment",
     "pixelaw::core::models::pixel::pixel",
@@ -30,39 +33,11 @@ build-external-contracts = [
     "pixelaw::core::utils::DefaultParameters",
     "pixelaw::core::actions::actions",
     "pixelaw::core::actions::IActionsDispatcher",
-    "pixelaw::core::actions::IActionsDispatcherTrait"
+    "pixelaw::core::actions::IActionsDispatcherTrait",
 ]
 
-[tool.dojo]
-initializer_class_hash = "0xbeef"
+[tool.fmt]
+sort-module-level-items = true
 
 [scripts]
-ready_for_deployment = "bash ./scripts/ready_for_deployment.sh"
 initialize = "bash ./scripts/default_auth.sh"
-upload_manifest = "bash ./scripts/upload_manifest.sh"
-ready_for_deployment_zsh = "zsh ./scripts/ready_for_deployment.sh"
-initialize_zsh = "zsh ./scripts/default_auth.sh"
-upload_manifest_zsh = "zsh ./scripts/upload_manifest.sh"
-
-# Dev: http://localhost:3000
-[tool.dojo.env]
-rpc_url = "http://localhost:5050/"
-account_address = "0x003c4dd268780ef738920c801edc3a75b6337bc17558c74795b530c0ff502486"
-private_key = "0x2bbf4f9fd0bbb2e60b0316c1fe0b76cf7a4d0198bd493ced9b8df2a3a24d68a"
-world_address= "0x60916a73fe631fcba3b2a930e21c6f7bb2533ea398c7bfa75c72f71a8709fc2"
-
-# demo.pixelaw.xyz
-[profile.demo.tool.dojo.env]
-rpc_url = "https://katana.demo.pixelaw.xyz/"
-account_address = "0x003c4dd268780ef738920c801edc3a75b6337bc17558c74795b530c0ff502486"
-private_key = "0x2bbf4f9fd0bbb2e60b0316c1fe0b76cf7a4d0198bd493ced9b8df2a3a24d68a"
-world_address = "0x608cc3b3f4cf88e180bd3222dbf4af8afc1f0dbe93b2c30cd58f86ea6ccdbbf"
-manifest_url="https://demo.pixelaw.xyz/manifests"
-
-# dojo.pixelaw.xyz
-[profile.dojo.tool.dojo.env]
-rpc_url = "https://katana.dojo.pixelaw.xyz/"
-account_address = "0x003c4dd268780ef738920c801edc3a75b6337bc17558c74795b530c0ff502486"
-private_key = "0x2bbf4f9fd0bbb2e60b0316c1fe0b76cf7a4d0198bd493ced9b8df2a3a24d68a"
-world_address = "0x608cc3b3f4cf88e180bd3222dbf4af8afc1f0dbe93b2c30cd58f86ea6ccdbbf"
-manifest_url="https://dojo.pixelaw.xyz/manifests"

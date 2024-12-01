@@ -1,0 +1,20 @@
+{
+  "cairo1.enableLanguageServer": true,
+  "cairo1.languageServerPath": "${userHome}/.asdf/installs/dojo/1.0.0-alpha.13/bin/dojo-language-server",
+  "cairo1.enableScarb": true,
+  "cairo1.scarbPath": "${userHome}/.asdf/installs/scarb/2.7.0/bin/scarb",
+  "cairo1.preferScarbLanguageServer": false,
+  "cSpell.words": [
+    "braavos",
+    "callees",
+    "dojoengine",
+    "Embla",
+    "pixelaw",
+    "Serwist",
+    "sonner",
+    "starknet",
+    "tailwindcss",
+    "tileset",
+    "webwallet"
+  ]
+}

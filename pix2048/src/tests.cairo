@@ -12,27 +12,24 @@ mod tests {
     use pixelaw::core::utils::{get_core_actions, Direction, Position, DefaultParameters};
     use pixelaw::core::actions::{actions, IActionsDispatcher, IActionsDispatcherTrait};
 
-    use dojo::test_utils::{spawn_test_world, deploy_contract};
+    use dojo::utils::test::{spawn_test_world, deploy_contract};
 
-    use pix2048::app::{
-        pix2048_actions, INumberActionsDispatcher, INumberActionsDispatcherTrait, NumberGame, NumberGameField, NumberValue
-    };
+    use pix2048::app::{pix2048_actions, INumberActionsDispatcher, INumberActionsDispatcherTrait};
+    use pix2048::models::{NumberGame, NumberGameField, NumberValue};
 
     use zeroable::Zeroable;
 
     // Helper function: deploys world and actions
     fn deploy_world() -> (IWorldDispatcher, IActionsDispatcher, INumberActionsDispatcher) {
         // Deploy World and models
-        let world = spawn_test_world(
-            array![
-                pixel::TEST_CLASS_HASH,
-                app::TEST_CLASS_HASH,
-                app_name::TEST_CLASS_HASH,
-                core_actions_address::TEST_CLASS_HASH,
-                permissions::TEST_CLASS_HASH,
-            ]
-        );
-
+        let mut models = array![
+            pixel::TEST_CLASS_HASH,
+            app::TEST_CLASS_HASH,
+            app_name::TEST_CLASS_HASH,
+            core_actions_address::TEST_CLASS_HASH,
+            permissions::TEST_CLASS_HASH,
+        ];
+        let world = spawn_test_world(["pixelaw"].span(), models.span());
 
         // Deploy Core actions
         let core_actions_address = world
@@ -42,20 +39,23 @@ mod tests {
         // Deploy MyApp actions
         let pix2048_actions_address = world
             .deploy_contract('salt2', pix2048_actions::TEST_CLASS_HASH.try_into().unwrap());
-        let pix2048_actions = INumberActionsDispatcher { contract_address: pix2048_actions_address };
+        let pix2048_actions = INumberActionsDispatcher {
+            contract_address: pix2048_actions_address
+        };
 
         // Setup dojo auth
-        world.grant_writer('Pixel', core_actions_address);
-        world.grant_writer('App', core_actions_address);
-        world.grant_writer('AppName', core_actions_address);
-        world.grant_writer('CoreActionsAddress', core_actions_address);
-        world.grant_writer('Permissions', core_actions_address);
+        // Grant writer permissions to core actions models
+        world.grant_writer(selector_from_tag!("pixelaw-Pixel"), core_actions_address);
+        world.grant_writer(selector_from_tag!("pixelaw-App"), core_actions_address);
+        world.grant_writer(selector_from_tag!("pixelaw-AppName"), core_actions_address);
+        world.grant_writer(selector_from_tag!("pixelaw-Permissions"), core_actions_address);
+        world.grant_writer(selector_from_tag!("pixelaw-CoreActionsAddress"), core_actions_address);
 
-        // PLEASE ADD YOUR APP PERMISSIONS HERE
-        world.grant_writer('NumberGame', pix2048_actions_address);
-        world.grant_writer('NumberGameField',pix2048_actions_address);
-        world.grant_writer('NumberValue',pix2048_actions_address);
-        
+        // Grant writer permissions to p_dash actions models
+        world.grant_writer(selector_from_tag!("pixelaw-NumberGame"), pix2048_actions_address);
+        world.grant_writer(selector_from_tag!("pixelaw-NumberGameField"), pix2048_actions_address);
+        world.grant_writer(selector_from_tag!("pixelaw-NumberValue"), pix2048_actions_address);
+
         (world, core_actions, pix2048_actions)
     }
 
@@ -63,7 +63,7 @@ mod tests {
     #[available_gas(8000000000)]
     fn test_pix2048_actions() {
         // Deploy everything
-        let (world, core_actions, pix2048_actions) = deploy_world();
+        let (_world, core_actions, pix2048_actions) = deploy_world();
 
         core_actions.init();
         pix2048_actions.init();
@@ -72,7 +72,8 @@ mod tests {
 
         let color = encode_color(1, 1, 1);
 
-        pix2048_actions.interact(
+        pix2048_actions
+            .interact(
                 DefaultParameters {
                     for_player: Zeroable::zero(),
                     for_system: Zeroable::zero(),

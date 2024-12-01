@@ -1,0 +1,6 @@
+tag = "pixelaw-pix2048_actions"
+writes = [
+    "pixelaw-NumberGame",
+    "pixelaw-NumberGameField",
+    "pixelaw-NumberValue",
+]

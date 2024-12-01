@@ -1,0 +1,24 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Start Katana",
+      "type": "shell",
+      "command": "katana --disable-fee  --allowed-origins \"*\"",
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "Start Torii",
+      "type": "shell",
+      "command": "torii --world 0x10bbde7919b063a353fc2c6148555434cd8a7be8d5cbfdcd06ef63787b58838 --allowed-origins \"*\"",
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "Start Katana and Torii",
+      "dependsOn": ["Start Katana", "Start Torii"],
+      "problemMatcher": []
+    }
+  ]
+}
