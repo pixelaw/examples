@@ -1,0 +1,53 @@
+{
+  "name": "My Project",
+  "image": "ghcr.io/pixelaw/core:0.6.13",
+  "forwardPorts": [
+    5050,
+    8080,
+    9090,
+    3000
+  ],
+  "containerEnv": {
+    "RPC_URL": "http://127.0.0.1:5050",
+    "TORII_URL": "http://127.0.0.1:8080",
+    "RELAY_URL": "http://127.0.0.1:8080",
+    "PUBLIC_SERVER_URL": "http://127.0.0.1:3000",
+    "PUBLIC_RPC_URL": "http://127.0.0.1:5050",
+    "PUBLIC_TORII_URL": "http://127.0.0.1:8080",
+    "PUBLIC_RELAY_URL": "http://127.0.0.1:8080",
+    "WORLD_ADDRESS": "0x5a247732e3a59737fea5504ed776c6e79eae8b6b2317402ab36b6d3cc508e6",
+    "WORLD_ID": "local",
+    "SERVER_PORT": "3000",
+    // For web
+    "WORLDS_URL": "https://raw.githubusercontent.com/pixelaw/config/refs/heads/main/web.config.json"
+  },
+  "postStartCommand": [
+    "/pixelaw/scripts/startup.sh"
+  ],
+  // Configure tool-specific properties.
+  "customizations": {
+    // Configure properties specific to VS Code.
+    "vscode": {
+      // Set *default* container specific settings.json values on container create.
+      "settings": {
+        "cairo1.enableLanguageServer": true,
+        "cairo1.languageServerPath": "${userHome}/.asdf/installs/dojo/1.2.1/bin/dojo-language-server",
+        "cairo1.enableScarb": true,
+        "cairo1.scarbPath": "${userHome}/.asdf/installs/scarb/2.9.2/bin/scarb",
+        "lldb.executable": "/usr/bin/lldb",
+        // VS Code don't watch files under ./target
+        "files.watcherExclude": {
+          "**/target/**": true
+        },
+        "rust-analyzer.checkOnSave.command": "clippy",
+        "terminal.integrated.shell.linux": "/bin/bash"
+      },
+      // Add the IDs of extensions you want installed when the container is created.
+      "extensions": [
+        "mutantdino.resourcemonitor",
+        "tamasfe.even-better-toml",
+        "starkware.cairo1"
+      ]
+    }
+  }
+}

@@ -1,13 +1,10 @@
-use starknet::{ContractAddress, ClassHash};
-use dojo::world::{IWorldDispatcher, IWorldDispatcherTrait};
+use starknet::{ContractAddress};
+// use dojo::world::{IWorldDispatcher, IWorldDispatcherTrait};
 
-use pixelaw::core::utils::{get_core_actions, Direction, Position, DefaultParameters};
+use pixelaw::core::utils::{ DefaultParameters};
 
 const APP_KEY: felt252 = 'rps';
 const APP_ICON: felt252 = 'U+270A';
-
-/// BASE means using the server's default manifest.json handler
-const APP_MANIFEST: felt252 = 'BASE/manifests/rps';
 
 const GAME_MAX_DURATION: u64 = 20000;
 
@@ -39,12 +36,13 @@ impl MoveIntoFelt252 of Into<Move, felt252> {
     }
 }
 
-#[derive(Model, Copy, Drop, Serde, SerdeLen)]
+#[derive(Copy, Drop, Serde)]
+#[dojo::model]
 struct Game {
     #[key]
-    x: u32,
+    x: u16,
     #[key]
-    y: u32,
+    y: u16,
     id: u32,
     state: State,
     player1: ContractAddress,
@@ -55,7 +53,8 @@ struct Game {
     started_timestamp: u64
 }
 
-#[derive(Model, Copy, Drop, Serde, SerdeLen)]
+#[derive(Copy, Drop, Serde)]
+#[dojo::model]
 struct Player {
     #[key]
     player_id: felt252,
@@ -64,96 +63,78 @@ struct Player {
 
 
 #[starknet::interface]
-trait IRpsActions<TContractState> {
-    fn init(self: @TContractState);
-    fn secondary(self: @TContractState, default_params: DefaultParameters);
-    fn interact(self: @TContractState, default_params: DefaultParameters, cr_Move_move: felt252);
-    fn join(self: @TContractState, default_params: DefaultParameters, player2_move: Move);
-    fn finish(self: @TContractState, default_params: DefaultParameters, rv_move: Move, rs_move: felt252);
+trait IRpsActions<T> {
+    fn init(ref self: T);
+    fn secondary(ref self: T, default_params: DefaultParameters);
+    fn interact(ref self: T, default_params: DefaultParameters, cr_Move_move: felt252);
+    fn join(ref self: T, default_params: DefaultParameters, player2_move: Move);
+    fn finish(ref self: T, default_params: DefaultParameters, rv_move: Move, rs_move: felt252);
 }
 
 #[dojo::contract]
 mod rps_actions {
-    use poseidon::poseidon_hash_span;
-    use debug::PrintTrait;
-    use starknet::{ContractAddress, get_caller_address, ClassHash, get_contract_address};
+    use dojo::event::EventStorage;
+    use dojo::model::{ModelStorage};
+    // use dojo::world::storage::WorldStorage;
+    use dojo::world::{IWorldDispatcherTrait};
+    use core::poseidon::poseidon_hash_span;
+    use starknet::{ContractAddress,   get_contract_address};
 
 
     use pixelaw::core::models::pixel::{Pixel, PixelUpdate};
-    use pixelaw::core::utils::{get_core_actions, Direction, Position, DefaultParameters};
+    use pixelaw::core::utils::{get_core_actions,  get_callers, DefaultParameters};
 
-    use pixelaw::core::actions::{actions, IActionsDispatcher, IActionsDispatcherTrait};
+    use pixelaw::core::actions::{  IActionsDispatcherTrait};
 
     use super::IRpsActions;
-    use super::{APP_KEY, APP_ICON, APP_MANIFEST, GAME_MAX_DURATION, Move, State};
-    use super::{Game, Player};
-    // use super::{STATE_NONE, State::Created, State::Joined, State::Finished};
+    use super::{APP_KEY, APP_ICON,  Move, State};
+    use super::{Game};
 
-    use zeroable::Zeroable;
-    use dojo::database::introspect::Introspect;
-    use pixelaw::core::traits::IInteroperability;
-    use pixelaw::core::models::registry::{App};
+    use core::num::traits::Zero;
+    // use dojo::database::introspect::Introspect;
+    // use pixelaw::core::traits::IInteroperability;
+    // use pixelaw::core::models::registry::{App};
 
-    #[derive(Drop, starknet::Event)]
+    #[derive(Copy, Drop, Serde)]
+    #[dojo::event]
     struct GameCreated {
+        #[key]
         game_id: u32,
         creator: ContractAddress
     }
 
-    #[event]
-    #[derive(Drop, starknet::Event)]
-    enum Event {
-        GameCreated: GameCreated
-    }
 
-    #[abi(embed_v0)]
-    impl ActionsInteroperability of IInteroperability<ContractState> {
-        fn on_pre_update(
-            self: @ContractState,
-            pixel_update: PixelUpdate,
-            app_caller: App,
-            player_caller: ContractAddress
-        ) {
-        // do nothing
-        }
 
-        fn on_post_update(
-            self: @ContractState,
-            pixel_update: PixelUpdate,
-            app_caller: App,
-            player_caller: ContractAddress
-        ){
-        // do nothing
-        }
-    }
 
 
     // impl: implement functions specified in trait
     #[abi(embed_v0)]
     impl RpsActionsImpl of IRpsActions<ContractState> {
         /// Initialize the Paint App (TODO I think, do we need this??)
-        fn init(self: @ContractState) {
-            let core_actions = get_core_actions(self.world_dispatcher.read());
+        fn init(ref self: ContractState) {
+            let mut world = self.world(@"pixelaw");
+            let core_actions = get_core_actions(ref world);
 
-            core_actions.update_app(APP_KEY, APP_ICON, APP_MANIFEST);
+            core_actions.new_app(Zero::<ContractAddress>::zero(), APP_KEY, APP_ICON);
         }
 
 
-        fn interact(self: @ContractState, default_params: DefaultParameters, cr_Move_move: felt252) {
+        fn interact(ref self: ContractState, default_params: DefaultParameters, cr_Move_move: felt252) {
 
-            // Load important variables
-            let world = self.world_dispatcher.read();
-            let core_actions = get_core_actions(world);
+            let mut world = self.world(@"pixelaw");
+            let core_actions = get_core_actions(ref world);
             let position = default_params.position;
-            let player = core_actions.get_player_address(default_params.for_player);
 
-            let pixel = get!(world, (position.x, position.y), Pixel);
+            let (player, system) = get_callers(ref world, default_params);
+
+            let pixel: Pixel = world.read_model((position.x, position.y));
 
             // Bail if the caller is not allowed here
             assert(pixel.owner.is_zero() || pixel.owner == player, 'Pixel is not players');
 
             // Load the game
-            let mut game = get!(world, (position.x, position.y), Game);
+            let mut game: Game = world.read_model((position.x, position.y));
+            // let mut game = get!(world, (position.x, position.y), Game);
 
             if game.id != 0 {
                 // Bail if we're waiting for other player
@@ -162,9 +143,9 @@ mod rps_actions {
                 // Player1 changing their commit
                 game.player1_commit = cr_Move_move;
             } else {
-              let mut id = world.uuid();
+              let mut id = world.dispatcher.uuid();
               if id == 0 {
-                id = world.uuid();
+                id = world.dispatcher.uuid();
               }
 
               game =
@@ -174,23 +155,28 @@ mod rps_actions {
                         id,
                         state: State::Created,
                         player1: player,
-                        player2: Zeroable::zero(),
+                        player2: Zero::<ContractAddress>::zero(),
                         player1_commit: cr_Move_move,
                         player1_move: Move::None,
                         player2_move: Move::None,
                         started_timestamp: starknet::get_block_timestamp()
                     };
                 // Emit event
-                emit!(world, GameCreated { game_id: game.id, creator: player });
+                // emit!(world, GameCreated { game_id: game.id, creator: player });
+                world
+                .emit_event(
+                    @GameCreated  { game_id: game.id, creator: player },
+                );
             }
 
             // game entity
-            set!(world, (game));
+            // set!(world, (game));
+            world.write_model(@game);
 
             core_actions
                 .update_pixel(
                     player,
-                    get_contract_address(),
+                    system,
                     PixelUpdate {
                         x: position.x,
                         y: position.y,
@@ -202,21 +188,22 @@ mod rps_actions {
                         app: Option::Some(get_contract_address().into()),
                         owner: Option::Some(player.into()),
                         action: Option::Some('join')
-                    }
+                    },
+                    Option::None,   // area_id hint for this pixel
+                    false,          // allow modify of this update
                 );
         }
 
 
-        fn join(self: @ContractState, default_params: DefaultParameters, player2_move: Move) {
-
-            // Load important variables
-            let world = self.world_dispatcher.read();
-            let core_actions = get_core_actions(world);
+        fn join(ref self: ContractState, default_params: DefaultParameters, player2_move: Move) {
+            let mut world = self.world(@"pixelaw");
+            let core_actions = get_core_actions(ref world);
             let position = default_params.position;
-            let player = core_actions.get_player_address(default_params.for_player);
 
-            // Load the game
-            let mut game = get!(world, (position.x, position.y), Game);
+            let (player, system) = get_callers(ref world, default_params);
+
+            let mut game: Game = world.read_model((position.x, position.y));
+
 
             // Bail if theres no game at all
             assert(game.id != 0, 'No game to join');
@@ -235,12 +222,12 @@ mod rps_actions {
             game.state = State::Joined;
 
             // game entity
-            set!(world, (game));
+            world.write_model(@game);
 
             core_actions
                 .update_pixel(
                     player,
-                    get_contract_address(),
+                    system,
                     PixelUpdate {
                         x: position.x,
                         y: position.y,
@@ -252,23 +239,22 @@ mod rps_actions {
                         app: Option::None,
                         owner: Option::None,
                         action: Option::Some('finish')
-                    }
+                    },
+                    Option::None,   // area_id hint for this pixel
+                    false,          // allow modify of this update
                 );
         }
 
 
-        fn finish(
-            self: @ContractState, default_params: DefaultParameters, rv_move: Move, rs_move: felt252
-        ) {
+        fn finish(ref self: ContractState, default_params: DefaultParameters, rv_move: Move, rs_move: felt252) {
 
-            // Load important variables
-            let world = self.world_dispatcher.read();
-            let core_actions = get_core_actions(world);
+            let mut world = self.world(@"pixelaw");
+            let core_actions = get_core_actions(ref world);
             let position = default_params.position;
-            let player = core_actions.get_player_address(default_params.for_player);
 
-            // Load the game
-            let mut game = get!(world, (position.x, position.y), Game);
+            let (player, system) = get_callers(ref world, default_params);
+
+            let mut game: Game = world.read_model((position.x, position.y));
 
             // Bail if theres no game at all
             assert(game.id != 0, 'No game to finish');
@@ -291,17 +277,19 @@ mod rps_actions {
                 core_actions
                     .update_pixel(
                         player,
-                        get_contract_address(),
+                        system,
                         PixelUpdate {
                             x: position.x,
                             y: position.y,
                             color: Option::None,
                             timestamp: Option::None,
                             text: Option::Some(0),
-                            app: Option::Some(Zeroable::zero()),
-                            owner: Option::Some(Zeroable::zero()),
-                            action: Option::Some(Zeroable::zero())
-                        }
+                            app: Option::Some(Zero::<ContractAddress>::zero()),
+                            owner: Option::Some(Zero::<ContractAddress>::zero()),
+                            action: Option::Some(0)
+                        },
+                        Option::None,   // area_id hint for this pixel
+                        false,          // allow modify of this update
                     );
             // TODO emit event
             } else {
@@ -315,7 +303,7 @@ mod rps_actions {
                     core_actions
                         .update_pixel(
                             player,
-                            get_contract_address(),
+                            system,
                             PixelUpdate {
                                 x: position.x,
                                 y: position.y,
@@ -325,13 +313,15 @@ mod rps_actions {
                                 app: Option::None,
                                 owner: Option::Some(game.player2),
                                 action: Option::Some('finish')  // TODO, probably want to change color still
-                            }
+                            },
+                            Option::None,   // area_id hint for this pixel
+                            false,          // allow modify of this update
                         );
                 } else {
                     core_actions
                         .update_pixel(
                             player,
-                            get_contract_address(),
+                            system,
                             PixelUpdate {
                                 x: position.x,
                                 y: position.y,
@@ -341,47 +331,50 @@ mod rps_actions {
                                 app: Option::None,
                                 owner: Option::None,
                                 action: Option::Some('finish')  // TODO, probably want to change color still
-                            }
+                            },
+                            Option::None,   // area_id hint for this pixel
+                            false,          // allow modify of this update
                         );
                 }
             }
 
             // game entity
-            set!(world, (game));
+            world.write_model(@game);
+
         }
 
-        fn secondary(self: @ContractState, default_params: DefaultParameters) {
-
-            // Load important variables
-            let world = self.world_dispatcher.read();
-            let core_actions = get_core_actions(world);
+        fn secondary(ref self: ContractState, default_params: DefaultParameters) {
+            let mut world = self.world(@"pixelaw");
+            let core_actions = get_core_actions(ref world);
             let position = default_params.position;
-            let player = core_actions.get_player_address(default_params.for_player);
-            let pixel = get!(world, (position.x, position.y), Pixel);
-            let game = get!(world, (position.x, position.y), Game);
+
+            let (player, system) = get_callers(ref world, default_params);
+
+            let mut game: Game = world.read_model((position.x, position.y));
+            let pixel: Pixel = world.read_model((position.x, position.y));
 
             // reset the pixel in the right circumstances
             assert(pixel.owner == player, 'player doesnt own pixel');
 
-            let game_id_felt: felt252 = game.id.into();
-            let mut layout = array![];
-            Introspect::<Game>::layout(ref layout);
-            world.delete_entity('Game'.into(), array![game_id_felt.into()].span(), layout.span());
+  
+            world.erase_model(@game);
 
             core_actions
                 .update_pixel(
                     player,
-                    get_contract_address(),
+                    system,
                     PixelUpdate {
                         x: position.x,
                         y: position.y,
                         color: Option::Some(0),
                         timestamp: Option::None,
-                        text: Option::Some(Zeroable::zero()),
-                        app: Option::Some(Zeroable::zero()),
-                        owner: Option::Some(Zeroable::zero()),
-                        action: Option::Some(Zeroable::zero())
-                    }
+                        text: Option::Some(0),
+                        app: Option::Some(Zero::<ContractAddress>::zero()),
+                        owner: Option::Some(Zero::<ContractAddress>::zero()),
+                        action: Option::Some(0)
+                    },
+                    Option::None,   // area_id hint for this pixel
+                    false,          // allow modify of this update
                 );
 
         }
