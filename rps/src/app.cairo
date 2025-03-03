@@ -82,7 +82,8 @@ trait IRpsActions<T> {
 
 #[dojo::contract]
 mod rps_actions {
-    use dojo::event::EventStorage;
+    use pixelaw::core::models::pixel::PixelUpdateResultTrait;
+use dojo::event::EventStorage;
     use dojo::model::{ModelStorage};
     // use dojo::world::storage::WorldStorage;
     use dojo::world::{IWorldDispatcherTrait};
@@ -91,7 +92,7 @@ mod rps_actions {
 
     use pixelaw::core::models::registry::App;
 
-    use pixelaw::core::models::pixel::{Pixel, PixelUpdate};
+    use pixelaw::core::models::pixel::{Pixel, PixelUpdate, PixelUpdateResult};
     use pixelaw::core::utils::{get_core_actions,  get_callers, DefaultParameters};
 
     use pixelaw::core::actions::{  IActionsDispatcherTrait};
@@ -123,32 +124,28 @@ mod rps_actions {
     #[abi(embed_v0)]
     impl RpsActionsImpl of IRpsActions<ContractState> {
 
-        /// Hook called before a pixel update.
-        ///
-        /// # Arguments
-        ///
-        /// * `world` - A reference to the world dispatcher.
-        /// * `pixel_update` - The proposed update to the pixel.
-        /// * `app_caller` - The app initiating the update.
-        /// * `player_caller` - The player initiating the update.
+
         fn on_pre_update(
             ref self: ContractState,
             pixel_update: PixelUpdate,
             app_caller: App,
             player_caller: ContractAddress,
         ) -> Option<PixelUpdate> {
-            //Default is to not allow anything
-            Option::None
+
+
+            let mut result = Option::None; //Default is to not allow anything
+
+            // Only RPS app can call this update
+            // TODO is this secure enough? And maybe move this to core?
+            if app_caller.name == APP_KEY {
+                result = Option::Some(pixel_update);
+            }
+
+
+            result
         }
 
-        /// Hook called after a pixel update.
-        ///
-        /// # Arguments
-        ///
-        /// * `world` - A reference to the world dispatcher.
-        /// * `pixel_update` - The update that was applied to the pixel.
-        /// * `app_caller` - The app that performed the update.
-        /// * `player_caller` - The player that performed the update.
+
         fn on_post_update(
             ref self: ContractState,
             pixel_update: PixelUpdate,
@@ -272,14 +269,14 @@ mod rps_actions {
             // game entity
             world.write_model(@game);
 
-            core_actions
+            let result: PixelUpdateResult = core_actions
                 .update_pixel(
                     player,
                     system,
                     PixelUpdate {
                         x: position.x,
                         y: position.y,
-                        color: Option::None,
+                        color: Option::Some(default_params.color),
                         timestamp: Option::None,
                         text: Option::Some(
                             ICON_EXCLAMATION_MARK
@@ -291,6 +288,7 @@ mod rps_actions {
                     Option::None,   // area_id hint for this pixel
                     false,          // allow modify of this update
                 );
+                assert(result.is_ok(), 'could not update' );
         }
 
 
@@ -315,7 +313,7 @@ mod rps_actions {
 
             // Check player1's move
             assert(
-                validate_commit(game.player1_commit, crv_move, crs_move), 'player1 cheating'
+                validate_commit(game.player1_commit, crv_move, crs_move), 'player1 invalid commitreveal'
             );
 
             // Decide the winner
@@ -469,19 +467,19 @@ mod rps_actions {
         }
     }
 
-    // TODO: implement proper psuedo random number generator
-    fn random(seed: felt252, min: u128, max: u128) -> u128 {
-        let seed: u256 = seed.into();
-        let range = max - min;
+    // // TODO: implement proper psuedo random number generator
+    // fn random(seed: felt252, min: u128, max: u128) -> u128 {
+    //     let seed: u256 = seed.into();
+    //     let range = max - min;
 
-        (seed.low % range) + min
-    }
+    //     (seed.low % range) + min
+    // }
 
-    fn hash_commit(commit: u8, salt: felt252) -> felt252 {
-        let mut hash_span = ArrayTrait::<felt252>::new();
-        hash_span.append(commit.into());
-        hash_span.append(salt.into());
+    // fn hash_commit(commit: u8, salt: felt252) -> felt252 {
+    //     let mut hash_span = ArrayTrait::<felt252>::new();
+    //     hash_span.append(commit.into());
+    //     hash_span.append(salt.into());
 
-        poseidon_hash_span(hash_span.span())
-    }
+    //     poseidon_hash_span(hash_span.span())
+    // }
 }
