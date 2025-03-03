@@ -1,5 +1,6 @@
 use starknet::{ContractAddress};
 // use dojo::world::{IWorldDispatcher, IWorldDispatcherTrait};
+use pixelaw::core::models::{pixel::{PixelUpdate}, registry::{App}};
 
 use pixelaw::core::utils::{ DefaultParameters};
 
@@ -66,9 +67,17 @@ struct Player {
 trait IRpsActions<T> {
     fn init(ref self: T);
     fn secondary(ref self: T, default_params: DefaultParameters);
-    fn interact(ref self: T, default_params: DefaultParameters, cr_Move_move: felt252);
+    fn interact(ref self: T, default_params: DefaultParameters, crc_move_Move: felt252);
     fn join(ref self: T, default_params: DefaultParameters, player2_move: Move);
-    fn finish(ref self: T, default_params: DefaultParameters, rv_move: Move, rs_move: felt252);
+    fn finish(ref self: T, default_params: DefaultParameters, crv_move: Move, crs_move: felt252);
+    fn on_pre_update(
+        ref self: T, pixel_update: PixelUpdate, app_caller: App, player_caller: ContractAddress,
+    ) -> Option<PixelUpdate>;
+
+    fn on_post_update(
+        ref self: T, pixel_update: PixelUpdate, app_caller: App, player_caller: ContractAddress,
+    );
+
 }
 
 #[dojo::contract]
@@ -80,6 +89,7 @@ mod rps_actions {
     use core::poseidon::poseidon_hash_span;
     use starknet::{ContractAddress,   get_contract_address};
 
+    use pixelaw::core::models::registry::App;
 
     use pixelaw::core::models::pixel::{Pixel, PixelUpdate};
     use pixelaw::core::utils::{get_core_actions,  get_callers, DefaultParameters};
@@ -91,9 +101,13 @@ mod rps_actions {
     use super::{Game};
 
     use core::num::traits::Zero;
-    // use dojo::database::introspect::Introspect;
-    // use pixelaw::core::traits::IInteroperability;
-    // use pixelaw::core::models::registry::{App};
+
+    const ICON_QUESTIONMARK: felt252 = 0xe29d93efb88f;  // ❓
+    const ICON_EXCLAMATION_MARK: felt252 = 0xe29d97;  // ❗
+    const ICON_FIST: felt252 = 0xf09fa49b;   // 🤛
+    const ICON_PAPER: felt252 = 0xf09f9690; // 🖐
+    const ICON_SCISSOR: felt252 = 0xe29c8cefb88f;   // ✌️
+    
 
     #[derive(Copy, Drop, Serde)]
     #[dojo::event]
@@ -105,11 +119,45 @@ mod rps_actions {
 
 
 
-
-
     // impl: implement functions specified in trait
     #[abi(embed_v0)]
     impl RpsActionsImpl of IRpsActions<ContractState> {
+
+        /// Hook called before a pixel update.
+        ///
+        /// # Arguments
+        ///
+        /// * `world` - A reference to the world dispatcher.
+        /// * `pixel_update` - The proposed update to the pixel.
+        /// * `app_caller` - The app initiating the update.
+        /// * `player_caller` - The player initiating the update.
+        fn on_pre_update(
+            ref self: ContractState,
+            pixel_update: PixelUpdate,
+            app_caller: App,
+            player_caller: ContractAddress,
+        ) -> Option<PixelUpdate> {
+            //Default is to not allow anything
+            Option::None
+        }
+
+        /// Hook called after a pixel update.
+        ///
+        /// # Arguments
+        ///
+        /// * `world` - A reference to the world dispatcher.
+        /// * `pixel_update` - The update that was applied to the pixel.
+        /// * `app_caller` - The app that performed the update.
+        /// * `player_caller` - The player that performed the update.
+        fn on_post_update(
+            ref self: ContractState,
+            pixel_update: PixelUpdate,
+            app_caller: App,
+            player_caller: ContractAddress,
+        ) { // No action
+        }
+
+
         /// Initialize the Paint App (TODO I think, do we need this??)
         fn init(ref self: ContractState) {
             let mut world = self.world(@"pixelaw");
@@ -119,7 +167,7 @@ mod rps_actions {
         }
 
 
-        fn interact(ref self: ContractState, default_params: DefaultParameters, cr_Move_move: felt252) {
+        fn interact(ref self: ContractState, default_params: DefaultParameters, crc_move_Move: felt252) {
 
             let mut world = self.world(@"pixelaw");
             let core_actions = get_core_actions(ref world);
@@ -141,7 +189,7 @@ mod rps_actions {
                 assert(game.state == State::Created, 'cannot reset rps game');
 
                 // Player1 changing their commit
-                game.player1_commit = cr_Move_move;
+                game.player1_commit = crc_move_Move;
             } else {
               let mut id = world.dispatcher.uuid();
               if id == 0 {
@@ -156,7 +204,7 @@ mod rps_actions {
                         state: State::Created,
                         player1: player,
                         player2: Zero::<ContractAddress>::zero(),
-                        player1_commit: cr_Move_move,
+                        player1_commit: crc_move_Move,
                         player1_move: Move::None,
                         player2_move: Move::None,
                         started_timestamp: starknet::get_block_timestamp()
@@ -183,8 +231,8 @@ mod rps_actions {
                         color: Option::Some(default_params.color),
                         timestamp: Option::None,
                         text: Option::Some(
-                            'U+2753'
-                        ), // TODO better approach, for now copying unicode codepoint
+                            ICON_QUESTIONMARK 
+                        ), 
                         app: Option::Some(get_contract_address().into()),
                         owner: Option::Some(player.into()),
                         action: Option::Some('join')
@@ -234,8 +282,8 @@ mod rps_actions {
                         color: Option::None,
                         timestamp: Option::None,
                         text: Option::Some(
-                            'U+2757'
-                        ), // TODO better approach, for now copying unicode codepoint
+                            ICON_EXCLAMATION_MARK
+                        ), 
                         app: Option::None,
                         owner: Option::None,
                         action: Option::Some('finish')
@@ -246,7 +294,7 @@ mod rps_actions {
         }
 
 
-        fn finish(ref self: ContractState, default_params: DefaultParameters, rv_move: Move, rs_move: felt252) {
+        fn finish(ref self: ContractState, default_params: DefaultParameters, crv_move: Move, crs_move: felt252) {
 
             let mut world = self.world(@"pixelaw");
             let core_actions = get_core_actions(ref world);
@@ -267,11 +315,11 @@ mod rps_actions {
 
             // Check player1's move
             assert(
-                validate_commit(game.player1_commit, rv_move, rs_move), 'player1 cheating'
+                validate_commit(game.player1_commit, crv_move, crs_move), 'player1 cheating'
             );
 
             // Decide the winner
-            let winner = decide(rv_move, game.player2_move);
+            let winner = decide(crv_move, game.player2_move);
 
             if winner == 0 { // No winner: Wipe the pixel
                 core_actions
@@ -294,7 +342,7 @@ mod rps_actions {
             // TODO emit event
             } else {
                 // Update the game
-                game.player1_move = rv_move;
+                game.player1_move = crv_move;
                 game.state = State::Finished;
 
                 if winner == 2 {
@@ -381,13 +429,15 @@ mod rps_actions {
 
     }
 
+
+
     fn get_unicode_for_rps(move: Move) -> felt252 {
 
         match move {
-            Move::None => '',
-            Move::Rock => 'U+1FAA8',
-            Move::Paper => 'U+1F9FB',
-            Move::Scissors => 'U+2702',
+            Move::None => 0x00,
+            Move::Rock => ICON_FIST,
+            Move::Paper => ICON_PAPER,
+            Move::Scissors => ICON_SCISSOR,
         }
     }
 

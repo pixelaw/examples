@@ -1313,7 +1313,7 @@
   "contracts": [
     {
       "address": "0x5194e2c96d6d2dc1e84e0916cf59a89cdb06be2c42187820e56f2db4af84bd0",
-      "class_hash": "0x540d4aaf56bd5419ee106cc220245b354b0923411001a476efc7d3e00f9e167",
+      "class_hash": "0x1994b759c2c4133bbd87591cf19388f6171f7f7cc899ff3571f1fa8d7c05c3a",
       "abi": [
         {
           "type": "impl",
@@ -1461,6 +1461,108 @@
           ]
         },
         {
+          "type": "enum",
+          "name": "core::option::Option::<core::integer::u32>",
+          "variants": [
+            {
+              "name": "Some",
+              "type": "core::integer::u32"
+            },
+            {
+              "name": "None",
+              "type": "()"
+            }
+          ]
+        },
+        {
+          "type": "enum",
+          "name": "core::option::Option::<core::felt252>",
+          "variants": [
+            {
+              "name": "Some",
+              "type": "core::felt252"
+            },
+            {
+              "name": "None",
+              "type": "()"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "pixelaw::core::models::pixel::PixelUpdate",
+          "members": [
+            {
+              "name": "x",
+              "type": "core::integer::u16"
+            },
+            {
+              "name": "y",
+              "type": "core::integer::u16"
+            },
+            {
+              "name": "color",
+              "type": "core::option::Option::<core::integer::u32>"
+            },
+            {
+              "name": "owner",
+              "type": "core::option::Option::<core::starknet::contract_address::ContractAddress>"
+            },
+            {
+              "name": "app",
+              "type": "core::option::Option::<core::starknet::contract_address::ContractAddress>"
+            },
+            {
+              "name": "text",
+              "type": "core::option::Option::<core::felt252>"
+            },
+            {
+              "name": "timestamp",
+              "type": "core::option::Option::<core::integer::u64>"
+            },
+            {
+              "name": "action",
+              "type": "core::option::Option::<core::felt252>"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "pixelaw::core::models::registry::App",
+          "members": [
+            {
+              "name": "system",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "name",
+              "type": "core::felt252"
+            },
+            {
+              "name": "icon",
+              "type": "core::felt252"
+            },
+            {
+              "name": "action",
+              "type": "core::felt252"
+            }
+          ]
+        },
+        {
+          "type": "enum",
+          "name": "core::option::Option::<pixelaw::core::models::pixel::PixelUpdate>",
+          "variants": [
+            {
+              "name": "Some",
+              "type": "pixelaw::core::models::pixel::PixelUpdate"
+            },
+            {
+              "name": "None",
+              "type": "()"
+            }
+          ]
+        },
+        {
           "type": "interface",
           "name": "rps::app::IRpsActions",
           "items": [
@@ -1492,7 +1594,7 @@
                   "type": "pixelaw::core::utils::DefaultParameters"
                 },
                 {
-                  "name": "cr_Move_move",
+                  "name": "crc_move_Move",
                   "type": "core::felt252"
                 }
               ],
@@ -1524,12 +1626,56 @@
                   "type": "pixelaw::core::utils::DefaultParameters"
                 },
                 {
-                  "name": "rv_move",
+                  "name": "crv_move",
                   "type": "rps::app::Move"
                 },
                 {
-                  "name": "rs_move",
+                  "name": "crs_move",
                   "type": "core::felt252"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "on_pre_update",
+              "inputs": [
+                {
+                  "name": "pixel_update",
+                  "type": "pixelaw::core::models::pixel::PixelUpdate"
+                },
+                {
+                  "name": "app_caller",
+                  "type": "pixelaw::core::models::registry::App"
+                },
+                {
+                  "name": "player_caller",
+                  "type": "core::starknet::contract_address::ContractAddress"
+                }
+              ],
+              "outputs": [
+                {
+                  "type": "core::option::Option::<pixelaw::core::models::pixel::PixelUpdate>"
+                }
+              ],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "on_post_update",
+              "inputs": [
+                {
+                  "name": "pixel_update",
+                  "type": "pixelaw::core::models::pixel::PixelUpdate"
+                },
+                {
+                  "name": "app_caller",
+                  "type": "pixelaw::core::models::registry::App"
+                },
+                {
+                  "name": "player_caller",
+                  "type": "core::starknet::contract_address::ContractAddress"
                 }
               ],
               "outputs": [],
@@ -1661,6 +1807,8 @@
         "interact",
         "join",
         "finish",
+        "on_pre_update",
+        "on_post_update",
         "upgrade"
       ]
     }
