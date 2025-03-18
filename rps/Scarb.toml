@@ -14,8 +14,8 @@ build-external-contracts = ["dojo::world::world_contract::world"]
 
 [dependencies]
 starknet = "=2.9.2"
-pixelaw = { git = "https://github.com/pixelaw/core", tag = "v0.6.13" }
-dojo = { git = "https://github.com/dojoengine/dojo", tag = "v1.2.1" }
+pixelaw = { git = "https://github.com/pixelaw/core", tag = "v0.6.19" }
+dojo = { git = "https://github.com/dojoengine/dojo", tag = "v1.3.0" }
 
 
 [scripts]

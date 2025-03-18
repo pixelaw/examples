@@ -1,6 +1,6 @@
 {
   "name": "My Project",
-  "image": "ghcr.io/pixelaw/core:0.6.14",
+  "image": "ghcr.io/pixelaw/core:0.6.19",
   "forwardPorts": [
     5050,
     8080,
@@ -31,7 +31,7 @@
       // Set *default* container specific settings.json values on container create.
       "settings": {
         "cairo1.enableLanguageServer": true,
-        "cairo1.languageServerPath": "${userHome}/.asdf/installs/dojo/1.2.1/bin/dojo-language-server",
+        "cairo1.languageServerPath": "${userHome}/.asdf/installs/dojo/1.3.0/bin/dojo-language-server",
         "cairo1.enableScarb": true,
         "cairo1.scarbPath": "${userHome}/.asdf/installs/scarb/2.9.2/bin/scarb",
         "lldb.executable": "/usr/bin/lldb",
@@ -46,7 +46,8 @@
       "extensions": [
         "mutantdino.resourcemonitor",
         "tamasfe.even-better-toml",
-        "starkware.cairo1"
+        "starkware.cairo1",
+        "qwtel.sqlite-viewer"
       ]
     }
   }
