@@ -1,176 +1,147 @@
-#[cfg(test)]
-mod tests {
-    use starknet::class_hash::Felt252TryIntoClassHash;
+use dojo::world::{WorldStorage, WorldStorageTrait};
+use dojo_cairo_test::{
+    ContractDef, ContractDefTrait, NamespaceDef, TestResource, WorldStorageTestTrait,
+};
 
-    use dojo::world::{IWorldDispatcher, IWorldDispatcherTrait};
-    use pixelaw::core::models::registry::{
-        app, app_name, core_actions_address
+use pixelaw::core::utils::{DefaultParameters, Position};
+
+
+use rps::app::{IRpsActionsDispatcher, IRpsActionsDispatcherTrait, rps_actions};
+use rps::app::{m_Game, m_Player, Move};
+
+use pixelaw_testing::helpers::{setup_core_initialized, update_test_world};
+
+
+fn deploy_app(ref world: WorldStorage) -> IRpsActionsDispatcher {
+    let ndef = NamespaceDef {
+        namespace: "pixelaw",
+        resources: [
+            TestResource::Model(m_Player::TEST_CLASS_HASH),
+            TestResource::Model(m_Game::TEST_CLASS_HASH),
+            TestResource::Contract(rps_actions::TEST_CLASS_HASH),
+        ]
+            .span(),
     };
 
-    use pixelaw::core::models::pixel::{Pixel, PixelUpdate};
-    use pixelaw::core::models::pixel::{pixel};
-    use pixelaw::core::models::permissions::{permissions};
-    use pixelaw::core::utils::{get_core_actions, Direction, Position, DefaultParameters};
-    use pixelaw::core::actions::{actions, IActionsDispatcher, IActionsDispatcherTrait};
+    let cdefs: Span<ContractDef> = [
+        ContractDefTrait::new(@"pixelaw", @"rps_actions")
+            .with_writer_of([dojo::utils::bytearray_hash(@"pixelaw")].span())
+    ]
+        .span();
 
-    use dojo::test_utils::{spawn_test_world, deploy_contract};
+    update_test_world(ref world, [ndef].span());
 
-    use pixelaw::apps::rps::app::{
-        rps_actions, game, player, IRpsActionsDispatcher, IRpsActionsDispatcherTrait
-    };
-    use pixelaw::apps::rps::app::{Game, Player};
-    use pixelaw::apps::rps::app::{State, Move};
+    world.sync_perms_and_inits(cdefs);
 
+    let (rps_actions_address, _) = world.dns(@"rps_actions").unwrap();
+    IRpsActionsDispatcher { contract_address: rps_actions_address }
+}
 
+#[test]
+#[available_gas(3000000000)]
+fn test_playthrough() {
+    // Deploy everything
+    let (mut world, _core_actions, player_1, player_2) = setup_core_initialized();
 
-    use zeroable::Zeroable;
+    // Deploy rps actions
+    let rps_actions = deploy_app(ref world);
 
+    rps_actions.init();
 
-    // Helper function: deploys world and actions
-    fn deploy_world() -> (IWorldDispatcher, IActionsDispatcher, IRpsActionsDispatcher) {
-        // Deploy World and models
-        let world = spawn_test_world(
-            array![
-                pixel::TEST_CLASS_HASH,
-                game::TEST_CLASS_HASH,
-                player::TEST_CLASS_HASH,
-                app::TEST_CLASS_HASH,
-                app_name::TEST_CLASS_HASH,
-                core_actions_address::TEST_CLASS_HASH,
-                permissions::TEST_CLASS_HASH,
-            ]
+    starknet::testing::set_account_contract_address(player_1);
+
+    // Set the players commitments
+    let player_1_commit: Move = Move::Scissors;
+    let player_2_commit: Move = Move::Paper;
+
+    // Set the player's secret salt. For the test its just different, client will send truly random
+    let player_1_salt = '1';
+    let player_1_hash: felt252 = hash_commit(player_1_commit, player_1_salt.into());
+
+    // Player 1 submits their hashed commit
+    rps_actions
+        .interact(
+            DefaultParameters {
+                player_override: Option::None,
+                system_override: Option::None,
+                area_hint: Option::None,
+                position: Position { x: 1, y: 1 },
+                color: 0,
+            },
+            player_1_hash,
         );
 
-        // Deploy Core actions
-        let core_actions_address = world
-            .deploy_contract('salt1', actions::TEST_CLASS_HASH.try_into().unwrap());
-        let core_actions = IActionsDispatcher { contract_address: core_actions_address };
+    // Player 1 submits their hashed commit
+    rps_actions
+        .interact(
+            DefaultParameters {
+                player_override: Option::None,
+                system_override: Option::None,
+                area_hint: Option::None,
+                position: Position { x: 1, y: 1 },
+                color: 0,
+            },
+            player_1_hash,
+        );
 
-        // Deploy RPS actions
-        let rps_actions_address = world
-            .deploy_contract('salt', rps_actions::TEST_CLASS_HASH.try_into().unwrap());
-        let rps_actions = IRpsActionsDispatcher { contract_address: rps_actions_address };
+    // TODO assert state
+    starknet::testing::set_account_contract_address(player_2);
 
-        // Setup dojo auth
-        world.grant_writer('Pixel',core_actions_address);
-        world.grant_writer('App',core_actions_address);
-        world.grant_writer('AppName',core_actions_address);
-        world.grant_writer('CoreActionsAddress',core_actions_address);
-        world.grant_writer('Permissions',core_actions_address);
+    // player_2 joins
+    rps_actions
+        .join(
+            DefaultParameters {
+                player_override: Option::None,
+                system_override: Option::None,
+                area_hint: Option::None,
+                position: Position { x: 1, y: 1 },
+                color: 0,
+            },
+            player_2_commit,
+        );
 
-        world.grant_writer('Game',rps_actions_address);
-        world.grant_writer('Player',rps_actions_address);
+    starknet::testing::set_account_contract_address(player_1);
 
+    // player_1 finishes
+    rps_actions
+        .finish(
+            DefaultParameters {
+                player_override: Option::None,
+                system_override: Option::None,
+                area_hint: Option::None,
+                position: Position { x: 1, y: 1 },
+                color: 0,
+            },
+            player_1_commit,
+            player_1_salt,
+        );
 
-        (world, core_actions, rps_actions)
-    }
+    // player_1 secondary (reset pixel)
+    rps_actions
+        .secondary(
+            DefaultParameters {
+                player_override: Option::None,
+                system_override: Option::None,
+                area_hint: Option::None,
+                position: Position { x: 1, y: 1 },
+                color: 0,
+            },
+        );
+}
 
-    #[test]
-    #[available_gas(3000000000)]
-    fn test_playthrough() {
-        // Deploy everything
-        let (world, core_actions, rps_actions) = deploy_world();
+use core::poseidon::poseidon_hash_span;
+// TODO: implement proper psuedo random number generator
+fn random(seed: felt252, min: u128, max: u128) -> u128 {
+    let seed: u256 = seed.into();
+    let range = max - min;
 
-        core_actions.init();
-        rps_actions.init();
+    (seed.low % range) + min
+}
 
-        // Impersonate player1
-        let player1 = starknet::contract_address_const::<0x1337>();
-        let player2 = starknet::contract_address_const::<0x42>();
+fn hash_commit(commit: Move, salt: felt252) -> felt252 {
+    let mut hash_span = ArrayTrait::<felt252>::new();
+    hash_span.append(commit.into());
+    hash_span.append(salt.into());
 
-
-        starknet::testing::set_account_contract_address(player1);
-
-        // Set the players commitments
-        let player1_commit: Move = Move::Scissors;
-        let player2_commit: Move = Move::Paper;
-
-        // Set the player's secret salt. For the test its just different, client will send truly random
-        let player1_salt = '1';
-        let player1_hash: felt252 = hash_commit(player1_commit, player1_salt.into());
-
-        // Player 1 submits their hashed commit
-        rps_actions
-            .interact(
-                DefaultParameters {
-                    for_player: Zeroable::zero(),
-                    for_system: Zeroable::zero(),
-                    position: Position { x: 1, y: 1 },
-                    color: 0
-                },
-                player1_hash
-            );
-
-        // Player 1 submits their hashed commit
-        rps_actions
-            .interact(
-                DefaultParameters {
-                    for_player: Zeroable::zero(),
-                    for_system: Zeroable::zero(),
-                    position: Position { x: 1, y: 1 },
-                    color: 0
-                },
-                player1_hash
-            );
-
-        // TODO assert state
-        starknet::testing::set_account_contract_address(player2);
-
-        // Player2 joins
-        rps_actions
-            .join(
-                DefaultParameters {
-                    for_player: Zeroable::zero(),
-                    for_system: Zeroable::zero(),
-                    position: Position { x: 1, y: 1 },
-                    color: 0
-                },
-                player2_commit
-            );
-
-        starknet::testing::set_account_contract_address(player1);
-
-        // Player1 finishes
-        rps_actions
-            .finish(
-                DefaultParameters {
-                    for_player: Zeroable::zero(),
-                    for_system: Zeroable::zero(),
-                    position: Position { x: 1, y: 1 },
-                    color: 0
-                },
-                player1_commit,
-                player1_salt
-            );
-
-        // Player1 secondary (reset pixel)
-        rps_actions
-            .secondary(
-                DefaultParameters {
-                    for_player: Zeroable::zero(),
-                    for_system: Zeroable::zero(),
-                    position: Position { x: 1, y: 1 },
-                    color: 0
-                }
-            );
-    }
-    use array::ArrayTrait;
-    use traits::{Into, TryInto};
-    use poseidon::poseidon_hash_span;
-
-    // TODO: implement proper psuedo random number generator
-    fn random(seed: felt252, min: u128, max: u128) -> u128 {
-        let seed: u256 = seed.into();
-        let range = max - min;
-
-        (seed.low % range) + min
-    }
-
-    fn hash_commit(commit: Move, salt: felt252) -> felt252 {
-        let mut hash_span = ArrayTrait::<felt252>::new();
-        hash_span.append(commit.into());
-        hash_span.append(salt.into());
-
-        poseidon_hash_span(hash_span.span())
-    }
+    poseidon_hash_span(hash_span.span())
 }

@@ -1,25 +1,24 @@
 use starknet::{ContractAddress};
-// use dojo::world::{IWorldDispatcher, IWorldDispatcherTrait};
 use pixelaw::core::models::{pixel::{PixelUpdate}, registry::{App}};
 
-use pixelaw::core::utils::{ DefaultParameters};
+use pixelaw::core::utils::{DefaultParameters};
 
 const APP_KEY: felt252 = 'rps';
-const APP_ICON: felt252 = 'U+270A';
+const APP_ICON: felt252 = 0xf09f918a; // 👊
 
 const GAME_MAX_DURATION: u64 = 20000;
 
 
 #[derive(Serde, Copy, Drop, PartialEq, Introspect)]
-enum State {
+pub enum State {
     None: (),
     Created: (),
     Joined: (),
-    Finished: ()
+    Finished: (),
 }
 
 #[derive(Serde, Copy, Drop, PartialEq, Introspect)]
-enum Move {
+pub enum Move {
     None: (),
     Rock: (),
     Paper: (),
@@ -39,7 +38,7 @@ impl MoveIntoFelt252 of Into<Move, felt252> {
 
 #[derive(Copy, Drop, Serde)]
 #[dojo::model]
-struct Game {
+pub struct Game {
     #[key]
     x: u16,
     #[key]
@@ -51,20 +50,20 @@ struct Game {
     player1_commit: felt252,
     player1_move: Move,
     player2_move: Move,
-    started_timestamp: u64
+    started_timestamp: u64,
 }
 
 #[derive(Copy, Drop, Serde)]
 #[dojo::model]
-struct Player {
+pub struct Player {
     #[key]
     player_id: felt252,
-    wins: u32
+    wins: u32,
 }
 
 
 #[starknet::interface]
-trait IRpsActions<T> {
+pub trait IRpsActions<T> {
     fn init(ref self: T);
     fn secondary(ref self: T, default_params: DefaultParameters);
     fn interact(ref self: T, default_params: DefaultParameters, crc_move_Move: felt252);
@@ -77,62 +76,54 @@ trait IRpsActions<T> {
     fn on_post_update(
         ref self: T, pixel_update: PixelUpdate, app_caller: App, player_caller: ContractAddress,
     );
-
 }
 
 #[dojo::contract]
-mod rps_actions {
+pub mod rps_actions {
     use pixelaw::core::models::pixel::PixelUpdateResultTrait;
-use dojo::event::EventStorage;
+
     use dojo::model::{ModelStorage};
-    // use dojo::world::storage::WorldStorage;
     use dojo::world::{IWorldDispatcherTrait};
     use core::poseidon::poseidon_hash_span;
-    use starknet::{ContractAddress,   get_contract_address};
+    use starknet::{ContractAddress, get_contract_address};
 
     use pixelaw::core::models::registry::App;
 
     use pixelaw::core::models::pixel::{Pixel, PixelUpdate, PixelUpdateResult};
-    use pixelaw::core::utils::{get_core_actions,  get_callers, DefaultParameters};
+    use pixelaw::core::utils::{get_core_actions, get_callers, DefaultParameters};
 
-    use pixelaw::core::actions::{  IActionsDispatcherTrait};
+    use pixelaw::core::actions::{IActionsDispatcherTrait};
 
     use super::IRpsActions;
-    use super::{APP_KEY, APP_ICON,  Move, State};
+    use super::{APP_KEY, APP_ICON, Move, State};
     use super::{Game};
 
     use core::num::traits::Zero;
 
-    const ICON_QUESTIONMARK: felt252 = 0xe29d93efb88f;  // ❓
-    const ICON_EXCLAMATION_MARK: felt252 = 0xe29d97;  // ❗
-    const ICON_FIST: felt252 = 0xf09fa49b;   // 🤛
+    const ICON_QUESTIONMARK: felt252 = 0xe29d93efb88f; // ❓
+    const ICON_EXCLAMATION_MARK: felt252 = 0xe29d97; // ❗
+    const ICON_FIST: felt252 = 0xf09fa49b; // 🤛
     const ICON_PAPER: felt252 = 0xf09f9690; // 🖐
-    const ICON_SCISSOR: felt252 = 0xe29c8cefb88f;   // ✌️
-    
-
-    #[derive(Copy, Drop, Serde)]
-    #[dojo::event]
-    struct GameCreated {
-        #[key]
-        game_id: u32,
-        creator: ContractAddress
-    }
+    const ICON_SCISSOR: felt252 = 0xe29c8cefb88f; // ✌️
 
 
+    // #[derive(Copy, Drop, Serde)]
+    // #[dojo::event]
+    // pub struct GameCreated {
+    //     #[key]
+    //     game_id: u32,
+    //     creator: ContractAddress,
+    // }
 
     // impl: implement functions specified in trait
     #[abi(embed_v0)]
     impl RpsActionsImpl of IRpsActions<ContractState> {
-
-
         fn on_pre_update(
             ref self: ContractState,
             pixel_update: PixelUpdate,
             app_caller: App,
             player_caller: ContractAddress,
         ) -> Option<PixelUpdate> {
-
-
             let mut result = Option::None; //Default is to not allow anything
 
             // Only RPS app can call this update
@@ -140,7 +131,6 @@ use dojo::event::EventStorage;
             if app_caller.name == APP_KEY {
                 result = Option::Some(pixel_update);
             }
-
 
             result
         }
@@ -164,8 +154,9 @@ use dojo::event::EventStorage;
         }
 
 
-        fn interact(ref self: ContractState, default_params: DefaultParameters, crc_move_Move: felt252) {
-
+        fn interact(
+            ref self: ContractState, default_params: DefaultParameters, crc_move_Move: felt252,
+        ) {
             let mut world = self.world(@"pixelaw");
             let core_actions = get_core_actions(ref world);
             let position = default_params.position;
@@ -179,7 +170,6 @@ use dojo::event::EventStorage;
 
             // Load the game
             let mut game: Game = world.read_model((position.x, position.y));
-            // let mut game = get!(world, (position.x, position.y), Game);
 
             if game.id != 0 {
                 // Bail if we're waiting for other player
@@ -188,12 +178,12 @@ use dojo::event::EventStorage;
                 // Player1 changing their commit
                 game.player1_commit = crc_move_Move;
             } else {
-              let mut id = world.dispatcher.uuid();
-              if id == 0 {
-                id = world.dispatcher.uuid();
-              }
+                let mut id = world.dispatcher.uuid();
+                if id == 0 {
+                    id = world.dispatcher.uuid();
+                }
 
-              game =
+                game =
                     Game {
                         x: position.x,
                         y: position.y,
@@ -204,18 +194,13 @@ use dojo::event::EventStorage;
                         player1_commit: crc_move_Move,
                         player1_move: Move::None,
                         player2_move: Move::None,
-                        started_timestamp: starknet::get_block_timestamp()
+                        started_timestamp: starknet::get_block_timestamp(),
                     };
-                // Emit event
-                // emit!(world, GameCreated { game_id: game.id, creator: player });
-                world
-                .emit_event(
-                    @GameCreated  { game_id: game.id, creator: player },
-                );
+                // TODO Emit event
+
             }
 
             // game entity
-            // set!(world, (game));
             world.write_model(@game);
 
             core_actions
@@ -227,15 +212,13 @@ use dojo::event::EventStorage;
                         y: position.y,
                         color: Option::Some(default_params.color),
                         timestamp: Option::None,
-                        text: Option::Some(
-                            ICON_QUESTIONMARK 
-                        ), 
+                        text: Option::Some(ICON_QUESTIONMARK),
                         app: Option::Some(get_contract_address().into()),
                         owner: Option::Some(player.into()),
-                        action: Option::Some('join')
+                        action: Option::Some('join'),
                     },
-                    Option::None,   // area_id hint for this pixel
-                    false,          // allow modify of this update
+                    Option::None, // area_id hint for this pixel
+                    false // allow modify of this update
                 );
         }
 
@@ -249,17 +232,14 @@ use dojo::event::EventStorage;
 
             let mut game: Game = world.read_model((position.x, position.y));
 
-
             // Bail if theres no game at all
             assert(game.id != 0, 'No game to join');
 
             // Bail if wrong gamestate
             assert(game.state == State::Created, 'Wrong gamestate');
 
-
             // Bail if the player is joining their own game
             assert(game.player1 != player, 'Cant join own game');
-
 
             // Update the game
             game.player2 = player;
@@ -278,22 +258,24 @@ use dojo::event::EventStorage;
                         y: position.y,
                         color: Option::Some(default_params.color),
                         timestamp: Option::None,
-                        text: Option::Some(
-                            ICON_EXCLAMATION_MARK
-                        ), 
+                        text: Option::Some(ICON_EXCLAMATION_MARK),
                         app: Option::None,
                         owner: Option::None,
-                        action: Option::Some('finish')
+                        action: Option::Some('finish'),
                     },
-                    Option::None,   // area_id hint for this pixel
-                    false,          // allow modify of this update
+                    Option::None, // area_id hint for this pixel
+                    false // allow modify of this update
                 );
-                assert(result.is_ok(), 'could not update' );
+            assert(result.is_ok(), 'could not update');
         }
 
 
-        fn finish(ref self: ContractState, default_params: DefaultParameters, crv_move: Move, crs_move: felt252) {
-
+        fn finish(
+            ref self: ContractState,
+            default_params: DefaultParameters,
+            crv_move: Move,
+            crs_move: felt252,
+        ) {
             let mut world = self.world(@"pixelaw");
             let core_actions = get_core_actions(ref world);
             let position = default_params.position;
@@ -313,7 +295,8 @@ use dojo::event::EventStorage;
 
             // Check player1's move
             assert(
-                validate_commit(game.player1_commit, crv_move, crs_move), 'player1 invalid commitreveal'
+                validate_commit(game.player1_commit, crv_move, crs_move),
+                'player1 invalid commitreveal',
             );
 
             // Decide the winner
@@ -332,12 +315,12 @@ use dojo::event::EventStorage;
                             text: Option::Some(0),
                             app: Option::Some(Zero::<ContractAddress>::zero()),
                             owner: Option::Some(Zero::<ContractAddress>::zero()),
-                            action: Option::Some(0)
+                            action: Option::Some(0),
                         },
-                        Option::None,   // area_id hint for this pixel
-                        false,          // allow modify of this update
+                        Option::None, // area_id hint for this pixel
+                        false // allow modify of this update
                     );
-            // TODO emit event
+                // TODO emit event
             } else {
                 // Update the game
                 game.player1_move = crv_move;
@@ -358,10 +341,12 @@ use dojo::event::EventStorage;
                                 text: Option::Some(get_unicode_for_rps(game.player2_move)),
                                 app: Option::None,
                                 owner: Option::Some(game.player2),
-                                action: Option::Some('finish')  // TODO, probably want to change color still
+                                action: Option::Some(
+                                    'finish',
+                                ) // TODO, probably want to change color still
                             },
-                            Option::None,   // area_id hint for this pixel
-                            false,          // allow modify of this update
+                            Option::None, // area_id hint for this pixel
+                            false // allow modify of this update
                         );
                 } else {
                     core_actions
@@ -376,17 +361,18 @@ use dojo::event::EventStorage;
                                 text: Option::Some(get_unicode_for_rps(game.player1_move)),
                                 app: Option::None,
                                 owner: Option::None,
-                                action: Option::Some('finish')  // TODO, probably want to change color still
+                                action: Option::Some(
+                                    'finish',
+                                ) // TODO, probably want to change color still
                             },
-                            Option::None,   // area_id hint for this pixel
-                            false,          // allow modify of this update
+                            Option::None, // area_id hint for this pixel
+                            false // allow modify of this update
                         );
                 }
             }
 
             // game entity
             world.write_model(@game);
-
         }
 
         fn secondary(ref self: ContractState, default_params: DefaultParameters) {
@@ -402,7 +388,6 @@ use dojo::event::EventStorage;
             // reset the pixel in the right circumstances
             assert(pixel.owner == player, 'player doesnt own pixel');
 
-  
             world.erase_model(@game);
 
             core_actions
@@ -417,20 +402,16 @@ use dojo::event::EventStorage;
                         text: Option::Some(0),
                         app: Option::Some(Zero::<ContractAddress>::zero()),
                         owner: Option::Some(Zero::<ContractAddress>::zero()),
-                        action: Option::Some(0)
+                        action: Option::Some(0),
                     },
-                    Option::None,   // area_id hint for this pixel
-                    false,          // allow modify of this update
+                    Option::None, // area_id hint for this pixel
+                    false // allow modify of this update
                 );
-
         }
-
     }
 
 
-
     fn get_unicode_for_rps(move: Move) -> felt252 {
-
         match move {
             Move::None => 0x00,
             Move::Rock => ICON_FIST,
@@ -466,20 +447,4 @@ use dojo::event::EventStorage;
             0
         }
     }
-
-    // // TODO: implement proper psuedo random number generator
-    // fn random(seed: felt252, min: u128, max: u128) -> u128 {
-    //     let seed: u256 = seed.into();
-    //     let range = max - min;
-
-    //     (seed.low % range) + min
-    // }
-
-    // fn hash_commit(commit: u8, salt: felt252) -> felt252 {
-    //     let mut hash_span = ArrayTrait::<felt252>::new();
-    //     hash_span.append(commit.into());
-    //     hash_span.append(salt.into());
-
-    //     poseidon_hash_span(hash_span.span())
-    // }
 }

@@ -9,13 +9,35 @@ sierra-replace-ids = true
 
 [[target.starknet-contract]]
 sierra = true
-build-external-contracts = ["dojo::world::world_contract::world"]
-
+build-external-contracts = [
+    "dojo::world::world_contract::world",
+    "pixelaw::core::models::pixel::m_Pixel",
+    "pixelaw::core::models::area::m_Area",
+    "pixelaw::core::models::queue::m_QueueItem",
+    "pixelaw::core::models::registry::m_App",
+    "pixelaw::core::models::registry::m_AppName",
+    "pixelaw::core::models::registry::m_CoreActionsAddress",
+    "pixelaw::core::models::area::m_RTree",
+    "pixelaw::apps::snake::m_Snake",
+    "pixelaw::apps::snake::m_SnakeSegment",
+    "pixelaw::core::events::e_QueueScheduled",
+    "pixelaw::core::events::e_Alert",
+    "pixelaw::core::actions::actions",
+    "pixelaw::apps::paint::paint_actions",
+    "pixelaw::apps::snake::snake_actions"
+]
 
 [dependencies]
 starknet = "=2.9.2"
-pixelaw = { git = "https://github.com/pixelaw/core", tag = "v0.6.19" }
+pixelaw = { git = "https://github.com/pixelaw/core", tag = "v0.6.20" }
 dojo = { git = "https://github.com/dojoengine/dojo", tag = "v1.3.0" }
+
+[dev-dependencies]
+dojo_cairo_test = { git = "https://github.com/dojoengine/dojo", tag = "v1.3.0" }
+pixelaw_testing = { git = "https://github.com/pixelaw/core", tag = "v0.6.20" }
+cairo_test = "=2.9.2"
+
+
 
 
 [scripts]
