@@ -37,7 +37,7 @@ source = "git+https://github.com/keep-starknet-strange/alexandria.git?rev=01a769
 
 [[package]]
 name = "cubit"
-version = "1.3.0"
+version = "1.4.0"
 source = "git+https://github.com/akhercha/cubit.git?rev=d3869a3#d3869a3f0c47e5ed229bbbfe2fce3fc0510cbc8a"
 
 [[package]]
