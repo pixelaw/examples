@@ -144,13 +144,15 @@ pub mod rps_actions {
         fn interact(
             ref self: ContractState, default_params: DefaultParameters, crc_move_Move: felt252,
         ) {
-            let mut world = self.world(@"pixelaw");
-            let core_actions = get_core_actions(ref world);
+            let mut core_world = self.world(@"pixelaw");
+            let mut rps_world = self.world(@"rps");
+
+            let core_actions = get_core_actions(ref core_world);
+            let (player, system) = get_callers(ref core_world, default_params);
+
             let position = default_params.position;
 
-            let (player, system) = get_callers(ref world, default_params);
-
-            let pixel: Pixel = world.read_model((position.x, position.y));
+            let pixel: Pixel = core_world.read_model((position.x, position.y));
 
             // Bail if the caller is not allowed here
             assert!(
@@ -161,7 +163,7 @@ pub mod rps_actions {
             );
 
             // Load the game
-            let mut game: Game = world.read_model((position.x, position.y));
+            let mut game: Game = rps_world.read_model((position.x, position.y));
 
             if game.id != 0 {
                 // Bail if we're waiting for other player
@@ -175,9 +177,9 @@ pub mod rps_actions {
                 // Player1 changing their commit
                 game.player1_commit = crc_move_Move;
             } else {
-                let mut id = world.dispatcher.uuid();
+                let mut id = core_world.dispatcher.uuid();
                 if id == 0 {
-                    id = world.dispatcher.uuid();
+                    id = core_world.dispatcher.uuid();
                 }
 
                 game =
@@ -198,7 +200,7 @@ pub mod rps_actions {
             }
 
             // game entity
-            world.write_model(@game);
+            rps_world.write_model(@game);
 
             core_actions
                 .update_pixel(
@@ -222,13 +224,15 @@ pub mod rps_actions {
 
 
         fn join(ref self: ContractState, default_params: DefaultParameters, player2_move: Move) {
-            let mut world = self.world(@"pixelaw");
-            let core_actions = get_core_actions(ref world);
+            let mut core_world = self.world(@"pixelaw");
+            let mut rps_world = self.world(@"rps");
+
+            let core_actions = get_core_actions(ref core_world);
             let position = default_params.position;
 
-            let (player, system) = get_callers(ref world, default_params);
+            let (player, system) = get_callers(ref core_world, default_params);
 
-            let mut game: Game = world.read_model((position.x, position.y));
+            let mut game: Game = rps_world.read_model((position.x, position.y));
 
             // Bail if theres no game at all
             assert!(game.id != 0, "{:?}_{:?} No game to join", position.x, position.y);
@@ -249,7 +253,7 @@ pub mod rps_actions {
             game.state = State::Joined;
 
             // game entity
-            world.write_model(@game);
+            rps_world.write_model(@game);
 
             core_actions
                 .update_pixel(
@@ -278,13 +282,15 @@ pub mod rps_actions {
             crv_move: Move,
             crs_move: felt252,
         ) {
-            let mut world = self.world(@"pixelaw");
-            let core_actions = get_core_actions(ref world);
+            let mut core_world = self.world(@"pixelaw");
+            let mut rps_world = self.world(@"rps");
+
+            let core_actions = get_core_actions(ref core_world);
             let position = default_params.position;
 
-            let (player, system) = get_callers(ref world, default_params);
+            let (player, system) = get_callers(ref core_world, default_params);
 
-            let mut game: Game = world.read_model((position.x, position.y));
+            let mut game: Game = rps_world.read_model((position.x, position.y));
 
             // Bail if theres no game at all
             assert!(game.id != 0, "{:?}_{:?} No game to finish", position.x, position.y);
@@ -383,25 +389,27 @@ pub mod rps_actions {
             }
 
             // game entity
-            world.write_model(@game);
+            rps_world.write_model(@game);
         }
 
         fn secondary(ref self: ContractState, default_params: DefaultParameters) {
-            let mut world = self.world(@"pixelaw");
-            let core_actions = get_core_actions(ref world);
+            let mut core_world = self.world(@"pixelaw");
+            let mut rps_world = self.world(@"rps");
+
+            let core_actions = get_core_actions(ref core_world);
+            let (player, system) = get_callers(ref core_world, default_params);
+
             let position = default_params.position;
 
-            let (player, system) = get_callers(ref world, default_params);
-
-            let mut game: Game = world.read_model((position.x, position.y));
-            let pixel: Pixel = world.read_model((position.x, position.y));
+            let mut game: Game = rps_world.read_model((position.x, position.y));
+            let pixel: Pixel = core_world.read_model((position.x, position.y));
 
             // reset the pixel in the right circumstances
             assert!(
                 pixel.owner == player, "{:?}_{:?} player doesnt own pixel", position.x, position.y,
             );
 
-            world.erase_model(@game);
+            rps_world.erase_model(@game);
 
             core_actions
                 .update_pixel(

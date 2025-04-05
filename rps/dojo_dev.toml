@@ -4,7 +4,7 @@ name = "pixelaw"
 seed = "pixelaw"
 
 [namespace]
-default = "pixelaw"
+default = "rps"
 mappings = {}
 
 [env]

@@ -1,6 +1,6 @@
 {
   "name": "My Project",
-  "image": "ghcr.io/pixelaw/core:0.6.19",
+  "image": "ghcr.io/pixelaw/core:0.6.28",
   "forwardPorts": [
     5050,
     8080,
@@ -15,7 +15,7 @@
     "PUBLIC_RPC_URL": "http://127.0.0.1:5050",
     "PUBLIC_TORII_URL": "http://127.0.0.1:8080",
     "PUBLIC_RELAY_URL": "http://127.0.0.1:8080",
-    "WORLD_ADDRESS": "0x5a247732e3a59737fea5504ed776c6e79eae8b6b2317402ab36b6d3cc508e6",
+    "WORLD_ADDRESS": "0x01d09b5e00f376337603943fc12715e439e91c0039f353b1cc48bb278dfa99d5",
     "WORLD_ID": "local",
     "SERVER_PORT": "3000",
     // For web

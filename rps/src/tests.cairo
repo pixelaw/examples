@@ -1,4 +1,4 @@
-use dojo::world::{WorldStorage, WorldStorageTrait};
+use dojo::world::{IWorldDispatcherTrait, WorldStorage, WorldStorageTrait};
 use dojo_cairo_test::{
     ContractDef, ContractDefTrait, NamespaceDef, TestResource, WorldStorageTestTrait,
 };
@@ -13,8 +13,12 @@ use pixelaw_testing::helpers::{setup_core_initialized, update_test_world};
 
 
 fn deploy_app(ref world: WorldStorage) -> IRpsActionsDispatcher {
+    let namespace = "rps";
+
+    world.dispatcher.register_namespace(namespace.clone());
+
     let ndef = NamespaceDef {
-        namespace: "pixelaw",
+        namespace: namespace.clone(),
         resources: [
             TestResource::Model(m_Player::TEST_CLASS_HASH),
             TestResource::Model(m_Game::TEST_CLASS_HASH),
@@ -24,8 +28,8 @@ fn deploy_app(ref world: WorldStorage) -> IRpsActionsDispatcher {
     };
 
     let cdefs: Span<ContractDef> = [
-        ContractDefTrait::new(@"pixelaw", @"rps_actions")
-            .with_writer_of([dojo::utils::bytearray_hash(@"pixelaw")].span())
+        ContractDefTrait::new(@namespace, @"rps_actions")
+            .with_writer_of([dojo::utils::bytearray_hash(@namespace)].span())
     ]
         .span();
 
@@ -33,7 +37,14 @@ fn deploy_app(ref world: WorldStorage) -> IRpsActionsDispatcher {
 
     world.sync_perms_and_inits(cdefs);
 
-    let (rps_actions_address, _) = world.dns(@"rps_actions").unwrap();
+    // Set the namespace so the myapp_actions can be found
+    world.set_namespace(@namespace);
+
+    let rps_actions_address = world.dns_address(@"rps_actions").unwrap();
+
+    // Set the namespace back to pixelaw so everything still works afterwards
+    world.set_namespace(@"pixelaw");
+
     IRpsActionsDispatcher { contract_address: rps_actions_address }
 }
 
@@ -45,8 +56,6 @@ fn test_playthrough() {
 
     // Deploy rps actions
     let rps_actions = deploy_app(ref world);
-
-    rps_actions.init();
 
     starknet::testing::set_account_contract_address(player_1);
 

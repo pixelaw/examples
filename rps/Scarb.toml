@@ -32,12 +32,12 @@ build-external-contracts = [
 
 [dependencies]
 starknet = "=2.9.4"
-pixelaw = { git = "https://github.com/pixelaw/core", tag = "v0.6.26" }
+pixelaw = { git = "https://github.com/pixelaw/core", tag = "v0.6.28" }
 dojo = { git = "https://github.com/dojoengine/dojo", tag = "v1.4.0" }
 
 [dev-dependencies]
 dojo_cairo_test = { git = "https://github.com/dojoengine/dojo", tag = "v1.4.0" }
-pixelaw_testing = { git = "https://github.com/pixelaw/core", tag = "v0.6.26" }
+pixelaw_testing = { git = "https://github.com/pixelaw/core", tag = "v0.6.28" }
 cairo_test = "=2.9.4"
 
 
