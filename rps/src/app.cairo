@@ -64,7 +64,6 @@ pub struct Player {
 
 #[starknet::interface]
 pub trait IRpsActions<T> {
-    fn init(ref self: T);
     fn secondary(ref self: T, default_params: DefaultParameters);
     fn interact(ref self: T, default_params: DefaultParameters, crc_move_Move: felt252);
     fn join(ref self: T, default_params: DefaultParameters, player2_move: Move);
@@ -86,10 +85,10 @@ pub mod rps_actions {
     use dojo::world::{IWorldDispatcherTrait};
     use core::poseidon::poseidon_hash_span;
     use starknet::{ContractAddress, get_contract_address};
-
+    use starknet::{contract_address_const};
     use pixelaw::core::models::registry::App;
 
-    use pixelaw::core::models::pixel::{Pixel, PixelUpdate, PixelUpdateResult};
+    use pixelaw::core::models::pixel::{Pixel, PixelUpdate};
     use pixelaw::core::utils::{get_core_actions, get_callers, DefaultParameters};
 
     use pixelaw::core::actions::{IActionsDispatcherTrait};
@@ -106,14 +105,12 @@ pub mod rps_actions {
     const ICON_PAPER: felt252 = 0xf09f9690; // 🖐
     const ICON_SCISSOR: felt252 = 0xe29c8cefb88f; // ✌️
 
+    fn dojo_init(ref self: ContractState) {
+        let mut world = self.world(@"pixelaw");
+        let core_actions = get_core_actions(ref world);
 
-    // #[derive(Copy, Drop, Serde)]
-    // #[dojo::event]
-    // pub struct GameCreated {
-    //     #[key]
-    //     game_id: u32,
-    //     creator: ContractAddress,
-    // }
+        core_actions.new_app(contract_address_const::<0>(), APP_KEY, APP_ICON);
+    }
 
     // impl: implement functions specified in trait
     #[abi(embed_v0)]
@@ -144,16 +141,6 @@ pub mod rps_actions {
         ) { // No action
         }
 
-
-        /// Initialize the Paint App (TODO I think, do we need this??)
-        fn init(ref self: ContractState) {
-            let mut world = self.world(@"pixelaw");
-            let core_actions = get_core_actions(ref world);
-
-            core_actions.new_app(Zero::<ContractAddress>::zero(), APP_KEY, APP_ICON);
-        }
-
-
         fn interact(
             ref self: ContractState, default_params: DefaultParameters, crc_move_Move: felt252,
         ) {
@@ -166,14 +153,24 @@ pub mod rps_actions {
             let pixel: Pixel = world.read_model((position.x, position.y));
 
             // Bail if the caller is not allowed here
-            assert(pixel.owner.is_zero() || pixel.owner == player, 'Pixel is not players');
+            assert!(
+                pixel.owner.is_zero() || pixel.owner == player,
+                "{:?}_{:?} Pixel is not players",
+                position.x,
+                position.y,
+            );
 
             // Load the game
             let mut game: Game = world.read_model((position.x, position.y));
 
             if game.id != 0 {
                 // Bail if we're waiting for other player
-                assert(game.state == State::Created, 'cannot reset rps game');
+                assert!(
+                    game.state == State::Created,
+                    "{:?}_{:?} Cannot reset rps game",
+                    position.x,
+                    position.y,
+                );
 
                 // Player1 changing their commit
                 game.player1_commit = crc_move_Move;
@@ -219,7 +216,8 @@ pub mod rps_actions {
                     },
                     Option::None, // area_id hint for this pixel
                     false // allow modify of this update
-                );
+                )
+                .unwrap();
         }
 
 
@@ -233,13 +231,17 @@ pub mod rps_actions {
             let mut game: Game = world.read_model((position.x, position.y));
 
             // Bail if theres no game at all
-            assert(game.id != 0, 'No game to join');
+            assert!(game.id != 0, "{:?}_{:?} No game to join", position.x, position.y);
 
             // Bail if wrong gamestate
-            assert(game.state == State::Created, 'Wrong gamestate');
+            assert!(
+                game.state == State::Created, "{:?}_{:?} Wrong gamestate", position.x, position.y,
+            );
 
             // Bail if the player is joining their own game
-            assert(game.player1 != player, 'Cant join own game');
+            assert!(
+                game.player1 != player, "{:?}_{:?} Cannot join own game", position.x, position.y,
+            );
 
             // Update the game
             game.player2 = player;
@@ -249,7 +251,7 @@ pub mod rps_actions {
             // game entity
             world.write_model(@game);
 
-            let result: PixelUpdateResult = core_actions
+            core_actions
                 .update_pixel(
                     player,
                     system,
@@ -265,8 +267,8 @@ pub mod rps_actions {
                     },
                     Option::None, // area_id hint for this pixel
                     false // allow modify of this update
-                );
-            assert(result.is_ok(), 'could not update');
+                )
+                .unwrap();
         }
 
 
@@ -285,18 +287,24 @@ pub mod rps_actions {
             let mut game: Game = world.read_model((position.x, position.y));
 
             // Bail if theres no game at all
-            assert(game.id != 0, 'No game to finish');
+            assert!(game.id != 0, "{:?}_{:?} No game to finish", position.x, position.y);
 
             // Bail if wrong gamestate
-            assert(game.state == State::Joined, 'Wrong gamestate');
+            assert!(
+                game.state == State::Joined, "{:?}_{:?} Wrong gamestate", position.x, position.y,
+            );
 
             // Bail if another player is finishing (has to be player1)
-            assert(game.player1 == player, 'Cant finish others game');
+            assert!(
+                game.player1 == player, "{:?}_{:?} Cant finish others game", position.x, position.y,
+            );
 
             // Check player1's move
-            assert(
+            assert!(
                 validate_commit(game.player1_commit, crv_move, crs_move),
-                'player1 invalid commitreveal',
+                "{:?}_{:?} player1 invalid commitreveal",
+                position.x,
+                position.y,
             );
 
             // Decide the winner
@@ -319,7 +327,8 @@ pub mod rps_actions {
                         },
                         Option::None, // area_id hint for this pixel
                         false // allow modify of this update
-                    );
+                    )
+                    .unwrap();
                 // TODO emit event
             } else {
                 // Update the game
@@ -347,7 +356,8 @@ pub mod rps_actions {
                             },
                             Option::None, // area_id hint for this pixel
                             false // allow modify of this update
-                        );
+                        )
+                        .unwrap();
                 } else {
                     core_actions
                         .update_pixel(
@@ -367,7 +377,8 @@ pub mod rps_actions {
                             },
                             Option::None, // area_id hint for this pixel
                             false // allow modify of this update
-                        );
+                        )
+                        .unwrap();
                 }
             }
 
@@ -386,7 +397,9 @@ pub mod rps_actions {
             let pixel: Pixel = world.read_model((position.x, position.y));
 
             // reset the pixel in the right circumstances
-            assert(pixel.owner == player, 'player doesnt own pixel');
+            assert!(
+                pixel.owner == player, "{:?}_{:?} player doesnt own pixel", position.x, position.y,
+            );
 
             world.erase_model(@game);
 
@@ -406,7 +419,8 @@ pub mod rps_actions {
                     },
                     Option::None, // area_id hint for this pixel
                     false // allow modify of this update
-                );
+                )
+                .unwrap();
         }
     }
 
@@ -429,6 +443,7 @@ pub mod rps_actions {
 
         committed_hash == computed_hash
     }
+
 
     fn decide(player1_commit: Move, player2_commit: Move) -> u8 {
         if player1_commit == Move::Rock && player2_commit == Move::Paper {
