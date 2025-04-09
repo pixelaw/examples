@@ -23,7 +23,7 @@ build-external-contracts = [
     "pixelaw::apps::player::m_Player",
     "pixelaw::apps::player::m_PositionPlayer",
     "pixelaw::core::events::e_QueueScheduled",
-    "pixelaw::core::events::e_Alert",
+    "pixelaw::core::events::e_Notification",
     "pixelaw::core::actions::actions",
     "pixelaw::apps::paint::paint_actions",
     "pixelaw::apps::snake::snake_actions",
@@ -32,16 +32,13 @@ build-external-contracts = [
 
 [dependencies]
 starknet = "=2.9.4"
-pixelaw = { git = "https://github.com/pixelaw/core", tag = "v0.6.28" }
+pixelaw = { git = "https://github.com/pixelaw/core", tag = "v0.6.31" }
 dojo = { git = "https://github.com/dojoengine/dojo", tag = "v1.4.0" }
 
 [dev-dependencies]
 dojo_cairo_test = { git = "https://github.com/dojoengine/dojo", tag = "v1.4.0" }
-pixelaw_testing = { git = "https://github.com/pixelaw/core", tag = "v0.6.28" }
+pixelaw_testing = { git = "https://github.com/pixelaw/core", tag = "v0.6.31" }
 cairo_test = "=2.9.4"
 
 
 
-
-[scripts]
-init = "sozo execute --wait pixelaw-rps_actions init "

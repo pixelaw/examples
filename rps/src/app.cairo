@@ -1,7 +1,7 @@
 use starknet::{ContractAddress};
 use pixelaw::core::models::{pixel::{PixelUpdate}, registry::{App}};
 
-use pixelaw::core::utils::{DefaultParameters};
+use pixelaw::core::utils::{DefaultParameters, Position};
 
 const APP_KEY: felt252 = 'rps';
 const APP_ICON: felt252 = 0xf09f918a; // 👊
@@ -40,9 +40,7 @@ impl MoveIntoFelt252 of Into<Move, felt252> {
 #[dojo::model]
 pub struct Game {
     #[key]
-    x: u16,
-    #[key]
-    y: u16,
+    position: Position,
     id: u32,
     state: State,
     player1: ContractAddress,
@@ -184,8 +182,7 @@ pub mod rps_actions {
 
                 game =
                     Game {
-                        x: position.x,
-                        y: position.y,
+                        position,
                         id,
                         state: State::Created,
                         player1: player,
@@ -207,8 +204,7 @@ pub mod rps_actions {
                     player,
                     system,
                     PixelUpdate {
-                        x: position.x,
-                        y: position.y,
+                        position,
                         color: Option::Some(default_params.color),
                         timestamp: Option::None,
                         text: Option::Some(ICON_QUESTIONMARK),
@@ -260,8 +256,7 @@ pub mod rps_actions {
                     player,
                     system,
                     PixelUpdate {
-                        x: position.x,
-                        y: position.y,
+                        position,
                         color: Option::Some(default_params.color),
                         timestamp: Option::None,
                         text: Option::Some(ICON_EXCLAMATION_MARK),
@@ -322,8 +317,7 @@ pub mod rps_actions {
                         player,
                         system,
                         PixelUpdate {
-                            x: position.x,
-                            y: position.y,
+                            position,
                             color: Option::None,
                             timestamp: Option::None,
                             text: Option::Some(0),
@@ -349,8 +343,7 @@ pub mod rps_actions {
                             player,
                             system,
                             PixelUpdate {
-                                x: position.x,
-                                y: position.y,
+                                position,
                                 color: Option::None,
                                 timestamp: Option::None,
                                 text: Option::Some(get_unicode_for_rps(game.player2_move)),
@@ -370,8 +363,7 @@ pub mod rps_actions {
                             player,
                             system,
                             PixelUpdate {
-                                x: position.x,
-                                y: position.y,
+                                position,
                                 color: Option::None,
                                 timestamp: Option::None,
                                 text: Option::Some(get_unicode_for_rps(game.player1_move)),
@@ -401,8 +393,8 @@ pub mod rps_actions {
 
             let position = default_params.position;
 
-            let mut game: Game = rps_world.read_model((position.x, position.y));
-            let pixel: Pixel = core_world.read_model((position.x, position.y));
+            let mut game: Game = rps_world.read_model(position);
+            let pixel: Pixel = core_world.read_model(position);
 
             // reset the pixel in the right circumstances
             assert!(
@@ -416,8 +408,7 @@ pub mod rps_actions {
                     player,
                     system,
                     PixelUpdate {
-                        x: position.x,
-                        y: position.y,
+                        position,
                         color: Option::Some(0),
                         timestamp: Option::None,
                         text: Option::Some(0),
