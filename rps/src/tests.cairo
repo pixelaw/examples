@@ -9,7 +9,7 @@ use pixelaw::core::utils::{DefaultParameters, Position};
 use rps::app::{IRpsActionsDispatcher, IRpsActionsDispatcherTrait, rps_actions};
 use rps::app::{m_Game, m_Player, Move};
 
-use pixelaw_testing::helpers::{setup_core_initialized, update_test_world};
+use pixelaw_testing::helpers::{setup_core, update_test_world};
 
 
 fn deploy_app(ref world: WorldStorage) -> IRpsActionsDispatcher {
@@ -52,7 +52,7 @@ fn deploy_app(ref world: WorldStorage) -> IRpsActionsDispatcher {
 #[available_gas(3000000000)]
 fn test_playthrough() {
     // Deploy everything
-    let (mut world, _core_actions, player_1, player_2) = setup_core_initialized();
+    let (mut world, _core_actions, player_1, player_2) = setup_core();
 
     // Deploy rps actions
     let rps_actions = deploy_app(ref world);
