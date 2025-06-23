@@ -1,0 +1,42 @@
+[package]
+cairo-version = "=2.9.4"
+name = "dojo_starter"
+version = "1.4.0"
+edition = "2024_07"
+
+[cairo]
+sierra-replace-ids = true
+
+[scripts]
+migrate = "sozo build && sozo migrate"                      # scarb run migrate
+spawn = "sozo execute dojo_starter-actions spawn --wait"    # scarb run spawn
+move = "sozo execute dojo_starter-actions move -c 1 --wait" # scarb run move
+
+[dependencies]
+pixelaw = { git = "https://github.com/pixelaw/core", tag = "v0.6.31" }
+dojo = { git = "https://github.com/dojoengine/dojo", tag = "v1.4.0" }
+
+[dev-dependencies]
+dojo_cairo_test = { git = "https://github.com/dojoengine/dojo", tag = "v1.4.0" }
+pixelaw_testing = { git = "https://github.com/pixelaw/core", tag = "v0.6.31" }
+
+[[target.starknet-contract]]
+sierra = true
+
+build-external-contracts = [
+    "dojo::world::world_contract::world",
+    "pixelaw::core::models::pixel::m_Pixel",
+    "pixelaw::core::models::area::m_Area",
+    "pixelaw::core::models::queue::m_QueueItem",
+    "pixelaw::core::models::registry::m_App",
+    "pixelaw::core::models::registry::m_AppName",
+    "pixelaw::core::models::registry::m_CoreActionsAddress",
+    "pixelaw::core::models::area::m_RTree",
+    "pixelaw::core::events::e_QueueScheduled",
+    "pixelaw::core::events::e_Notification",
+]
+
+[tool.fmt]
+sort-module-level-items = true
+
+[profile.sepolia]
