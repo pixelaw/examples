@@ -1,6 +1,6 @@
 {
-  "name": "My Project",
-  "image": "ghcr.io/pixelaw/core:0.6.28",
+  "name": "Examples",
+  "image": "ghcr.io/pixelaw/core:0.7.8",
   "forwardPorts": [
     5050,
     8080,
@@ -31,9 +31,9 @@
       // Set *default* container specific settings.json values on container create.
       "settings": {
         "cairo1.enableLanguageServer": true,
-        "cairo1.languageServerPath": "${userHome}/.asdf/installs/dojo/1.4.0/bin/dojo-language-server",
+        "cairo1.languageServerPath": "${userHome}/.asdf/installs/dojo/1.5.1/bin/dojo-language-server",
         "cairo1.enableScarb": true,
-        "cairo1.scarbPath": "${userHome}/.asdf/installs/scarb/2.9.4/bin/scarb",
+        "cairo1.scarbPath": "${userHome}/.asdf/installs/scarb/2.10.1/bin/scarb",
         "lldb.executable": "/usr/bin/lldb",
         // VS Code don't watch files under ./target
         "files.watcherExclude": {
