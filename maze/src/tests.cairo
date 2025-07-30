@@ -5,6 +5,7 @@ use dojo_cairo_test::{
 };
 use maze::app::{IMazeActionsDispatcher, IMazeActionsDispatcherTrait, MazeGame, m_MazeGame, maze_actions};
 use pixelaw::core::models::pixel::{Pixel};
+use pixelaw::apps::player::{Player};
 
 
 use pixelaw::core::utils::{DefaultParameters, Position, encode_rgba};
@@ -13,6 +14,8 @@ use pixelaw_testing::helpers::{set_caller, setup_core, update_test_world};
 
 fn deploy_app(ref world: WorldStorage) -> IMazeActionsDispatcher {
     let namespace = "maze";
+
+    world.dispatcher.register_namespace(namespace.clone());
 
     let ndef = NamespaceDef {
         namespace: namespace.clone(),
@@ -28,7 +31,6 @@ fn deploy_app(ref world: WorldStorage) -> IMazeActionsDispatcher {
     ]
         .span();
 
-    world.dispatcher.register_namespace(namespace.clone());
     update_test_world(ref world, [ndef].span());
     world.sync_perms_and_inits(cdefs);
 
@@ -96,7 +98,7 @@ fn test_maze_actions() {
     let trap_position = Position { x: 102, y: 101 }; // This should be a trap in maze layout 1
     
     // Set up player with some lives for testing
-    let mut test_player: pixelaw::apps::player::Player = world.read_model(player_1);
+    let mut test_player: Player = world.read_model(player_1);
     test_player.lives = 5; // Give player 5 lives
     world.write_model(@test_player);
     

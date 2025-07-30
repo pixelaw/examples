@@ -2,16 +2,6 @@
 version = 1
 
 [[package]]
-name = "chest"
-version = "0.0.0"
-dependencies = [
- "dojo",
- "dojo_cairo_test",
- "pixelaw",
- "pixelaw_testing",
-]
-
-[[package]]
 name = "dojo"
 version = "1.5.1"
 source = "git+https://github.com/dojoengine/dojo?tag=v1.5.1#986c3b0c6d647b23847c70ddceb1d33ddac86ead"
@@ -31,6 +21,16 @@ dependencies = [
 name = "dojo_plugin"
 version = "2.10.1"
 source = "git+https://github.com/dojoengine/dojo?tag=v1.5.1#986c3b0c6d647b23847c70ddceb1d33ddac86ead"
+
+[[package]]
+name = "maze"
+version = "0.0.0"
+dependencies = [
+ "dojo",
+ "dojo_cairo_test",
+ "pixelaw",
+ "pixelaw_testing",
+]
 
 [[package]]
 name = "pixelaw"

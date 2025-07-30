@@ -100,11 +100,12 @@ pub mod chest_actions {
         ///
         /// * `default_params` - Default parameters including position and color.
         fn interact(ref self: ContractState, default_params: DefaultParameters) {
-            let mut world = self.world(@"pixelaw");
+            let mut core_world = self.world(@"pixelaw");
+            let mut app_world = self.world(@"chest");
             let position = default_params.position;
 
             // Check if there's already a chest at this position
-            let pixel: Pixel = world.read_model(position);
+            let pixel: Pixel = core_world.read_model(position);
             
             if pixel.app == get_contract_address() {
                 // There's a chest here, try to collect it
@@ -121,17 +122,18 @@ pub mod chest_actions {
         ///
         /// * `default_params` - Default parameters including position
         fn place_chest(ref self: ContractState, default_params: DefaultParameters) {
-            let mut world = self.world(@"pixelaw");
+            let mut core_world = self.world(@"pixelaw");
+            let mut app_world = self.world(@"chest");
 
             // Load important variables
-            let core_actions = get_core_actions(ref world);
-            let (player, system) = get_callers(ref world, default_params);
+            let core_actions = get_core_actions(ref core_world);
+            let (player, system) = get_callers(ref core_world, default_params);
 
             let position = default_params.position;
             let current_timestamp = get_block_timestamp();
 
             // Check if position is empty
-            let pixel: Pixel = world.read_model(position);
+            let pixel: Pixel = core_world.read_model(position);
             assert!(pixel.app == contract_address_const::<0>(), "Position is not empty");
 
             // Create chest record
@@ -142,7 +144,7 @@ pub mod chest_actions {
                 is_collected: false,
                 last_collected_at: 0,
             };
-            world.write_model(@chest);
+            app_world.write_model(@chest);
 
             // Place chest pixel
             core_actions
@@ -180,21 +182,22 @@ pub mod chest_actions {
         ///
         /// * `default_params` - Default parameters including position
         fn collect_chest(ref self: ContractState, default_params: DefaultParameters) {
-            let mut world = self.world(@"pixelaw");
+            let mut core_world = self.world(@"pixelaw");
+            let mut app_world = self.world(@"chest");
 
             // Load important variables
-            let core_actions = get_core_actions(ref world);
-            let (player, system) = get_callers(ref world, default_params);
+            let core_actions = get_core_actions(ref core_world);
+            let (player, system) = get_callers(ref core_world, default_params);
 
             let position = default_params.position;
             let current_timestamp = get_block_timestamp();
 
             // Check if there's a chest at this position
-            let pixel: Pixel = world.read_model(position);
+            let pixel: Pixel = core_world.read_model(position);
             assert!(pixel.app == get_contract_address(), "No chest at this position");
 
             // Get the chest data
-            let mut chest: Chest = world.read_model(position);
+            let mut chest: Chest = app_world.read_model(position);
             assert!(!chest.is_collected, "Chest already collected");
 
             // Check cooldown (24 hours)
@@ -206,12 +209,12 @@ pub mod chest_actions {
             // Update chest collection status
             chest.is_collected = true;
             chest.last_collected_at = current_timestamp;
-            world.write_model(@chest);
+            app_world.write_model(@chest);
 
             // Get player data and add life
-            let mut player_data: Player = world.read_model(player);
+            let mut player_data: Player = core_world.read_model(player);
             player_data.lives += LIFE_REWARD;
-            world.write_model(@player_data);
+            core_world.write_model(@player_data);
 
             // Update pixel to show collected chest
             core_actions
