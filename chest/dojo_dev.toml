@@ -18,4 +18,4 @@ private_key = "0xc5b2fcab997346f3ea1c00b002ecf6f382c5f9c9659a3894eb783c5320f912"
 world_address = "0x01d09b5e00f376337603943fc12715e439e91c0039f353b1cc48bb278dfa99d5"
 
 [writers]
-"chest-ClickGame" = ["chest-chest_actions"]
+"chest-Chest" = ["chest-chest_actions"]
