@@ -5,11 +5,11 @@ use dojo_cairo_test::{
 
 use pixelaw::core::utils::{DefaultParameters, Position};
 
+use pixelaw_testing::helpers::{set_caller, setup_core, update_test_world};
+
 
 use rps::app::{IRpsActionsDispatcher, IRpsActionsDispatcherTrait, rps_actions};
-use rps::app::{m_Game, m_Player, Move};
-
-use pixelaw_testing::helpers::{setup_core, update_test_world};
+use rps::app::{Move, m_Game, m_Player};
 
 
 fn deploy_app(ref world: WorldStorage) -> IRpsActionsDispatcher {
@@ -57,7 +57,7 @@ fn test_playthrough() {
     // Deploy rps actions
     let rps_actions = deploy_app(ref world);
 
-    starknet::testing::set_account_contract_address(player_1);
+    set_caller(player_1);
 
     // Set the players commitments
     let player_1_commit: Move = Move::Scissors;
@@ -94,7 +94,7 @@ fn test_playthrough() {
         );
 
     // TODO assert state
-    starknet::testing::set_account_contract_address(player_2);
+    set_caller(player_2);
 
     // player_2 joins
     rps_actions
@@ -109,7 +109,7 @@ fn test_playthrough() {
             player_2_commit,
         );
 
-    starknet::testing::set_account_contract_address(player_1);
+    set_caller(player_1);
 
     // player_1 finishes
     rps_actions

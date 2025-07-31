@@ -1,5 +1,5 @@
 [package]
-cairo-version = "=2.9.4"
+cairo-version = "=2.10.1"
 name = "rps"
 version = "0.0.0"
 edition = "2024_07"
@@ -7,8 +7,17 @@ edition = "2024_07"
 [cairo]
 sierra-replace-ids = true
 
+[dependencies]
+pixelaw = { git = "https://github.com/pixelaw/core", tag = "v0.7.8" }
+dojo = { git = "https://github.com/dojoengine/dojo", tag = "v1.5.1" }
+
+[dev-dependencies]
+pixelaw_testing = { git = "https://github.com/pixelaw/core", tag = "v0.7.8" }
+dojo_cairo_test = { git = "https://github.com/dojoengine/dojo", tag = "v1.5.1" }
+
 [[target.starknet-contract]]
 sierra = true
+
 build-external-contracts = [
     "dojo::world::world_contract::world",
     "pixelaw::core::models::pixel::m_Pixel",
@@ -23,16 +32,5 @@ build-external-contracts = [
     "pixelaw::core::actions::actions"
 ]
 
-[dependencies]
-starknet = "=2.9.4"
-pixelaw = { path = "../../core/contracts" }
-#pixelaw = { git = "https://github.com/pixelaw/core", tag = "v0.6.31" }
-dojo = { git = "https://github.com/dojoengine/dojo", tag = "v1.4.0" }
-
-[dev-dependencies]
-dojo_cairo_test = { git = "https://github.com/dojoengine/dojo", tag = "v1.4.0" }
-pixelaw_testing = { path = "../../core/pixelaw_testing" }
-cairo_test = "=2.9.4"
-
-
-
+[tool.fmt]
+sort-module-level-items = true
