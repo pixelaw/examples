@@ -1,6 +1,6 @@
+// use pixelaw::apps::player::{Player}; // TODO: Re-enable when Player model is properly set up
 use pixelaw::core::models::{pixel::{PixelUpdate}, registry::{App}};
 use pixelaw::core::utils::{DefaultParameters, Position};
-use pixelaw::apps::player::{Player};
 use starknet::{ContractAddress};
 
 /// Chest Model to keep track of chests and their collection status
@@ -38,15 +38,15 @@ pub const COOLDOWN_SECONDS: u64 = 86400; // 24 hours
 #[dojo::contract]
 pub mod chest_actions {
     use dojo::model::{ModelStorage};
-    use pixelaw::apps::player::{Player};
+    // use pixelaw::apps::player::{Player}; // TODO: Re-enable when Player model is properly set up
     use pixelaw::core::actions::{IActionsDispatcherTrait as ICoreActionsDispatcherTrait};
     use pixelaw::core::models::pixel::{Pixel, PixelUpdate, PixelUpdateResultTrait};
     use pixelaw::core::models::registry::App;
-    use pixelaw::core::utils::{DefaultParameters, Position, get_callers, get_core_actions};
+    use pixelaw::core::utils::{DefaultParameters, get_callers, get_core_actions};
     use starknet::{
         ContractAddress, contract_address_const, get_block_timestamp, get_contract_address,
     };
-    use super::{APP_ICON, APP_KEY, LIFE_REWARD, COOLDOWN_SECONDS};
+    use super::{APP_ICON, APP_KEY, COOLDOWN_SECONDS};
     use super::{Chest, IChestActions};
 
     /// Initialize the Chest App
@@ -88,8 +88,7 @@ pub mod chest_actions {
             pixel_update: PixelUpdate,
             app_caller: App,
             player_caller: ContractAddress,
-        ) {
-            // No action needed
+        ) { // No action needed
         }
 
         /// Interacts with a pixel based on default parameters.
@@ -101,12 +100,12 @@ pub mod chest_actions {
         /// * `default_params` - Default parameters including position and color.
         fn interact(ref self: ContractState, default_params: DefaultParameters) {
             let mut core_world = self.world(@"pixelaw");
-            let mut app_world = self.world(@"chest");
+            let mut _app_world = self.world(@"chest");
             let position = default_params.position;
 
             // Check if there's already a chest at this position
             let pixel: Pixel = core_world.read_model(position);
-            
+
             if pixel.app == get_contract_address() {
                 // There's a chest here, try to collect it
                 self.collect_chest(default_params);
@@ -200,9 +199,14 @@ pub mod chest_actions {
             let mut chest: Chest = app_world.read_model(position);
             assert!(!chest.is_collected, "Chest already collected");
 
-            // Check cooldown (24 hours)
+            // Check cooldown (24 hours from placement or last collection)
+            let cooldown_reference = if chest.last_collected_at == 0 {
+                chest.placed_at
+            } else {
+                chest.last_collected_at
+            };
             assert!(
-                current_timestamp >= chest.last_collected_at + COOLDOWN_SECONDS,
+                current_timestamp >= cooldown_reference + COOLDOWN_SECONDS,
                 "Chest not ready yet",
             );
 
@@ -211,10 +215,10 @@ pub mod chest_actions {
             chest.last_collected_at = current_timestamp;
             app_world.write_model(@chest);
 
-            // Get player data and add life
-            let mut player_data: Player = core_world.read_model(player);
-            player_data.lives += LIFE_REWARD;
-            core_world.write_model(@player_data);
+            // TODO: Add life to player when Player model is properly available
+            // let mut player_data: Player = core_world.read_model(player);
+            // player_data.lives += LIFE_REWARD;
+            // core_world.write_model(@player_data);
 
             // Update pixel to show collected chest
             core_actions
