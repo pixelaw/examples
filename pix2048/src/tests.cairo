@@ -1,100 +1,156 @@
-#[cfg(test)]
-mod tests {
-    use starknet::class_hash::Felt252TryIntoClassHash;
-    use debug::PrintTrait;
+use dojo::model::{ModelStorage};
+use dojo::world::{IWorldDispatcherTrait, WorldStorage, WorldStorageTrait};
+use dojo_cairo_test::{
+    ContractDef, ContractDefTrait, NamespaceDef, TestResource, WorldStorageTestTrait,
+};
 
-    use dojo::world::{IWorldDispatcher, IWorldDispatcherTrait};
-    use pixelaw::core::models::registry::{app, app_name, core_actions_address};
+use pix2048::app::{
+    GameState, IPix2048ActionsDispatcher, IPix2048ActionsDispatcherTrait, m_GameState,
+    pix2048_actions,
+};
+use pixelaw::core::models::pixel::{Pixel, PixelUpdate};
+use pixelaw::core::models::registry::App;
+use pixelaw::core::utils::{DefaultParameters, Position, encode_rgba};
+use pixelaw_testing::helpers::{set_caller, setup_core, update_test_world};
 
-    use pixelaw::core::models::pixel::{Pixel, PixelUpdate};
-    use pixelaw::core::models::pixel::{pixel};
-    use pixelaw::core::models::permissions::{permissions};
-    use pixelaw::core::utils::{get_core_actions, Direction, Position, DefaultParameters};
-    use pixelaw::core::actions::{actions, IActionsDispatcher, IActionsDispatcherTrait};
+fn deploy_app(ref world: WorldStorage) -> IPix2048ActionsDispatcher {
+    let namespace = "pix2048";
 
-    use dojo::test_utils::{spawn_test_world, deploy_contract};
-
-    use pix2048::app::{
-        pix2048_actions, INumberActionsDispatcher, INumberActionsDispatcherTrait, NumberGame, NumberGameField, NumberValue
+    let ndef = NamespaceDef {
+        namespace: namespace.clone(),
+        resources: [
+            TestResource::Model(m_GameState::TEST_CLASS_HASH),
+            TestResource::Contract(pix2048_actions::TEST_CLASS_HASH),
+        ]
+            .span(),
     };
 
-    use zeroable::Zeroable;
+    let cdefs: Span<ContractDef> = [
+        ContractDefTrait::new(@namespace, @"pix2048_actions")
+            .with_writer_of([dojo::utils::bytearray_hash(@namespace)].span())
+    ]
+        .span();
 
-    // Helper function: deploys world and actions
-    fn deploy_world() -> (IWorldDispatcher, IActionsDispatcher, INumberActionsDispatcher) {
-        // Deploy World and models
-        let world = spawn_test_world(
-            array![
-                pixel::TEST_CLASS_HASH,
-                app::TEST_CLASS_HASH,
-                app_name::TEST_CLASS_HASH,
-                core_actions_address::TEST_CLASS_HASH,
-                permissions::TEST_CLASS_HASH,
-            ]
+    world.dispatcher.register_namespace(namespace.clone());
+    update_test_world(ref world, [ndef].span());
+    world.sync_perms_and_inits(cdefs);
+
+    world.set_namespace(@namespace);
+    let app_actions_address = world.dns_address(@"pix2048_actions").unwrap();
+    world.set_namespace(@"pixelaw");
+
+    IPix2048ActionsDispatcher { contract_address: app_actions_address }
+}
+
+#[test]
+#[available_gas(3000000000)]
+fn test_game_initialization() {
+    let (mut world, _core_actions, player_1, _player_2) = setup_core();
+    let app_actions = deploy_app(ref world);
+
+    set_caller(player_1);
+
+    let position = Position { x: 10, y: 10 };
+    let color = encode_rgba(255, 0, 0, 255);
+
+    // Interact to initialize game
+    app_actions
+        .interact(
+            DefaultParameters {
+                player_override: Option::None,
+                system_override: Option::None,
+                area_hint: Option::None,
+                position,
+                color,
+            },
         );
 
+    // Verify game state was created
+    world.set_namespace(@"pix2048");
+    let game_state: GameState = world.read_model(position);
+    assert(game_state.player == player_1, 'Player mismatch');
+    assert(game_state.moves == 0, 'Moves should be 0');
 
-        // Deploy Core actions
-        let core_actions_address = world
-            .deploy_contract('salt1', actions::TEST_CLASS_HASH.try_into().unwrap());
-        let core_actions = IActionsDispatcher { contract_address: core_actions_address };
+    world.set_namespace(@"pixelaw");
 
-        // Deploy MyApp actions
-        let pix2048_actions_address = world
-            .deploy_contract('salt2', pix2048_actions::TEST_CLASS_HASH.try_into().unwrap());
-        let pix2048_actions = INumberActionsDispatcher { contract_address: pix2048_actions_address };
+    // Verify pixel was updated for game
+    let pixel: Pixel = world.read_model(position);
+    assert(pixel.owner == player_1, 'Pixel owner mismatch');
+}
 
-        // Setup dojo auth
-        world.grant_writer('Pixel', core_actions_address);
-        world.grant_writer('App', core_actions_address);
-        world.grant_writer('AppName', core_actions_address);
-        world.grant_writer('CoreActionsAddress', core_actions_address);
-        world.grant_writer('Permissions', core_actions_address);
+#[test]
+#[available_gas(3000000000)]
+fn test_move_operations() {
+    let (mut world, _core_actions, player_1, _player_2) = setup_core();
+    let app_actions = deploy_app(ref world);
 
-        // PLEASE ADD YOUR APP PERMISSIONS HERE
-        world.grant_writer('NumberGame', pix2048_actions_address);
-        world.grant_writer('NumberGameField',pix2048_actions_address);
-        world.grant_writer('NumberValue',pix2048_actions_address);
-        
-        (world, core_actions, pix2048_actions)
-    }
+    set_caller(player_1);
 
-    #[test]
-    #[available_gas(8000000000)]
-    fn test_pix2048_actions() {
-        // Deploy everything
-        let (world, core_actions, pix2048_actions) = deploy_world();
+    let position = Position { x: 10, y: 10 };
+    let color = encode_rgba(255, 0, 0, 255);
 
-        core_actions.init();
-        pix2048_actions.init();
-        let player1 = starknet::contract_address_const::<0x1337>();
-        starknet::testing::set_account_contract_address(player1);
+    // Initialize game first
+    app_actions
+        .interact(
+            DefaultParameters {
+                player_override: Option::None,
+                system_override: Option::None,
+                area_hint: Option::None,
+                position,
+                color,
+            },
+        );
 
-        let color = encode_color(1, 1, 1);
+    // Test move operations by clicking on control pixels
+    let up_position = Position { x: position.x, y: position.y - 1 };
+    app_actions
+        .move_up(
+            DefaultParameters {
+                player_override: Option::None,
+                system_override: Option::None,
+                area_hint: Option::None,
+                position: up_position,
+                color,
+            },
+        );
 
-        pix2048_actions.interact(
-                DefaultParameters {
-                    for_player: Zeroable::zero(),
-                    for_system: Zeroable::zero(),
-                    position: Position { x: 1, y: 1 },
-                    color: color
-                },
-            );
+    // Verify moves were incremented
+    world.set_namespace(@"pix2048");
+    let game_state: GameState = world.read_model(position);
+    assert(game_state.moves == 1, 'Moves should be 1');
 
-        // let pixel_1_1 = get!(world, (1, 1), (Pixel));
-        // assert(pixel_1_1.color == color, 'should be the color');
-        'Passed test'.print();
-    }
+    world.set_namespace(@"pixelaw");
+}
 
-    fn encode_color(r: u8, g: u8, b: u8) -> u32 {
-        (r.into() * 0x10000) + (g.into() * 0x100) + b.into()
-    }
+#[test]
+#[available_gas(3000000000)]
+fn test_hook_functions() {
+    let (mut world, _core_actions, player_1, _player_2) = setup_core();
+    let app_actions = deploy_app(ref world);
 
-    fn decode_color(color: u32) -> (u8, u8, u8) {
-        let r = (color / 0x10000);
-        let g = (color / 0x100) & 0xff;
-        let b = color & 0xff;
+    set_caller(player_1);
 
-        (r.try_into().unwrap(), g.try_into().unwrap(), b.try_into().unwrap())
-    }
+    // Test pre_update hook (should return None by default)
+    let pixel_update = PixelUpdate {
+        position: Position { x: 5, y: 5 },
+        color: Option::Some(0xFF0000FF),
+        timestamp: Option::None,
+        text: Option::Some('test'),
+        app: Option::None,
+        owner: Option::None,
+        action: Option::None,
+    };
+
+    let test_app = App {
+        system: starknet::contract_address_const::<0x123>(),
+        name: 'test',
+        icon: 0x1F4A0,
+        action: 'test_action',
+    };
+
+    let result = app_actions.on_pre_update(pixel_update, test_app, player_1);
+    assert(result.is_none(), 'Pre-update should return None');
+
+    // Test post_update hook (should not panic)
+    app_actions.on_post_update(pixel_update, test_app, player_1);
 }
