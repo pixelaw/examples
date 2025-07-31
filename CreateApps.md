@@ -26,7 +26,7 @@ This guide provides detailed instructions for building new PixeLAW applications,
 ### Technology Stack
 
 - **Cairo** (v2.10.1): Smart contract programming language for Starknet
-- **Dojo Framework** (v1.5.0-1.5.1): ECS-based blockchain game development framework
+- **Dojo Framework** (v1.5.1): ECS-based blockchain game development framework
 - **Starknet**: Layer 2 blockchain platform
 - **Scarb** (v2.10.1): Package manager and build tool
 
