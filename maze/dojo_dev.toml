@@ -32,4 +32,5 @@ skip_contracts = [
     "pixelaw-RTree",
     "pixelaw-Notification",
     "pixelaw-QueueScheduled"
+    ""
 ]
