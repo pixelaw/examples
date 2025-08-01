@@ -1,7 +1,7 @@
-use starknet::{ContractAddress};
 use pixelaw::core::models::{pixel::{PixelUpdate}, registry::{App}};
 
 use pixelaw::core::utils::{DefaultParameters, Position};
+use starknet::{ContractAddress};
 
 const APP_KEY: felt252 = 'rps';
 const APP_ICON: felt252 = 0xf09f918a; // 👊
@@ -77,25 +77,24 @@ pub trait IRpsActions<T> {
 
 #[dojo::contract]
 pub mod rps_actions {
-    use pixelaw::core::models::pixel::PixelUpdateResultTrait;
+    use core::num::traits::Zero;
+    use core::poseidon::poseidon_hash_span;
 
     use dojo::model::{ModelStorage};
     use dojo::world::{IWorldDispatcherTrait};
-    use core::poseidon::poseidon_hash_span;
-    use starknet::{ContractAddress, get_contract_address};
-    use starknet::{contract_address_const};
-    use pixelaw::core::models::registry::App;
-
-    use pixelaw::core::models::pixel::{Pixel, PixelUpdate};
-    use pixelaw::core::utils::{get_core_actions, get_callers, DefaultParameters};
 
     use pixelaw::core::actions::{IActionsDispatcherTrait};
+    use pixelaw::core::models::pixel::PixelUpdateResultTrait;
+
+    use pixelaw::core::models::pixel::{Pixel, PixelUpdate};
+    use pixelaw::core::models::registry::App;
+    use pixelaw::core::utils::{DefaultParameters, get_callers, get_core_actions};
+    use starknet::{ContractAddress, get_contract_address};
+    use starknet::{contract_address_const};
 
     use super::IRpsActions;
-    use super::{APP_KEY, APP_ICON, Move, State};
+    use super::{APP_ICON, APP_KEY, Move, State};
     use super::{Game};
-
-    use core::num::traits::Zero;
 
     const ICON_QUESTIONMARK: felt252 = 0xe29d93efb88f; // ❓
     const ICON_EXCLAMATION_MARK: felt252 = 0xe29d97; // ❗

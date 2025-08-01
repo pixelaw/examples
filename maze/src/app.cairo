@@ -11,7 +11,7 @@ pub struct MazeGame {
     pub size: u32,
     pub started_timestamp: u64,
     pub is_revealed: bool,
-    pub cell_type: felt252, // 'wall', 'path', 'center'
+    pub cell_type: felt252,
 }
 
 #[starknet::interface]
@@ -23,18 +23,16 @@ pub trait IMazeActions<T> {
 /// contracts must be named as such (APP_KEY + underscore + "actions")
 #[dojo::contract]
 pub mod maze_actions {
+    use core::poseidon::poseidon_hash_span;
     use dojo::model::{ModelStorage};
-    use maze::constants::{
-        APP_ICON, APP_KEY, MAZE_SIZE, WALL, PATH, CENTER, TRAP
-    };
+    use maze::constants::{APP_ICON, APP_KEY, CENTER, MAZE_SIZE, PATH, TRAP, WALL};
+    use maze::constants::{MAZE_1, MAZE_2, MAZE_3, MAZE_4, MAZE_5};
+    use pixelaw::apps::player::{Player};
     use pixelaw::core::actions::{IActionsDispatcherTrait as ICoreActionsDispatcherTrait};
     use pixelaw::core::models::pixel::{PixelUpdate, PixelUpdateResultTrait};
     use pixelaw::core::utils::{DefaultParameters, Position, get_callers, get_core_actions};
     use starknet::{contract_address_const, get_block_timestamp};
-    use super::{MazeGame, IMazeActions};
-    use core::poseidon::poseidon_hash_span;
-    use pixelaw::apps::player::{Player};
-    use maze::constants::{MAZE_1, MAZE_2, MAZE_3, MAZE_4, MAZE_5};
+    use super::{IMazeActions, MazeGame};
 
     /// Initialize the Maze App
     fn dojo_init(ref self: ContractState) {
@@ -63,13 +61,13 @@ pub mod maze_actions {
             if game.id == 0 {
                 let core_actions = get_core_actions(ref core_world);
                 let timestamp = get_block_timestamp();
-                
+
                 // Generate maze ID based on position and timestamp
                 let id = self.generate_maze_id(position, timestamp);
-                
+
                 // Select a random maze layout
                 let maze_layout_id = self.select_maze_layout(position, timestamp);
-                
+
                 // Create maze cells
                 let mut i: u32 = 0;
                 let mut j: u32 = 0;
@@ -82,10 +80,13 @@ pub mod maze_actions {
                         if j >= MAZE_SIZE {
                             break;
                         }
-                        
-                        let cell_position = Position { x: position.x + j.try_into().unwrap(), y: position.y + i.try_into().unwrap() };
+
+                        let cell_position = Position {
+                            x: position.x + j.try_into().unwrap(),
+                            y: position.y + i.try_into().unwrap(),
+                        };
                         let cell_type = self.get_maze_cell_type(maze_layout_id, i, j);
-                        
+
                         let game = MazeGame {
                             position: cell_position,
                             id: id,
@@ -93,11 +94,11 @@ pub mod maze_actions {
                             size: MAZE_SIZE,
                             started_timestamp: timestamp,
                             is_revealed: false,
-                            cell_type: cell_type
+                            cell_type: cell_type,
                         };
-                        
+
                         app_world.write_model(@game);
-                        
+
                         // Initialize pixel with hidden state
                         core_actions
                             .update_pixel(
@@ -110,13 +111,13 @@ pub mod maze_actions {
                                     text: Option::Some('U+2753'), // Question mark
                                     app: Option::Some(system),
                                     owner: Option::Some(player),
-                                    action: Option::None
+                                    action: Option::None,
                                 },
-                                default_params.area_hint,
-                                false
+                                Option::None,
+                                false,
                             )
                             .unwrap();
-                        
+
                         j += 1;
                     };
                     i += 1;
@@ -137,7 +138,7 @@ pub mod maze_actions {
             let position = default_params.position;
 
             let mut game: MazeGame = app_world.read_model(position);
-            
+
             // Only reveal if not already revealed
             if !game.is_revealed && game.id != 0 {
                 game.is_revealed = true;
@@ -145,7 +146,6 @@ pub mod maze_actions {
 
                 let (emoji, color) = self.get_cell_display(game.cell_type);
 
-                // If it's a trap, reduce player's lives
                 if game.cell_type == TRAP {
                     let mut player_model: Player = core_world.read_model(player);
                     if player_model.lives > 0 {
@@ -165,10 +165,10 @@ pub mod maze_actions {
                             text: Option::Some(emoji),
                             app: Option::Some(system),
                             owner: Option::Some(player),
-                            action: Option::None
+                            action: Option::None,
                         },
                         default_params.area_hint,
-                        false
+                        false,
                     )
                     .unwrap();
             }
@@ -177,28 +177,19 @@ pub mod maze_actions {
 
     #[generate_trait]
     impl HelperImpl of HelperTrait {
-
         /// Generate a unique maze ID
-        fn generate_maze_id(
-            ref self: ContractState, 
-            position: Position, 
-            timestamp: u64
-        ) -> u32 {
+        fn generate_maze_id(ref self: ContractState, position: Position, timestamp: u64) -> u32 {
             let hash = poseidon_hash_span(
-                array![position.x.into(), position.y.into(), timestamp.into()].span()
+                array![position.x.into(), position.y.into(), timestamp.into()].span(),
             );
             let id: u32 = (hash.into() % 1000000_u256).try_into().unwrap();
             id
         }
 
         /// Select which maze layout to use (1-5)
-        fn select_maze_layout(
-            ref self: ContractState, 
-            position: Position, 
-            timestamp: u64
-        ) -> u32 {
+        fn select_maze_layout(ref self: ContractState, position: Position, timestamp: u64) -> u32 {
             let hash = poseidon_hash_span(
-                array![position.x.into(), position.y.into(), timestamp.into(), 42].span()
+                array![position.x.into(), position.y.into(), timestamp.into(), 42].span(),
             );
             let layout: u32 = (hash.into() % 5_u256).try_into().unwrap() + 1;
             layout
@@ -206,10 +197,7 @@ pub mod maze_actions {
 
         /// Get the cell type for a specific position in the selected maze
         fn get_maze_cell_type(
-            ref self: ContractState,
-            maze_id: u32,
-            row: u32,
-            col: u32
+            ref self: ContractState, maze_id: u32, row: u32, col: u32,
         ) -> felt252 {
             let index: u32 = row * MAZE_SIZE + col;
             let cell_value: u8 = self.get_maze_cell_value(maze_id, index);
@@ -258,6 +246,5 @@ pub mod maze_actions {
                 ('U+1F3C6', 0xFFD700) // Trophy emoji, gold color
             }
         }
-
     }
 }

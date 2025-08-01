@@ -5,7 +5,7 @@ use orion::numbers::{FixedTrait, FP16x16};
 
 fn tensor() -> Tensor<FP16x16> {
     Tensor {
-        shape: array![18,].span(),
+        shape: array![18].span(),
         data: array![
             FP16x16 { mag: 77099, sign: true },
             FP16x16 { mag: 140625, sign: true },
@@ -26,6 +26,6 @@ fn tensor() -> Tensor<FP16x16> {
             FP16x16 { mag: 141435, sign: true },
             FP16x16 { mag: 123843, sign: true },
         ]
-            .span()
+            .span(),
     }
 }

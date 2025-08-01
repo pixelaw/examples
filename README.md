@@ -8,7 +8,6 @@ Each app can stand alone and can be deployed individually. Here are the list of 
 | minsweeper | A classic minesweeper with a limited amount of pixels in a board                                            |
 | rps        | Stands for rock-paper-scissors, where two players can play on the same pixel                                |
 | tictactoe  | A classic game of tictactoe against a machine learning opponent                                             |
-| brc2048    | A fully on-chain 2048 based on PixeLAW(a pixel-based Autonomous World built on @Starknet using @ohayo_dojo) |
 | pix2048    | A fully on-chain 2048 based on PixeLAW(a pixel-based Autonomous World built on @Starknet using @ohayo_dojo) |
 
 
@@ -59,7 +58,6 @@ and add your app in the table above.
 
 | Contribution                                               | Developer                                |
 |------------------------------------------------------------|------------------------------------------|
-| App - [brc2048](https://github.com/themetacat/PixeLAW2048) | [MetaCat](https://github.com/themetacat) |
 | App - [pix2048](https://github.com/themetacat/PixeLAW2048) | [MetaCat](https://github.com/themetacat) |
 
 

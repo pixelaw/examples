@@ -25,7 +25,7 @@ Each app follows a consistent structure:
 
 ### Key Apps
 - **chest**: Dojo-based treasure chest placement and collection system
-- **brc2048/pix2048**: 2048 game implementations
+- **pix2048**: 2048 game implementations
 - **hunter**: Pixel-based chance game
 - **minesweeper**: Classic minesweeper implementation
 - **rps**: Rock-paper-scissors game
@@ -117,8 +117,8 @@ sozo test
 ## Dependencies
 
 - PixeLAW core contracts are imported as git dependencies
-- Dojo framework v1.4.0 for blockchain functionality
-- Cairo v2.9.4 for smart contract development
+- Dojo framework v1.5.1 for blockchain functionality
+- Cairo v2.10.1 for smart contract development
 - Local development uses predefined account addresses and private keys
 
 ## Development Notes

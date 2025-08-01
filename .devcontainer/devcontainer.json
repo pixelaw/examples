@@ -1,6 +1,7 @@
 {
-  "name": "Examples",
+  "name": "PixeLAW Examples Workspace",
   "image": "ghcr.io/pixelaw/core:0.7.8",
+  "workspaceFolder": "/pixelaw/examples",
   "forwardPorts": [
     5050,
     8080,
@@ -24,6 +25,7 @@
   "postStartCommand": [
     "/pixelaw/scripts/startup.sh"
   ],
+  "postCreateCommand": "echo 'PixeLAW Examples Workspace ready! Use: sozo build (workspace) or cd <app> && scarb build (individual app)'",
   // Configure tool-specific properties.
   "customizations": {
     // Configure properties specific to VS Code.

@@ -1,43 +1,35 @@
 [package]
-cairo-version = "2.6.3"
+cairo-version = "=2.10.1"
 name = "tictactoe"
-version = "0.0.0"
+version = "1.0.0"
+edition = "2024_07"
 
 [cairo]
 sierra-replace-ids = true
 
 [dependencies]
-pixelaw = { git = "https://github.com/pixelaw/core", tag = "v0.3.5" }
-orion = { git = "https://github.com/gizatechxyz/orion.git", rev = "v0.1.9" }
-sequential_1_dense_1_matmul_readvariableop_0 = { path = "crates/sequential_1_dense_1_matmul_readvariableop_0" }
-sequential_1_dense_1_biasadd_readvariableop_0 = { path = "crates/sequential_1_dense_1_biasadd_readvariableop_0" }
-sequential_1_dense_2_matmul_readvariableop_0 = { path = "crates/sequential_1_dense_2_matmul_readvariableop_0" }
-sequential_1_dense_2_biasadd_readvariableop_0 = { path = "crates/sequential_1_dense_2_biasadd_readvariableop_0" }
-sequential_1_dense_3_matmul_readvariableop_0 = { path = "crates/sequential_1_dense_3_matmul_readvariableop_0" }
-sequential_1_dense_3_biasadd_readvariableop_0 = { path = "crates/sequential_1_dense_3_biasadd_readvariableop_0" }
+pixelaw = { git = "https://github.com/pixelaw/core", tag = "v0.7.8" }
+dojo = { git = "https://github.com/dojoengine/dojo", tag = "v1.5.1" }
 
-[[target.dojo]]
+[dev-dependencies]
+pixelaw_testing = { git = "https://github.com/pixelaw/core", tag = "v0.7.8" }
+dojo_cairo_test = { git = "https://github.com/dojoengine/dojo", tag = "v1.5.1" }
+
+[[target.starknet-contract]]
+sierra = true
+
 build-external-contracts = [
-    "pixelaw::apps::snake::app::snake",
-    "pixelaw::apps::snake::app::snake_segment",
-    "pixelaw::core::models::pixel::pixel",
-    "pixelaw::core::models::pixel::Pixel",
-    "pixelaw::core::models::pixel::PixelUpdate",
-    "pixelaw::core::models::queue::queue_item",
-    "pixelaw::core::models::registry::app",
-    "pixelaw::core::models::registry::app_name",
-    "pixelaw::core::models::registry::app_user",
-    "pixelaw::core::models::registry::app_instruction",
-    "pixelaw::core::models::registry::instruction",
-    "pixelaw::core::models::registry::core_actions_address",
-    "pixelaw::core::models::permissions::permissions",
-    "pixelaw::core::utils::get_core_actions",
-    "pixelaw::core::utils::Direction",
-    "pixelaw::core::utils::Position",
-    "pixelaw::core::utils::DefaultParameters",
-    "pixelaw::core::actions::actions",
-    "pixelaw::core::actions::IActionsDispatcher",
-    "pixelaw::core::actions::IActionsDispatcherTrait"
+    "dojo::world::world_contract::world",
+    "pixelaw::core::models::pixel::m_Pixel",
+    "pixelaw::core::models::area::m_Area",
+    "pixelaw::core::models::queue::m_QueueItem",
+    "pixelaw::core::models::registry::m_App",
+    "pixelaw::core::models::registry::m_AppName",
+    "pixelaw::core::models::registry::m_CoreActionsAddress",
+    "pixelaw::core::models::area::m_RTree",
+    "pixelaw::core::events::e_QueueScheduled",
+    "pixelaw::core::events::e_Notification",
+    "pixelaw::core::actions::actions"
 ]
 
 [tool.dojo]
