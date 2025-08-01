@@ -20,7 +20,6 @@ jobs:
         with:
           scarb-version: "2.10.1"
       - run: |
-          cd examples
           make fmt_check
   
   apps-test:
@@ -32,5 +31,4 @@ jobs:
           asdf plugin add dojo https://github.com/dojoengine/asdf-dojo
           asdf install dojo 1.5.1
           asdf global dojo 1.5.1
-          cd examples
           make test_all
