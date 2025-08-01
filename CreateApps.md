@@ -290,7 +290,32 @@ make start_core  # Start PixeLAW core infrastructure
 make deploy_app APP=your_app  # Deploy your app
 ```
 
-### 3. VSCode DevContainer (Recommended)
+### 3. Build Tools Setup
+
+PixeLAW development requires both Sozo and Scarb:
+
+```bash
+# Install Scarb (Cairo package manager)
+curl --proto '=https' --tlsv1.2 -sSf https://docs.swmansion.com/scarb/install.sh | sh
+
+# Install Sozo (part of Dojo toolkit)
+curl -L https://install.dojoengine.org | bash
+dojoup
+
+# Verify installations
+scarb --version  # Should show v2.10.1
+sozo --version   # Should show v1.5.1
+```
+
+**Development Workflow:**
+1. **Write Code**: Edit `.cairo` files in your IDE
+2. **Quick Check**: `scarb build` for fast syntax validation
+3. **Format**: `scarb fmt` to maintain code style
+4. **Full Build**: `sozo build` for complete Dojo integration
+5. **Test**: `sozo test` for comprehensive testing
+6. **Deploy**: `sozo migrate` for deployment
+
+### 4. VSCode DevContainer (Recommended)
 
 Use the provided DevContainer configuration for a complete development environment with all tools pre-installed.
 
@@ -584,12 +609,43 @@ fn test_failure_case() {
 5. **Verify State**: Check both pixel state and app model state
 6. **Gas Limits**: Set appropriate gas limits for complex tests
 
-### Running Tests
+### Build and Test Commands
 
+PixeLAW development uses two main build tools:
+
+#### Sozo (Dojo's Build Tool)
 ```bash
 cd your_app
+
+# Build the app with Dojo integration
+sozo build
+
+# Run tests with Dojo framework
 sozo test
+
+# Migrate/deploy to local or remote world
+sozo migrate
 ```
+
+#### Scarb (Cairo Package Manager)
+```bash
+cd your_app
+
+# Build Cairo code (faster for syntax checking)
+scarb build
+
+# Format code
+scarb fmt
+
+# Check code without building
+scarb check
+```
+
+**When to use which:**
+- **`sozo build`**: Use for full Dojo app builds and when deploying
+- **`scarb build`**: Use for quick Cairo syntax validation during development
+- **`sozo test`**: Use for running integration tests with world setup
+- **`scarb fmt`**: Use to format code according to Cairo standards
 
 ## Deployment
 
@@ -639,21 +695,32 @@ account = "$DOJO_ACCOUNT_ADDRESS"
 
 ### App Design Patterns
 
-#### 1. Simple Apps
+#### 1. Simple Apps (Hunter, Chest Pattern)
 - Single contract with minimal state
+- One model per pixel position
 - Direct pixel manipulation
-- Examples: Paint, basic games
+- Cooldown/timing mechanisms
+- Examples: Collectibles, probability games, simple rewards
 
-#### 2. Complex Apps
-- Multiple models for state management
-- Queue system for delayed actions
-- Player integration
-- Examples: Snake, House, Maze
+#### 2. Complex Grid Games (Maze, Minesweeper, Pix2048 Pattern)
+- Multiple coordinated pixels forming game boards
+- Cell-based state management with game references
+- Grid initialization and complex state relationships
+- Win/lose condition checking
+- Examples: Board games, puzzles, strategy games
 
-#### 3. Multi-App Integration
+#### 3. Player vs Player Games (RPS Pattern)
+- State machine progression (Created → Joined → Finished)
+- Commit-reveal cryptographic schemes
+- Turn-based interaction management
+- Winner determination algorithms
+- Examples: Competitive multiplayer games
+
+#### 4. Multi-App Integration
 - Implement hooks for cross-app interactions
 - Design for interoperability
 - Consider permission models
+- Use app-specific namespaces properly
 
 ### Security Considerations
 
@@ -688,11 +755,337 @@ account = "$DOJO_ACCOUNT_ADDRESS"
    - `house.cairo`: Area management and player integration
    - `player.cairo`: Player management and movement
 
-2. **Example Apps** (`examples/`):
-   - `chest/`: Simple reward system
-   - `maze/`: Complex game with custom models
-   - `minesweeper/`: Grid-based gameplay
-   - `rps/`: Player vs player interactions
+2. **Example Apps** (`examples/`) - Critical Learning Resources:
+   - **`chest/`**: Simple cooldown-based reward system with state management
+   - **`maze/`**: Complex multi-pixel games with predefined layouts and randomization
+   - **`hunter/`**: Probability-based games using cryptographic randomness
+   - **`minesweeper/`**: Grid-based games with complex state interactions
+   - **`pix2048/`**: Multi-pixel UI with control buttons and game logic
+   - **`rps/`**: Player vs player games with commit-reveal schemes and game states
+
+## Critical Development Insights from Example Apps
+
+### App Architecture Patterns
+
+#### 1. Simple Single-Pixel Apps (Hunter, Chest)
+**Pattern**: One pixel, one state, direct interaction
+- **Use Case**: Collectibles, probability games, simple rewards
+- **Key Features**:
+  - Single model per pixel position
+  - Direct state management
+  - Cooldown mechanisms
+  - Simple randomization
+- **Implementation**: Basic interact() function with state checks
+
+#### 2. Complex Multi-Pixel Games (Maze, Minesweeper, Pix2048)
+**Pattern**: Grid-based games with multiple coordinated pixels
+- **Use Case**: Board games, puzzles, strategy games
+- **Key Features**:
+  - Multiple related pixels forming a game board
+  - Complex state relationships between cells
+  - Game initialization with board setup
+  - Win/lose conditions
+- **Implementation**: Grid initialization, cell state management, game logic
+
+#### 3. Player vs Player Games (RPS)
+**Pattern**: Turn-based competitive games with commit-reveal
+- **Use Case**: Competitive multiplayer interactions
+- **Key Features**:
+  - Game state progression (Created → Joined → Finished)
+  - Commit-reveal scheme for fair play
+  - Player authentication and turn management
+  - Winner determination logic
+- **Implementation**: State machine pattern with cryptographic commits
+
+### Essential Implementation Patterns
+
+#### 1. Dual World Pattern (Critical!)
+```cairo
+let mut core_world = self.world(@"pixelaw");  // For pixel operations
+let mut app_world = self.world(@"your_app");  // For app-specific data
+```
+**Every app must use both worlds:**
+- `pixelaw` world: Pixel operations, core actions, player data
+- App-specific world: Custom models, game state, app logic
+
+#### 2. Helper Trait Pattern
+```cairo
+#[generate_trait]
+impl HelperImpl of HelperTrait {
+    fn generate_maze_id(ref self: ContractState, position: Position, timestamp: u64) -> u32 {
+        // Complex helper logic
+    }
+}
+```
+**Use for:**
+- Complex calculations
+- Randomization logic
+- Game state validation
+- Internal utility functions
+
+#### 3. Constants File Pattern
+```cairo
+// constants.cairo
+pub const APP_KEY: felt252 = 'your_app';
+pub const APP_ICON: felt252 = 'U+1F3F0';
+pub const GAME_SIZE: u32 = 5;
+pub const WALL: felt252 = 'wall';
+pub const PATH: felt252 = 'path';
+```
+**Essential for:**
+- App identification
+- Game configuration
+- Predefined data (layouts, emojis)
+- Magic numbers
+
+#### 4. Proper Error Handling
+```cairo
+assert!(pixel.owner == contract_address_const::<0>(), "Position is not empty");
+assert!(current_timestamp >= cooldown_reference + COOLDOWN_SECONDS, "Cooldown not ready yet");
+```
+**Always validate:**
+- Pixel ownership
+- Game state prerequisites
+- Timing constraints
+- Input parameters
+
+### Advanced Game Mechanics
+
+#### 1. Randomization Techniques
+**Cryptographic Randomness (Hunter):**
+```cairo
+let hash: u256 = poseidon_hash_span(array![timestamp_felt252, x_felt252, y_felt252].span()).into();
+let winning = ((hash | MASK) == MASK);  // 1/1024 chance
+```
+
+**Timestamp-based Random (Maze, Minesweeper):**
+```cairo
+let layout: u32 = (hash.into() % 5_u256).try_into().unwrap() + 1;
+let rand_x = (timestamp + placed_mines.into()) % size.into();
+```
+
+#### 2. Cooldown Systems
+**Time-based Restrictions (Chest):**
+```cairo
+const COOLDOWN_SECONDS: u64 = 86400; // 24 hours
+let cooldown_reference = if chest.last_collected_at == 0 { chest.placed_at } else { chest.last_collected_at };
+assert!(current_timestamp >= cooldown_reference + COOLDOWN_SECONDS, "Cooldown not ready yet");
+```
+
+#### 3. State Machines
+**Game Progression (RPS):**
+```cairo
+#[derive(Serde, Copy, Drop, PartialEq, Introspect)]
+pub enum State {
+    None: (),
+    Created: (),
+    Joined: (),
+    Finished: (),
+}
+```
+
+#### 4. Commit-Reveal Schemes
+**Fair Play Mechanisms (RPS):**
+```cairo
+fn validate_commit(committed_hash: felt252, move: Move, salt: felt252) -> bool {
+    let computed_hash: felt252 = poseidon_hash_span(array![move.into(), salt.into()].span());
+    committed_hash == computed_hash
+}
+```
+
+### Model Design Patterns
+
+#### 1. Game State Model
+```cairo
+#[derive(Copy, Drop, Serde)]
+#[dojo::model]
+pub struct GameState {
+    #[key]
+    pub position: Position,        // Always use Position as key
+    pub creator: ContractAddress,  // Track game creator
+    pub state: u8,                // Game state enum
+    pub started_timestamp: u64,    // For timing logic
+    pub custom_data: u32,         // Game-specific fields
+}
+```
+
+#### 2. Cell State Model (for grid games)
+```cairo
+#[derive(Copy, Drop, Serde)]
+#[dojo::model]
+pub struct Cell {
+    #[key]
+    pub position: Position,           // Cell position
+    pub game_position: Position,      // Reference to game origin
+    pub is_revealed: bool,            // State flags
+    pub cell_type: felt252,          // Cell content type
+    pub custom_properties: u8,        // Game-specific properties
+}
+```
+
+#### 3. Player Tracking Model
+```cairo
+#[derive(Copy, Drop, Serde)]
+#[dojo::model]
+pub struct PlayerState {
+    #[key]
+    pub player: ContractAddress,
+    pub last_action_timestamp: u64,
+    pub score: u32,
+    pub attempts: u32,
+}
+```
+
+### Visual and UI Patterns
+
+#### 1. Emoji Constants
+```cairo
+pub const APP_ICON: felt252 = 'U+1F3F0';           // 🏰 castle
+pub const QUESTION_MARK: felt252 = 'U+2753';        // ❓
+pub const EXPLOSION: felt252 = 'U+1F4A5';           // 💥
+pub const TROPHY: felt252 = 'U+1F3C6';              // 🏆
+```
+
+#### 2. Color Schemes
+```cairo
+pub const EMPTY_CELL: u32 = 0xFFCDC1B4;      // Beige
+pub const REVEALED_CELL: u32 = 0xFFFFFFFF;     // White
+pub const MINE_COLOR: u32 = 0xFFFF0000;        // Red
+pub const FLAG_COLOR: u32 = 0xFFFF0000;        // Red
+```
+
+#### 3. Control Button Layout
+```cairo
+// Create directional controls around game board
+let up_button = Position { x: position.x + 1, y: position.y - 1 };
+let down_button = Position { x: position.x + 1, y: position.y + 4 };
+let left_button = Position { x: position.x - 1, y: position.y + 1 };
+let right_button = Position { x: position.x + 4, y: position.y + 1 };
+```
+
+### Testing Patterns from Examples
+
+#### 1. Comprehensive Test Setup
+```cairo
+fn deploy_app(ref world: WorldStorage) -> IAppActionsDispatcher {
+    let namespace = "your_app";
+    world.dispatcher.register_namespace(namespace.clone());
+    // ... resource registration
+    world.sync_perms_and_inits(cdefs);
+    // Return dispatcher
+}
+```
+
+#### 2. State Verification Tests
+```cairo
+// Verify pixel state
+let pixel: Pixel = world.read_model(position);
+assert(pixel.color == expected_color, 'Color mismatch');
+
+// Verify app model state
+world.set_namespace(@"your_app");
+let app_data: YourModel = world.read_model(position);
+assert(app_data.is_collected, 'State mismatch');
+world.set_namespace(@"pixelaw");
+```
+
+#### 3. Failure Case Testing
+```cairo
+#[test]
+#[should_panic(expected: ("Expected error message", 'ENTRYPOINT_FAILED'))]
+fn test_failure_case() {
+    // Test conditions that should fail
+}
+```
+
+### Performance and Gas Optimization
+
+#### 1. Efficient Loops
+```cairo
+// Avoid nested loops where possible
+let mut i = 0;
+loop {
+    if i >= MAX_SIZE { break; }
+    // Process single dimension
+    i += 1;
+};
+```
+
+#### 2. Batch Operations
+```cairo
+// Group related pixel updates
+let mut updates: Array<PixelUpdate> = ArrayTrait::new();
+// ... build update array
+// Process all updates together
+```
+
+#### 3. Minimize Model Reads/Writes
+```cairo
+// Read once, modify, write once
+let mut game_state: GameState = app_world.read_model(position);
+game_state.moves += 1;
+game_state.score += points;
+app_world.write_model(@game_state);
+```
+
+### Security Considerations from Examples
+
+#### 1. Ownership Validation
+```cairo
+let pixel: Pixel = core_world.read_model(position);
+assert!(pixel.owner.is_zero() || pixel.owner == player, "Not authorized");
+```
+
+#### 2. State Validation
+```cairo
+assert!(game.state == State::Created, "Invalid game state");
+assert!(!chest.is_collected, "Already collected");
+```
+
+#### 3. Timing Constraints
+```cairo
+assert!(current_timestamp >= last_action + COOLDOWN, "Too soon");
+```
+
+### Common Anti-Patterns to Avoid
+
+#### 1. Direct Pixel Text/Color Access
+❌ **Don't**: Read pixel.text directly for game logic
+✅ **Do**: Use app-specific models for game state
+
+#### 2. Missing State Validation
+❌ **Don't**: Assume game state without checking
+✅ **Do**: Always validate state before operations
+
+#### 3. Hardcoded Magic Numbers
+❌ **Don't**: Use literal numbers in code
+✅ **Do**: Define constants for all magic numbers
+
+#### 4. Single World Usage
+❌ **Don't**: Use only pixelaw world or only app world
+✅ **Do**: Use both worlds appropriately
+
+### Development Workflow Insights
+
+#### 1. Start Simple, Add Complexity
+1. Basic pixel interaction
+2. Add state model
+3. Add game logic
+4. Add multi-pixel support
+5. Add advanced features
+
+#### 2. Test-Driven Development
+1. Write failing test
+2. Implement minimum code
+3. Verify test passes
+4. Refactor and optimize
+
+#### 3. Incremental Feature Addition
+1. Core interaction
+2. State management
+3. Visual feedback
+4. Error handling
+5. Advanced mechanics
 
 ### Useful Resources
 
