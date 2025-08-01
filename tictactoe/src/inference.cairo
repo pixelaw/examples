@@ -1,9 +1,9 @@
 // Simplified TicTacToe AI without complex ML dependencies
 use core::array::ArrayTrait;
 
-const MOVE_PLAYER: u8 = 1;    // Human player (X)
-const MOVE_AI: u8 = 2;        // AI player (O)  
-const MOVE_EMPTY: u8 = 0;     // Empty cell
+const MOVE_PLAYER: u8 = 1; // Human player (X)
+const MOVE_AI: u8 = 2; // AI player (O)  
+const MOVE_EMPTY: u8 = 0; // Empty cell
 
 // Simplified AI that uses basic strategy instead of ML
 pub fn move_selector(current_board_state: Array<u8>) -> Option<u32> {
@@ -41,7 +41,7 @@ pub fn move_selector(current_board_state: Array<u8>) -> Option<u32> {
         }
         i += 1;
     };
-    
+
     if corner_move.is_some() {
         return corner_move;
     }
@@ -58,7 +58,7 @@ pub fn move_selector(current_board_state: Array<u8>) -> Option<u32> {
         }
         i += 1;
     };
-    
+
     if edge_move.is_some() {
         return edge_move;
     }
@@ -88,7 +88,7 @@ fn find_winning_move(board: @Array<u8>, player: u8) -> Option<u32> {
         array![1, 4, 7], // Middle column
         array![2, 5, 8], // Right column
         array![0, 4, 8], // Main diagonal
-        array![2, 4, 6], // Anti-diagonal
+        array![2, 4, 6] // Anti-diagonal
     ];
 
     let mut combo_idx = 0;
@@ -120,7 +120,9 @@ fn find_winning_move(board: @Array<u8>, player: u8) -> Option<u32> {
 }
 
 // Check if a player can win by playing in a specific combination
-fn can_win_with_combination(board: @Array<u8>, player: u8, pos1: u32, pos2: u32, pos3: u32) -> bool {
+fn can_win_with_combination(
+    board: @Array<u8>, player: u8, pos1: u32, pos2: u32, pos3: u32,
+) -> bool {
     let val1 = *board.at(pos1);
     let val2 = *board.at(pos2);
     let val3 = *board.at(pos3);
@@ -160,12 +162,18 @@ mod tests {
     fn test_winning_move() {
         // AI can win by playing at position 2
         // X | O | _
-        // X | O | _  
+        // X | O | _
         // _ | _ | _
         let state = array![
-            MOVE_PLAYER, MOVE_AI, MOVE_EMPTY,
-            MOVE_PLAYER, MOVE_AI, MOVE_EMPTY,
-            MOVE_EMPTY, MOVE_EMPTY, MOVE_EMPTY,
+            MOVE_PLAYER,
+            MOVE_AI,
+            MOVE_EMPTY,
+            MOVE_PLAYER,
+            MOVE_AI,
+            MOVE_EMPTY,
+            MOVE_EMPTY,
+            MOVE_EMPTY,
+            MOVE_EMPTY,
         ];
 
         let ai_move = move_selector(state).unwrap();
@@ -180,9 +188,15 @@ mod tests {
         // O | _ | _
         // _ | _ | _
         let state = array![
-            MOVE_PLAYER, MOVE_PLAYER, MOVE_EMPTY,
-            MOVE_AI, MOVE_EMPTY, MOVE_EMPTY,
-            MOVE_EMPTY, MOVE_EMPTY, MOVE_EMPTY,
+            MOVE_PLAYER,
+            MOVE_PLAYER,
+            MOVE_EMPTY,
+            MOVE_AI,
+            MOVE_EMPTY,
+            MOVE_EMPTY,
+            MOVE_EMPTY,
+            MOVE_EMPTY,
+            MOVE_EMPTY,
         ];
 
         let ai_move = move_selector(state).unwrap();
@@ -197,9 +211,15 @@ mod tests {
         // _ | _ | _
         // _ | _ | _
         let state = array![
-            MOVE_PLAYER, MOVE_EMPTY, MOVE_EMPTY,
-            MOVE_EMPTY, MOVE_EMPTY, MOVE_EMPTY,
-            MOVE_EMPTY, MOVE_EMPTY, MOVE_EMPTY,
+            MOVE_PLAYER,
+            MOVE_EMPTY,
+            MOVE_EMPTY,
+            MOVE_EMPTY,
+            MOVE_EMPTY,
+            MOVE_EMPTY,
+            MOVE_EMPTY,
+            MOVE_EMPTY,
+            MOVE_EMPTY,
         ];
 
         let ai_move = move_selector(state).unwrap();
@@ -214,16 +234,21 @@ mod tests {
         // _ | X | _
         // _ | _ | _
         let state = array![
-            MOVE_EMPTY, MOVE_EMPTY, MOVE_EMPTY,
-            MOVE_EMPTY, MOVE_PLAYER, MOVE_EMPTY,
-            MOVE_EMPTY, MOVE_EMPTY, MOVE_EMPTY,
+            MOVE_EMPTY,
+            MOVE_EMPTY,
+            MOVE_EMPTY,
+            MOVE_EMPTY,
+            MOVE_PLAYER,
+            MOVE_EMPTY,
+            MOVE_EMPTY,
+            MOVE_EMPTY,
+            MOVE_EMPTY,
         ];
 
         let ai_move = move_selector(state).unwrap();
         // Should be one of the corners: 0, 2, 6, 8
         assert(
-            ai_move == 0 || ai_move == 2 || ai_move == 6 || ai_move == 8,
-            'AI should take a corner'
+            ai_move == 0 || ai_move == 2 || ai_move == 6 || ai_move == 8, 'AI should take a corner',
         );
     }
 }

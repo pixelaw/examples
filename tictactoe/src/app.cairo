@@ -13,11 +13,11 @@ pub enum GameState {
 }
 
 /// Cell states for TicTacToe grid
-#[derive(Serde, Copy, Drop, PartialEq, Introspect)]  
+#[derive(Serde, Copy, Drop, PartialEq, Introspect)]
 pub enum CellState {
     Empty: (),
-    Player: (),  // X
-    AI: (),      // O
+    Player: (), // X
+    AI: (),
 }
 
 /// Main game model
@@ -38,9 +38,9 @@ pub struct TicTacToeGame {
 pub struct TicTacToeCell {
     #[key]
     pub position: Position,
-    pub game_position: Position,  // Reference to game origin
+    pub game_position: Position, // Reference to game origin
     pub cell_state: CellState,
-    pub grid_index: u8,          // 0-8 for 3x3 grid
+    pub grid_index: u8,
 }
 
 #[starknet::interface]
@@ -48,11 +48,11 @@ pub trait ITicTacToeActions<T> {
     fn on_pre_update(
         ref self: T, pixel_update: PixelUpdate, app_caller: App, player_caller: ContractAddress,
     ) -> Option<PixelUpdate>;
-    
+
     fn on_post_update(
         ref self: T, pixel_update: PixelUpdate, app_caller: App, player_caller: ContractAddress,
     );
-    
+
     fn interact(ref self: T, default_params: DefaultParameters);
     fn make_move(ref self: T, default_params: DefaultParameters);
 }
@@ -63,11 +63,11 @@ pub const APP_ICON: felt252 = 'U+2B55'; // ⭕
 pub const GAME_GRIDSIZE: u16 = 3;
 
 // Visual constants
-pub const EMPTY_CELL_COLOR: u32 = 0xFFEEEEEE;  // Light gray
-pub const PLAYER_X_COLOR: u32 = 0xFFFF0000;    // Red
-pub const AI_O_COLOR: u32 = 0xFF00FF00;        // Green
-pub const X_SYMBOL: felt252 = 'U+0058';        // X
-pub const O_SYMBOL: felt252 = 'U+004F';        // O
+pub const EMPTY_CELL_COLOR: u32 = 0xFFEEEEEE; // Light gray
+pub const PLAYER_X_COLOR: u32 = 0xFFFF0000; // Red
+pub const AI_O_COLOR: u32 = 0xFF00FF00; // Green
+pub const X_SYMBOL: felt252 = 'U+0058'; // X
+pub const O_SYMBOL: felt252 = 'U+004F'; // O
 
 /// TicTacToe actions contract
 #[dojo::contract]
@@ -77,13 +77,10 @@ pub mod tictactoe_actions {
     use pixelaw::core::models::pixel::{Pixel, PixelUpdate, PixelUpdateResultTrait};
     use pixelaw::core::models::registry::App;
     use pixelaw::core::utils::{DefaultParameters, Position, get_callers, get_core_actions};
-    use starknet::{
-        ContractAddress, contract_address_const, get_block_timestamp,
-    };
+    use starknet::{ContractAddress, contract_address_const, get_block_timestamp};
     use super::{
-        APP_ICON, APP_KEY, ITicTacToeActions, TicTacToeGame, TicTacToeCell, 
-        GameState, CellState, GAME_GRIDSIZE, EMPTY_CELL_COLOR, PLAYER_X_COLOR, 
-        AI_O_COLOR, X_SYMBOL, O_SYMBOL
+        APP_ICON, APP_KEY, ITicTacToeActions, TicTacToeGame, TicTacToeCell, GameState, CellState,
+        GAME_GRIDSIZE, EMPTY_CELL_COLOR, PLAYER_X_COLOR, AI_O_COLOR, X_SYMBOL, O_SYMBOL,
     };
 
     // Import ML inference
@@ -117,8 +114,7 @@ pub mod tictactoe_actions {
             pixel_update: PixelUpdate,
             app_caller: App,
             player_caller: ContractAddress,
-        ) {
-            // No post-update actions needed
+        ) { // No post-update actions needed
         }
 
         fn interact(ref self: ContractState, default_params: DefaultParameters) {
@@ -128,7 +124,7 @@ pub mod tictactoe_actions {
 
             // Check if there's already a cell here (indicating an existing game)
             let existing_cell: TicTacToeCell = app_world.read_model(position);
-            
+
             if existing_cell.game_position.x == 0 && existing_cell.game_position.y == 0 {
                 // No cell exists, create new game
                 self.init_game(default_params);
@@ -186,27 +182,19 @@ pub mod tictactoe_actions {
             if winner == CellState::Player {
                 game.state = GameState::PlayerWon;
                 app_world.write_model(@game);
-                
+
                 core_actions
                     .notification(
-                        position,
-                        PLAYER_X_COLOR,
-                        Option::Some(player),
-                        Option::None,
-                        'You won!',
+                        position, PLAYER_X_COLOR, Option::Some(player), Option::None, 'You won!',
                     );
                 return;
             } else if game.moves_left == 0 {
                 game.state = GameState::Tie;
                 app_world.write_model(@game);
-                
+
                 core_actions
                     .notification(
-                        position,
-                        EMPTY_CELL_COLOR,
-                        Option::Some(player),
-                        Option::None,
-                        'Tie game!',
+                        position, EMPTY_CELL_COLOR, Option::Some(player), Option::None, 'Tie game!',
                     );
                 return;
             }
@@ -216,7 +204,7 @@ pub mod tictactoe_actions {
             if ai_move_index < 9 {
                 let ai_position = self.index_to_position(game.position, ai_move_index);
                 let mut ai_cell: TicTacToeCell = app_world.read_model(ai_position);
-                
+
                 ai_cell.cell_state = CellState::AI;
                 app_world.write_model(@ai_cell);
 
@@ -246,19 +234,15 @@ pub mod tictactoe_actions {
                 if winner == CellState::AI {
                     game.state = GameState::AIWon;
                     app_world.write_model(@game);
-                    
+
                     core_actions
                         .notification(
-                            position,
-                            AI_O_COLOR,
-                            Option::Some(player),
-                            Option::None,
-                            'AI won!',
+                            position, AI_O_COLOR, Option::Some(player), Option::None, 'AI won!',
                         );
                 } else if game.moves_left == 0 {
                     game.state = GameState::Tie;
                     app_world.write_model(@game);
-                    
+
                     core_actions
                         .notification(
                             position,
@@ -302,10 +286,7 @@ pub mod tictactoe_actions {
             while x < GAME_GRIDSIZE {
                 let mut y = 0;
                 while y < GAME_GRIDSIZE {
-                    let cell_position = Position {
-                        x: position.x + x,
-                        y: position.y + y,
-                    };
+                    let cell_position = Position { x: position.x + x, y: position.y + y };
 
                     // Create cell model
                     let cell = TicTacToeCell {
@@ -354,20 +335,14 @@ pub mod tictactoe_actions {
 
         fn validate_empty_area(ref self: ContractState, position: Position) {
             let mut core_world = self.world(@"pixelaw");
-            
+
             let mut x = 0;
             while x < GAME_GRIDSIZE {
                 let mut y = 0;
                 while y < GAME_GRIDSIZE {
-                    let check_position = Position {
-                        x: position.x + x,
-                        y: position.y + y,
-                    };
+                    let check_position = Position { x: position.x + x, y: position.y + y };
                     let pixel: Pixel = core_world.read_model(check_position);
-                    assert!(
-                        pixel.owner == contract_address_const::<0>(),
-                        "Need 3x3 empty area"
-                    );
+                    assert!(pixel.owner == contract_address_const::<0>(), "Need 3x3 empty area");
                     y += 1;
                 };
                 x += 1;
@@ -382,12 +357,9 @@ pub mod tictactoe_actions {
             while x < GAME_GRIDSIZE {
                 let mut y = 0;
                 while y < GAME_GRIDSIZE {
-                    let cell_position = Position {
-                        x: game_position.x + x,
-                        y: game_position.y + y,
-                    };
+                    let cell_position = Position { x: game_position.x + x, y: game_position.y + y };
                     let cell: TicTacToeCell = app_world.read_model(cell_position);
-                    
+
                     let state_value = match cell.cell_state {
                         CellState::Empty => 0_u8,
                         CellState::Player => 1_u8,
@@ -403,7 +375,7 @@ pub mod tictactoe_actions {
 
         fn get_ai_move(ref self: ContractState, game_position: Position) -> u8 {
             let board_state = self.get_board_state(game_position);
-            
+
             // Try to use ML inference, fallback to simple AI if it fails
             match move_selector(board_state.clone()) {
                 Option::Some(ai_move) => {
@@ -432,10 +404,7 @@ pub mod tictactoe_actions {
         }
 
         fn index_to_position(ref self: ContractState, origin: Position, index: u8) -> Position {
-            Position {
-                x: origin.x + (index % 3).into(),
-                y: origin.y + (index / 3).into(),
-            }
+            Position { x: origin.x + (index % 3).into(), y: origin.y + (index / 3).into() }
         }
 
         fn check_winner(ref self: ContractState, game_position: Position) -> CellState {

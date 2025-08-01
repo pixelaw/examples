@@ -206,8 +206,7 @@ pub mod chest_actions {
                 chest.last_collected_at
             };
             assert!(
-                current_timestamp >= cooldown_reference + COOLDOWN_SECONDS,
-                "Chest not ready yet",
+                current_timestamp >= cooldown_reference + COOLDOWN_SECONDS, "Chest not ready yet",
             );
 
             // Update chest collection status

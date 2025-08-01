@@ -6,8 +6,8 @@ use dojo_cairo_test::{
 };
 
 use tictactoe::app::{
-    ITicTacToeActionsDispatcher, ITicTacToeActionsDispatcherTrait, tictactoe_actions,
-    TicTacToeGame, TicTacToeCell, m_TicTacToeGame, m_TicTacToeCell, GameState, CellState,
+    ITicTacToeActionsDispatcher, ITicTacToeActionsDispatcherTrait, tictactoe_actions, TicTacToeGame,
+    TicTacToeCell, m_TicTacToeGame, m_TicTacToeCell, GameState, CellState,
 };
 use pixelaw::core::models::pixel::{Pixel, PixelUpdate, PixelUpdateResultTrait};
 use pixelaw::core::utils::{DefaultParameters, Position, encode_rgba};
@@ -125,7 +125,7 @@ fn test_tictactoe_make_move() {
     world.set_namespace(@"tictactoe");
     let cell: TicTacToeCell = world.read_model(position);
     assert(cell.cell_state == CellState::Player, 'Cell should be Player');
-    
+
     // Check that game moves were decremented (player + AI move)
     let game: TicTacToeGame = world.read_model(position);
     assert(game.moves_left <= 7, 'Moves should be decremented'); // Player move + AI move
@@ -197,7 +197,7 @@ fn test_tictactoe_requires_empty_area() {
     let tictactoe_actions = deploy_app(ref world);
 
     let position = Position { x: 10, y: 10 };
-    
+
     // Occupy one pixel in the 3x3 area first
     core_actions
         .update_pixel(
@@ -271,7 +271,7 @@ fn test_tictactoe_game_integration() {
     // Verify both pixels are updated correctly
     let origin_pixel: Pixel = world.read_model(position);
     let move_pixel: Pixel = world.read_model(move_position);
-    
+
     assert(origin_pixel.owner == player_1, 'Origin should be owned');
     assert(move_pixel.owner == player_1, 'Move pixel should be owned');
     assert(move_pixel.text == 'U+0058', 'Should show X symbol');

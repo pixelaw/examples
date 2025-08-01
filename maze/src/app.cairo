@@ -11,7 +11,7 @@ pub struct MazeGame {
     pub size: u32,
     pub started_timestamp: u64,
     pub is_revealed: bool,
-    pub cell_type: felt252, // 'wall', 'path', 'center'
+    pub cell_type: felt252,
 }
 
 #[starknet::interface]
