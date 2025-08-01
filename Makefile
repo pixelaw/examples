@@ -12,13 +12,26 @@ deploy_all:
 	@for dir in $(SUBDIRS); do \
     	app_name=$$(basename $$dir); \
         echo "Deploying $$app_name"; \
-        ./local_deploy.sh $$app_name; \
+        ./deploy_apps.sh $$app_name; \
     done
 
 ### Deploys an individual app
 # to use make deploy_app APP=<put_app_name_here>
 deploy_app:
-	./local_deploy.sh $(APP)
+	./deploy_apps.sh $(APP)
+
+### Deploys an individual app to vanilla core
+# to use make deploy_app_vanilla APP=<put_app_name_here>
+deploy_app_vanilla:
+	./deploy_apps.sh $(APP) vanilla
+
+### Deploys all apps to vanilla core
+deploy_all_vanilla:
+	@for dir in $(SUBDIRS); do \
+    	app_name=$$(basename $$dir); \
+        echo "Deploying $$app_name to vanilla core"; \
+        ./deploy_apps.sh $$app_name vanilla; \
+    done
 
 ### Starts up the core
 start_core:
@@ -57,15 +70,20 @@ log_torii:
 log_bots:
 	docker compose exec pixelaw-core tail -f /keiko/log/bots.log
 
+### Clean all Scarb.lock files
+clean_locks:
+	@echo "Cleaning all Scarb.lock files..."
+	@find . -name "Scarb.lock" -not -path "./.devcontainer/*" -delete
+
 ### Build all apps
-build_all:
+build_all: clean_locks
 	@for app in $(APPS); do \
 		echo "Building $$app..."; \
 		(cd $$app && sozo build) || exit 1; \
 	done
 
 ### Test all apps
-test_all:
+test_all: clean_locks
 	@for app in $(APPS); do \
 		echo "Testing $$app..."; \
 		(cd $$app && sozo test) || exit 1; \
