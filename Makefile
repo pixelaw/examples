@@ -57,6 +57,13 @@ log_torii:
 log_bots:
 	docker compose exec pixelaw-core tail -f /keiko/log/bots.log
 
+### Build all apps
+build_all:
+	@for app in $(APPS); do \
+		echo "Building $$app..."; \
+		(cd $$app && sozo build) || exit 1; \
+	done
+
 ### Test all apps
 test_all:
 	@for app in $(APPS); do \
