@@ -1,14 +1,35 @@
+# How to use this config file: https://book.dojoengine.org/framework/config#dojo_profiletoml
+
 [world]
-name = "pixelaw"
-description = "PixeLAW PIX2048 Game"
-cover_uri = "file://assets/cover.png"
-icon_uri = "file://assets/icon.png"
-website = "https://github.com/pixelaw/examples"
-socials.x = "https://twitter.com/pixelaw"
+name = "pix2048"
+seed = "pixelaw"
 
 [namespace]
 default = "pix2048"
+# Reserve the pixelaw core contract names, the rest can be "pix2048" automatically.
+mappings = { "pixelaw" = [
+    "actions", "App", "AppName", "Area", "CoreActionsAddress", "Pixel", "QueueItem", "RTree", "Notification", "QueueScheduled"
+] }
 
-[[namespace.mappings]]
-namespace = "pix2048"
-account = "$DOJO_ACCOUNT_ADDRESS"
+[env]
+rpc_url = "http://localhost:5050/"
+account_address = "0x127fd5f1fe78a71f8bcd1fec63e3fe2f0486b6ecd5c86a0466c3a21fa5cfcec"
+private_key = "0xc5b2fcab997346f3ea1c00b002ecf6f382c5f9c9659a3894eb783c5320f912"
+
+[writers]
+"pix2048-Game2048" = ["pix2048-pix2048_actions"]
+"pix2048-GameTile" = ["pix2048-pix2048_actions"]
+
+[migration]
+skip_contracts = [
+    "pixelaw-actions",
+    "pixelaw-App",
+    "pixelaw-AppName",
+    "pixelaw-Area",
+    "pixelaw-CoreActionsAddress",
+    "pixelaw-Pixel",
+    "pixelaw-QueueItem",
+    "pixelaw-RTree",
+    "pixelaw-Notification",
+    "pixelaw-QueueScheduled"
+]

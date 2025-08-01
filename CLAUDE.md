@@ -2,128 +2,142 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Project Overview
+## Repository Purpose
 
-This is a PixeLAW Examples repository containing multiple game/app examples built on the PixeLAW framework. PixeLAW is a pixel-based Autonomous World built on Starknet using the Dojo engine. Each subdirectory contains a standalone app that can be deployed individually or as part of a collection.
+This is the **PixeLAW Examples Repository** containing multiple game/app examples built on the PixeLAW framework. Each subdirectory contains a standalone app that can be deployed individually or as part of a collection.
 
-## Architecture
+## Current Framework Versions
 
-- **Framework**: Built on Dojo v1.4.0 and PixeLAW core v0.6.31
-- **Language**: Cairo v2.9.4 for smart contracts
-- **Deployment**: Uses Sozo for building and deploying contracts
-- **Infrastructure**: Docker-based local development environment
+- **Dojo Framework**: v1.6.2 
+- **PixeLAW Core**: v0.7.9
+- **Cairo**: v2.10.1 
+- **Scarb**: v2.10.1
 
-### App Structure
+## Repository Structure
+
 Each app follows a consistent structure:
-- `src/lib.cairo` - Main library file with module declarations
-- `src/app.cairo` - Main application logic (for simpler apps)
-- `src/systems/actions.cairo` - System actions and contract interfaces (for Dojo-based apps)
-- `src/models.cairo` - Data models and structs (for Dojo-based apps)
-- `src/tests/` - Test files
-- `Scarb.toml` - Package configuration and dependencies
-- `dojo_dev.toml` - Dojo development configuration (for Dojo-based apps)
+- `src/lib.cairo` - Module declarations with `#[cfg(test)]` for tests
+- `src/app.cairo` - Main application logic and contract
+- `src/constants.cairo` - App constants (optional)
+- `src/tests.cairo` - Test suite
+- `Scarb.toml` - Package configuration with latest versions
+- `dojo_dev.toml` - Modern Dojo configuration (app-specific world name, no hardcoded world_address)
 
-### Key Apps
-- **chest**: Dojo-based treasure chest placement and collection system
-- **pix2048**: 2048 game implementations
-- **hunter**: Pixel-based chance game
-- **minesweeper**: Classic minesweeper implementation
-- **rps**: Rock-paper-scissors game
+## Available Apps
+
+- **chest**: Cooldown-based treasure chest system
+- **hunter**: Cryptographic randomness-based chance game  
+- **maze**: Multi-pixel maze navigation with predefined layouts
+- **minesweeper**: Classic minesweeper with complex grid state
+- **pix2048**: 2048 game with control buttons and multi-pixel coordination
+- **rps**: Player vs player rock-paper-scissors with commit-reveal scheme
 - **tictactoe**: Tic-tac-toe with ML opponent
 
 ## Development Commands
 
-### Core Infrastructure
+### Core Infrastructure Management
 ```bash
 # Start PixeLAW core infrastructure
 make start_core
 # or
 docker compose up -d
 
-# Stop core infrastructure
+# Stop core infrastructure  
 make stop_core
 # or
 docker compose down
 
-# Reset (with volume cleanup)
+# Reset everything (with volume cleanup)
 make reset
 ```
 
-### App Development
+### App Deployment
 ```bash
-# Deploy all apps
+# Deploy all apps (full setup)
 make start
 
 # Deploy specific app
+./deploy_apps.sh <app_name>
+# or  
 make deploy_app APP=<app_name>
-# or
-./local_deploy.sh <app_name>
+
+# Build all apps
+make build_all
+
+# Test all apps
+make test_all
 
 # Stop everything
 make stop
 ```
 
-### Individual App Commands
+### Individual App Development
 Within each app directory:
 ```bash
-# Build
+# Quick syntax check
+scarb build
+
+# Format code
+scarb fmt
+
+# Full Dojo build
 sozo build
 
-# Test
+# Run tests
 sozo test
 
-# Build and migrate (from Scarb.toml scripts)
-scarb run migrate
-
-# Individual app actions (example from chest)
-scarb run spawn
-scarb run move
+# Deploy to local environment
+sozo migrate
 ```
 
-### Debugging and Logs
+### Debugging and Monitoring
 ```bash
-# Access core container
+# Access core container shell
 make shell
 
 # View logs
-make log_katana    # Katana blockchain logs
-make log_torii     # Torii indexer logs
+make log_katana    # Blockchain logs
+make log_torii     # Indexer logs  
 make log_bots      # Bot logs
 ```
 
 ## Local Development Workflow
 
-1. **Start Core**: `make start_core` to launch the PixeLAW infrastructure
-2. **Wait for Katana**: The system automatically waits for Katana to be ready at localhost:5050
-3. **Deploy App**: Use `./local_deploy.sh <app_name>` to deploy and configure an app
-4. **Development**: Apps connect to local Katana node and use predefined accounts
+1. **Start Core**: `make start_core` launches PixeLAW infrastructure
+2. **Wait for Ready**: System waits for Katana at localhost:5050
+3. **Deploy Apps**: Use `./deploy_apps.sh <app_name>` for individual deployment
+4. **Development**: Apps connect to local Katana with predefined accounts
+5. **Testing**: Each app has comprehensive test suite via `sozo test`
 
-## Testing
+## Key Services
 
-Each app has its own test suite. Run tests from within the app directory:
-```bash
-cd <app_name>
-sozo test
-```
+- **Katana** (Starknet node): `http://localhost:5050`
+- **Torii** (indexer): `http://localhost:8080`  
+- **Dashboard**: `http://localhost:3000`
 
-## Key Configuration Files
+## Configuration Files
 
 - `docker-compose.yml` - Core PixeLAW infrastructure setup
 - `Makefile` - Development workflow commands
-- `local_deploy.sh` - App deployment script with automatic permissions setup
-- Individual `Scarb.toml` files define app-specific dependencies and scripts
-- `dojo_dev.toml` files configure Dojo world settings for each app
-
-## Dependencies
-
-- PixeLAW core contracts are imported as git dependencies
-- Dojo framework v1.5.1 for blockchain functionality
-- Cairo v2.10.1 for smart contract development
-- Local development uses predefined account addresses and private keys
+- `deploy_apps.sh` - App deployment script with automatic permissions
+- `dojo_dev.toml` files - Modern Dojo configuration for each app
 
 ## Development Notes
 
-- The system automatically handles contract permissions and authorizations during deployment
-- Each app can define custom models and systems while integrating with PixeLAW's core pixel management
-- Apps use the PixeLAW core actions for pixel updates and notifications
-- The framework supports both simple apps (single contract) and complex Dojo-based apps (multiple systems and models)
+- System automatically handles contract permissions during deployment
+- Apps integrate with PixeLAW core for pixel updates and notifications  
+- Each app uses dual world pattern (pixelaw + app-specific worlds)
+- Local development uses predefined account addresses and private keys
+- All apps support both individual and collective deployment
+
+## When to Use the PixeLAW App Developer Agent
+
+For any PixeLAW-specific development work, use the specialized agent:
+- Creating new PixeLAW applications
+- Updating apps to newer framework versions
+- Implementing PixeLAW patterns (hooks, pixel interactions)
+- Modernizing old Dojo-style apps
+- Debugging Cairo compilation issues
+- Writing comprehensive tests
+
+The agent contains all technical patterns, code templates, and expert knowledge for PixeLAW development.

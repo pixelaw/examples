@@ -3,7 +3,7 @@
     "class_hash": "0x13d92333361bb7049c1232c0a5404e2c19082ededc3a73d75cb33fa952adec7",
     "address": "0x548b7044c88b3338e88e3c0ea356eb9dcf65388c90ec7c9d9031547af30d1d1",
     "seed": "pixelaw",
-    "name": "rps",
+    "name": "hunter",
     "entrypoints": [
       "uuid",
       "set_metadata",
@@ -1328,12 +1328,12 @@
   },
   "contracts": [
     {
-      "address": "0x7c90a3c2bfd9a97e1e57815df2c4285c9fdd35850a87ba348fd87fb894f7c8",
-      "class_hash": "0x24bdbe7fea357dfe2b2c99f15b7ec72dce5035d11786d69f35bde1823468f2c",
+      "address": "0x2c5ac40a1ac79992d20412dcb1d641ec271c113b99e54edbcc872de27e1be19",
+      "class_hash": "0x5e434344f33ab16d6295a8e6d04a9b9d8b2254d1e96f5e28a5e9b8300872ce5",
       "abi": [
         {
           "type": "impl",
-          "name": "rps_actions__ContractImpl",
+          "name": "hunter_actions__ContractImpl",
           "interface_name": "dojo::contract::interface::IContract"
         },
         {
@@ -1343,7 +1343,7 @@
         },
         {
           "type": "impl",
-          "name": "rps_actions__DeployedContractImpl",
+          "name": "hunter_actions__DeployedContractImpl",
           "interface_name": "dojo::meta::interface::IDeployedResource"
         },
         {
@@ -1390,36 +1390,8 @@
         },
         {
           "type": "impl",
-          "name": "RpsActionsImpl",
-          "interface_name": "rps::app::IRpsActions"
-        },
-        {
-          "type": "enum",
-          "name": "core::option::Option::<core::starknet::contract_address::ContractAddress>",
-          "variants": [
-            {
-              "name": "Some",
-              "type": "core::starknet::contract_address::ContractAddress"
-            },
-            {
-              "name": "None",
-              "type": "()"
-            }
-          ]
-        },
-        {
-          "type": "enum",
-          "name": "core::option::Option::<core::integer::u64>",
-          "variants": [
-            {
-              "name": "Some",
-              "type": "core::integer::u64"
-            },
-            {
-              "name": "None",
-              "type": "()"
-            }
-          ]
+          "name": "ActionsImpl",
+          "interface_name": "hunter::app::IHunterActions"
         },
         {
           "type": "struct",
@@ -1432,54 +1404,6 @@
             {
               "name": "y",
               "type": "core::integer::u16"
-            }
-          ]
-        },
-        {
-          "type": "struct",
-          "name": "pixelaw::core::utils::DefaultParameters",
-          "members": [
-            {
-              "name": "player_override",
-              "type": "core::option::Option::<core::starknet::contract_address::ContractAddress>"
-            },
-            {
-              "name": "system_override",
-              "type": "core::option::Option::<core::starknet::contract_address::ContractAddress>"
-            },
-            {
-              "name": "area_hint",
-              "type": "core::option::Option::<core::integer::u64>"
-            },
-            {
-              "name": "position",
-              "type": "pixelaw::core::utils::Position"
-            },
-            {
-              "name": "color",
-              "type": "core::integer::u32"
-            }
-          ]
-        },
-        {
-          "type": "enum",
-          "name": "rps::app::Move",
-          "variants": [
-            {
-              "name": "None",
-              "type": "()"
-            },
-            {
-              "name": "Rock",
-              "type": "()"
-            },
-            {
-              "name": "Paper",
-              "type": "()"
-            },
-            {
-              "name": "Scissors",
-              "type": "()"
             }
           ]
         },
@@ -1499,11 +1423,39 @@
         },
         {
           "type": "enum",
+          "name": "core::option::Option::<core::starknet::contract_address::ContractAddress>",
+          "variants": [
+            {
+              "name": "Some",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "None",
+              "type": "()"
+            }
+          ]
+        },
+        {
+          "type": "enum",
           "name": "core::option::Option::<core::felt252>",
           "variants": [
             {
               "name": "Some",
               "type": "core::felt252"
+            },
+            {
+              "name": "None",
+              "type": "()"
+            }
+          ]
+        },
+        {
+          "type": "enum",
+          "name": "core::option::Option::<core::integer::u64>",
+          "variants": [
+            {
+              "name": "Some",
+              "type": "core::integer::u64"
             },
             {
               "name": "None",
@@ -1582,73 +1534,35 @@
           ]
         },
         {
+          "type": "struct",
+          "name": "pixelaw::core::utils::DefaultParameters",
+          "members": [
+            {
+              "name": "player_override",
+              "type": "core::option::Option::<core::starknet::contract_address::ContractAddress>"
+            },
+            {
+              "name": "system_override",
+              "type": "core::option::Option::<core::starknet::contract_address::ContractAddress>"
+            },
+            {
+              "name": "area_hint",
+              "type": "core::option::Option::<core::integer::u64>"
+            },
+            {
+              "name": "position",
+              "type": "pixelaw::core::utils::Position"
+            },
+            {
+              "name": "color",
+              "type": "core::integer::u32"
+            }
+          ]
+        },
+        {
           "type": "interface",
-          "name": "rps::app::IRpsActions",
+          "name": "hunter::app::IHunterActions",
           "items": [
-            {
-              "type": "function",
-              "name": "secondary",
-              "inputs": [
-                {
-                  "name": "default_params",
-                  "type": "pixelaw::core::utils::DefaultParameters"
-                }
-              ],
-              "outputs": [],
-              "state_mutability": "external"
-            },
-            {
-              "type": "function",
-              "name": "interact",
-              "inputs": [
-                {
-                  "name": "default_params",
-                  "type": "pixelaw::core::utils::DefaultParameters"
-                },
-                {
-                  "name": "crc_move_Move",
-                  "type": "core::felt252"
-                }
-              ],
-              "outputs": [],
-              "state_mutability": "external"
-            },
-            {
-              "type": "function",
-              "name": "join",
-              "inputs": [
-                {
-                  "name": "default_params",
-                  "type": "pixelaw::core::utils::DefaultParameters"
-                },
-                {
-                  "name": "player2_move",
-                  "type": "rps::app::Move"
-                }
-              ],
-              "outputs": [],
-              "state_mutability": "external"
-            },
-            {
-              "type": "function",
-              "name": "finish",
-              "inputs": [
-                {
-                  "name": "default_params",
-                  "type": "pixelaw::core::utils::DefaultParameters"
-                },
-                {
-                  "name": "crv_move",
-                  "type": "rps::app::Move"
-                },
-                {
-                  "name": "crs_move",
-                  "type": "core::felt252"
-                }
-              ],
-              "outputs": [],
-              "state_mutability": "external"
-            },
             {
               "type": "function",
               "name": "on_pre_update",
@@ -1688,6 +1602,18 @@
                 {
                   "name": "player_caller",
                   "type": "core::starknet::contract_address::ContractAddress"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "interact",
+              "inputs": [
+                {
+                  "name": "default_params",
+                  "type": "pixelaw::core::utils::DefaultParameters"
                 }
               ],
               "outputs": [],
@@ -1787,7 +1713,7 @@
         },
         {
           "type": "event",
-          "name": "rps::app::rps_actions::Event",
+          "name": "hunter::app::hunter_actions::Event",
           "kind": "enum",
           "variants": [
             {
@@ -1804,16 +1730,13 @@
         }
       ],
       "init_calldata": [],
-      "tag": "rps-rps_actions",
-      "selector": "0x3f58ca1d39a36006056356c121a7556142e53be5ae93333a11b2c1affbf298e",
+      "tag": "hunter-hunter_actions",
+      "selector": "0x79f2ad36d7d712a1779a823d8c87274c7d372f96aa3cfada8127bde55c24d88",
       "systems": [
         "dojo_init",
-        "secondary",
-        "interact",
-        "join",
-        "finish",
         "on_pre_update",
         "on_post_update",
+        "interact",
         "upgrade"
       ]
     }
@@ -1822,15 +1745,9 @@
   "models": [
     {
       "members": [],
-      "class_hash": "0xcd8546c14f324a6b6553be63e536229066bca2337b66cb1ec0ae56b289925f",
-      "tag": "rps-Game",
-      "selector": "0x1ef4e15940fcc612e049b4afa0afe0cdf86fe01a66be512c17e86bb8ec68442"
-    },
-    {
-      "members": [],
-      "class_hash": "0x54f31f39f9bc5d8379bca08009b0ba41cade6134fe615e66b0c1621ba844376",
-      "tag": "rps-Player",
-      "selector": "0x6e2ae02b8ea8df6b9bb0a89151bee54af09a97f6c91f1b12321a8036f0bce14"
+      "class_hash": "0x76a5302d89cbd169453f3fccad890526e8e5c6537229c860edbcbf60cd7c43d",
+      "tag": "hunter-LastAttempt",
+      "selector": "0xa3fd659f0e8ba579d347e0c4d9c94212bee14629ed2c873b2b200db1242836"
     }
   ],
   "events": [],

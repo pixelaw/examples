@@ -3,16 +3,16 @@ version = 1
 
 [[package]]
 name = "dojo"
-version = "1.5.1"
-source = "git+https://github.com/dojoengine/dojo?tag=v1.5.1#986c3b0c6d647b23847c70ddceb1d33ddac86ead"
+version = "1.6.2"
+source = "git+https://github.com/dojoengine/dojo?tag=v1.6.2#d6e847c51ecd0121a43c2a17b96dbca936604764"
 dependencies = [
  "dojo_plugin",
 ]
 
 [[package]]
 name = "dojo_cairo_test"
-version = "1.0.12"
-source = "git+https://github.com/dojoengine/dojo?tag=v1.5.1#986c3b0c6d647b23847c70ddceb1d33ddac86ead"
+version = "1.6.2"
+source = "git+https://github.com/dojoengine/dojo?tag=v1.6.2#d6e847c51ecd0121a43c2a17b96dbca936604764"
 dependencies = [
  "dojo",
 ]
@@ -20,7 +20,7 @@ dependencies = [
 [[package]]
 name = "dojo_plugin"
 version = "2.10.1"
-source = "git+https://github.com/dojoengine/dojo?tag=v1.5.1#986c3b0c6d647b23847c70ddceb1d33ddac86ead"
+source = "git+https://github.com/dojoengine/dojo?tag=v1.6.2#d6e847c51ecd0121a43c2a17b96dbca936604764"
 
 [[package]]
 name = "hunter"
@@ -34,16 +34,16 @@ dependencies = [
 
 [[package]]
 name = "pixelaw"
-version = "0.7.8"
-source = "git+https://github.com/pixelaw/core?tag=v0.7.8#0d020c16319676c1839cedd53577868458efa6c2"
+version = "0.7.9"
+source = "git+https://github.com/pixelaw/core?tag=v0.7.9#40313e650b145faa4d8f6eb525fbfa0e2b58a5bf"
 dependencies = [
  "dojo",
 ]
 
 [[package]]
 name = "pixelaw_testing"
-version = "0.7.8"
-source = "git+https://github.com/pixelaw/core?tag=v0.7.8#0d020c16319676c1839cedd53577868458efa6c2"
+version = "0.7.9"
+source = "git+https://github.com/pixelaw/core?tag=v0.7.9#40313e650b145faa4d8f6eb525fbfa0e2b58a5bf"
 dependencies = [
  "dojo",
  "dojo_cairo_test",

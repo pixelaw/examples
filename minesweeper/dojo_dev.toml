@@ -1,12 +1,12 @@
 # How to use this config file: https://book.dojoengine.org/framework/config#dojo_profiletoml
 
 [world]
-name = "tictactoe"
+name = "minesweeper"
 seed = "pixelaw"
 
 [namespace]
-default = "tictactoe"
-# Reserve the pixelaw core contract names, the rest can be "tictactoe" automatically.
+default = "minesweeper"
+# Reserve the pixelaw core contract names, the rest can be "minesweeper" automatically.
 mappings = { "pixelaw" = [
     "actions", "App", "AppName", "Area", "CoreActionsAddress", "Pixel", "QueueItem", "RTree", "Notification", "QueueScheduled"
 ] }
@@ -17,8 +17,8 @@ account_address = "0x127fd5f1fe78a71f8bcd1fec63e3fe2f0486b6ecd5c86a0466c3a21fa5c
 private_key = "0xc5b2fcab997346f3ea1c00b002ecf6f382c5f9c9659a3894eb783c5320f912"
 
 [writers]
-"tictactoe-TicTacToeGame" = ["tictactoe-tictactoe_actions"]
-"tictactoe-TicTacToeCell" = ["tictactoe-tictactoe_actions"]
+"minesweeper-MinesweeperGame" = ["minesweeper-minesweeper_actions"]
+"minesweeper-MineCell" = ["minesweeper-minesweeper_actions"]
 
 [migration]
 skip_contracts = [
