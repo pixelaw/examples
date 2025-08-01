@@ -1,63 +1,123 @@
 # PixeLAW Examples
-This is a list of app examples that demonstrate PixeLAW's capability.
-Each app can stand alone and can be deployed individually. Here are the list of apps currently available:
 
-| Name       | Description                                                                                                 |
-|------------|-------------------------------------------------------------------------------------------------------------|
-| hunter     | A game of chance where any player can pick a random pixel that could either be a winning or losing pixel    |
-| minsweeper | A classic minesweeper with a limited amount of pixels in a board                                            |
-| rps        | Stands for rock-paper-scissors, where two players can play on the same pixel                                |
-| tictactoe  | A classic game of tictactoe against a machine learning opponent                                             |
-| pix2048    | A fully on-chain 2048 based on PixeLAW(a pixel-based Autonomous World built on @Starknet using @ohayo_dojo) |
+A collection of game and application examples demonstrating PixeLAW's capabilities. Each app showcases different patterns and mechanics within the PixeLAW ecosystem - a pixel-based Autonomous World built on Starknet using the Dojo engine.
 
+## Available Apps
+
+| Name         | Type                    | Description                                                                             |
+|-------------|------------------------|-----------------------------------------------------------------------------------------|
+| **chest**   | Cooldown System        | Treasure chest placement and collection with 24-hour cooldown mechanics                |
+| **hunter**  | Probability Game       | Cryptographic randomness-based chance game with 1/1024 winning odds                    |
+| **maze**    | Grid Navigation        | Navigate through pixel-based mazes with predefined layouts and randomization           |
+| **minesweeper** | Classic Puzzle     | Traditional minesweeper with complex grid state management and win/lose conditions     |
+| **pix2048** | Grid Game              | Fully on-chain 2048 with directional controls and multi-pixel coordination             |
+| **rps**     | PvP Competition        | Rock-paper-scissors with commit-reveal cryptographic scheme for fair play              |
+| **tictactoe** | AI Opponent          | Classic tic-tac-toe against a machine learning opponent                                |
+
+## Framework Versions
+
+- **Dojo Framework**: v1.6.2
+- **PixeLAW Core**: v0.7.9  
+- **Cairo**: v2.10.1
+- **Starknet**: Latest
 
 ## Prerequisites
+
 1. [Make](https://www.gnu.org/software/make/#download)
 2. [Docker](https://docs.docker.com/engine/install/)
 3. [Docker Compose plugin](https://docs.docker.com/compose/install/)
 
-## Getting Started
-There are two recommended ways to get PixeLAW started. The simplest method is getting everything started with
-all the apps in this repo and the other method is individually deploying them.
+## Quick Start
 
-### Deploying all Apps
-Run this command to start up PixeLAW core and deploy all apps in the directory.
-````shell
+### Deploy All Apps (Recommended)
+Start PixeLAW with all example apps in one command:
+
+```shell
 make start
-````
+```
 
-To stop it, simply run this command:
-````shell
+This will:
+1. Launch PixeLAW core infrastructure (Katana, Torii, Dashboard)
+2. Wait for services to be ready
+3. Deploy all example apps with proper permissions
+4. Initialize each app for immediate use
+
+**Access the dashboard**: http://localhost:3000
+
+To stop everything:
+```shell
 make stop
-````
+```
 
-### Deploying an app individually
-To start up PixeLAW, you can either:
-````shell
-docker compose up -d
-````
-or 
-````shell
+### Manual Deployment
+
+#### 1. Start Core Infrastructure
+```shell
 make start_core
-````
+# or
+docker compose up -d
+```
 
-Afterwards, to deploy an app to your local PixeLAW, you can either:
-````shell
-./local_deploy.sh <replace_this_with_any_app_name>
-````
-or
-````shell
-make deploy_app APP=<replace_this_with_any_app_name>
-````
+Services will be available at:
+- **Katana** (blockchain): http://localhost:5050
+- **Torii** (indexer): http://localhost:8080  
+- **Dashboard**: http://localhost:3000
 
-## Contributing an app
-If you'd like to contribute your app to PixeLAW, feel free to do a pull request for this repo
-and add your app in the table above.
+#### 2. Deploy Apps
+
+**All apps at once:**
+```shell
+make deploy_all
+```
+
+**Individual app:**
+```shell
+./deploy_apps.sh <app_name>
+# or
+make deploy_app APP=<app_name>
+```
+
+Available apps: `chest`, `hunter`, `maze`, `minesweeper`, `pix2048`, `rps`, `tictactoe`
+
+## Development Commands
+
+```shell
+make reset           # Reset with volume cleanup
+make shell           # Access container shell  
+make build_all       # Build all apps
+make test_all        # Test all apps
+make log_katana      # View blockchain logs
+make log_torii       # View indexer logs
+```
+
+## App Architecture Patterns
+
+Each app demonstrates different PixeLAW development patterns:
+
+- **Simple Single-Pixel** (chest, hunter): Direct pixel interaction with state management
+- **Complex Grid Games** (maze, minesweeper, pix2048): Multi-pixel coordination and game boards  
+- **Player vs Player** (rps): Turn-based competition with cryptographic security
+- **AI Integration** (tictactoe): Machine learning opponent integration
+
+## Contributing
+
+We welcome contributions! To add your app:
+
+1. Create your app following PixeLAW patterns
+2. Add it to the table above
+3. Submit a pull request
+
+For development guidance, see the technical documentation in the repository.
 
 ## Credits
 
-| Contribution                                               | Developer                                |
-|------------------------------------------------------------|------------------------------------------|
-| App - [pix2048](https://github.com/themetacat/PixeLAW2048) | [MetaCat](https://github.com/themetacat) |
+| Contribution | Developer |
+|--------------|-----------|
+| [pix2048](https://github.com/themetacat/PixeLAW2048) | [MetaCat](https://github.com/themetacat) |
 
+---
 
+**Learn More**: 
+- [PixeLAW Core](https://github.com/pixelaw/core)
+- [Dojo Engine](https://dojoengine.org)
+- [Starknet](https://starknet.io)
