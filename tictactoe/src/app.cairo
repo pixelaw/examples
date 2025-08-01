@@ -122,18 +122,18 @@ pub mod tictactoe_actions {
         }
 
         fn interact(ref self: ContractState, default_params: DefaultParameters) {
-            let mut core_world = self.world(@"pixelaw");
+            let mut _core_world = self.world(@"pixelaw");
             let mut app_world = self.world(@"tictactoe");
             let position = default_params.position;
 
-            // Check if there's already a game here
-            let existing_game: TicTacToeGame = app_world.read_model(position);
+            // Check if there's already a cell here (indicating an existing game)
+            let existing_cell: TicTacToeCell = app_world.read_model(position);
             
-            if existing_game.player == contract_address_const::<0>() {
-                // Create new game
+            if existing_cell.game_position.x == 0 && existing_cell.game_position.y == 0 {
+                // No cell exists, create new game
                 self.init_game(default_params);
             } else {
-                // Try to make a move
+                // Cell exists, try to make a move
                 self.make_move(default_params);
             }
         }

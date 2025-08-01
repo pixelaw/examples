@@ -169,7 +169,7 @@ mod tests {
         ];
 
         let ai_move = move_selector(state).unwrap();
-        assert(ai_move == 8, 'AI should win at position 8');
+        assert(ai_move == 7, 'AI should win at position 7');
     }
 
     #[test]

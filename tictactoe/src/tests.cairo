@@ -1,5 +1,6 @@
 use dojo::model::{ModelStorage};
 use dojo::world::{IWorldDispatcherTrait, WorldStorage, WorldStorageTrait};
+use pixelaw::core::actions::{IActionsDispatcherTrait};
 use dojo_cairo_test::{
     ContractDef, ContractDefTrait, NamespaceDef, TestResource, WorldStorageTestTrait,
 };
@@ -8,7 +9,7 @@ use tictactoe::app::{
     ITicTacToeActionsDispatcher, ITicTacToeActionsDispatcherTrait, tictactoe_actions,
     TicTacToeGame, TicTacToeCell, m_TicTacToeGame, m_TicTacToeCell, GameState, CellState,
 };
-use pixelaw::core::models::pixel::{Pixel};
+use pixelaw::core::models::pixel::{Pixel, PixelUpdate, PixelUpdateResultTrait};
 use pixelaw::core::utils::{DefaultParameters, Position, encode_rgba};
 use pixelaw_testing::helpers::{set_caller, setup_core, update_test_world};
 
@@ -202,7 +203,7 @@ fn test_tictactoe_requires_empty_area() {
         .update_pixel(
             player_1,
             core_actions.contract_address,
-            pixelaw::core::models::pixel::PixelUpdate {
+            PixelUpdate {
                 position: Position { x: 11, y: 11 },
                 color: Option::Some(0xFF0000),
                 timestamp: Option::None,
