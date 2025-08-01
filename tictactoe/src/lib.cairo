@@ -1,3 +1,5 @@
 mod app;
-mod tests;
 mod inference;
+
+#[cfg(test)]
+mod tests;

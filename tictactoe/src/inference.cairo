@@ -1,324 +1,229 @@
-// Orion and ML stuff
-use core::array::SpanTrait;
+// Simplified TicTacToe AI without complex ML dependencies
 use core::array::ArrayTrait;
-use orion::operators::tensor::{TensorTrait, FP16x16Tensor, Tensor, FP16x16TensorAdd};
-use orion::operators::nn::{NNTrait, FP16x16NN};
-use orion::numbers::{FP16x16, FixedTrait};
 
-use sequential_1_dense_1_matmul_readvariableop_0::tensor as t1;
-use sequential_1_dense_1_biasadd_readvariableop_0::tensor as t2;
-use sequential_1_dense_2_matmul_readvariableop_0::tensor as t3;
-use sequential_1_dense_2_biasadd_readvariableop_0::tensor as t4;
-use sequential_1_dense_3_matmul_readvariableop_0::tensor as t5;
-use sequential_1_dense_3_biasadd_readvariableop_0::tensor as t6;
+const MOVE_PLAYER: u8 = 1;    // Human player (X)
+const MOVE_AI: u8 = 2;        // AI player (O)  
+const MOVE_EMPTY: u8 = 0;     // Empty cell
 
-const MOVE_PLAYER0: u8 = 1;
-const MOVE_PLAYER1: u8 = 2;
-const MOVE_EMPTY: u8 = 0;
+// Simplified AI that uses basic strategy instead of ML
+pub fn move_selector(current_board_state: Array<u8>) -> Option<u32> {
+    // Strategy priority:
+    // 1. Win if possible
+    // 2. Block opponent win
+    // 3. Take center if available
+    // 4. Take corner if available
+    // 5. Take any available spot
 
-const MODEL_MOVE_PLAYER0: u8 = 0;
-const MODEL_MOVE_PLAYER1: u8 = 1;
-const MODEL_MOVE_EMPTY: u8 = 2;
-
-fn predict(mut x: Tensor<FP16x16>) -> FP16x16 {
-    // let two = FixedTrait::<FP16x16>::new_unscaled(2, false);
-    // let mut x = Tensor {
-    //     shape: array![9].span(),
-    //     data: array![two, two, two, two, two, two, two, two, two].span()
-    // };
-
-    // DENSE 1
-    x = TensorTrait::matmul(@x, @t1());
-    x = x + t2();
-    x = NNTrait::relu(@x);
-
-    // DENSE 2
-    x = TensorTrait::matmul(@x, @t3());
-    x = x + t4();
-    x = NNTrait::relu(@x);
-
-    // DENSE 3
-    x = TensorTrait::matmul(@x, @t5());
-    x = x + t6();
-
-    return *x.data.at(0);
-}
-
-// def legal_moves_generator(current_board_state,turn_monitor):
-//     """Function that returns the set of all possible legal moves and resulting board states, 
-//     for a given input board state and player
-
-//     Args:
-//     current_board_state: The current board state
-//     turn_monitor: 1 if it's the player who places the mark 1's turn to play, 0 if its his opponent's turn
-
-//     Returns:
-//     legal_moves_dict: A dictionary of a list of possible next coordinate-resulting board state pairs
-//     The resulting board state is flattened to 1 d array
-
-//     """
-//     legal_moves_dict={}
-//     for i in range(current_board_state.shape[0]):
-//         for j in range(current_board_state.shape[1]):
-//             if current_board_state[i,j]==2:
-//                 board_state_copy=current_board_state.copy()
-//                 board_state_copy[i,j]=turn_monitor
-//                 legal_moves_dict[(i,j)]=board_state_copy.flatten()
-//     return legal_moves_dict
-fn legal_moves_generator(
-    current_board_state: @Array<u8>, turn_monitor: u8
-) -> Array<(Array<u8>, u32)> {
-    let mut moves = ArrayTrait::new();
-    let mut index = 0;
-    loop {
-        if index == 3 * 3 {
-            break;
-        }
-        // loop body
-        if *current_board_state.at(index) == MOVE_EMPTY {
-            let board_state_copy = modify_array_at_index(
-                current_board_state, index, turn_monitor.into()
-            );
-            moves.append((board_state_copy, index));
-        }
-        // end of loop body
-        index += 1;
-    };
-    moves
-}
-
-fn modify_array_at_index(array: @Array<u8>, index: u32, value: u8) -> Array<u8> {
-    let l = array.len();
-    let mut new_array = ArrayTrait::new();
-    let mut i = 0;
-    loop {
-        if i >= l {
-            break;
-        }
-        new_array.append(if i == index {
-            value
-        } else {
-            *array.at(i)
-        });
-        i += 1;
-    };
-    new_array
-}
-
-fn move_selector(current_board_state: Array<u8>) -> Option<u32> { // index of the move
-    let turn_monitor = MOVE_PLAYER1;
-
-    let mut current_max_location = 0;
-    let mut current_max = FixedTrait::<FP16x16>::new_unscaled(1000, true); // -1000
-    let legal_moves = legal_moves_generator(@current_board_state, turn_monitor);
-    let mut found = false;
-
-    let mut i = 0;
-    loop {
-        if (i >= legal_moves.len()) {
-            break;
-        }
-
-        let (state_after, location) = legal_moves.at(i);
-
-        // get tensor representation of a board state
-        let mut tensor_state_after = board_state_to_tensor(state_after);
-
-        let value = predict(tensor_state_after);
-
-        // compare prediction with a previous one
-        if value >= current_max {
-            // set current prediction and index to max prediction
-            current_max = value;
-            current_max_location = *location;
-            found = true;
-        }
-        i += 1;
-    };
-    // return the move in the index
-    if (found) {
-        Option::Some(current_max_location)
-    } else {
-        Option::None
+    // Check for winning move
+    if let Option::Some(winning_move) = find_winning_move(@current_board_state, MOVE_AI) {
+        return Option::Some(winning_move);
     }
-}
 
-// TODO impl Into<Array<u8>, Tensor>
-fn board_state_to_tensor(board_state: @Array<u8>) -> Tensor<FP16x16> {
-    // TODO globals?
-    let p0 = FixedTrait::<FP16x16>::new_unscaled(MODEL_MOVE_PLAYER0.into(), false);
-    let p1 = FixedTrait::<FP16x16>::new_unscaled(MODEL_MOVE_PLAYER1.into(), false);
-    let empty = FixedTrait::<FP16x16>::new_unscaled(MODEL_MOVE_EMPTY.into(), false);
+    // Check for blocking move
+    if let Option::Some(blocking_move) = find_winning_move(@current_board_state, MOVE_PLAYER) {
+        return Option::Some(blocking_move);
+    }
 
-    let mut tensor_data = ArrayTrait::new();
+    // Take center if available
+    if *current_board_state.at(4) == MOVE_EMPTY {
+        return Option::Some(4);
+    }
 
+    // Take corners in order of preference
+    let corners = array![0, 2, 6, 8];
     let mut i = 0;
-    loop {
-        if i >= board_state.len() {
+    let mut corner_move = Option::None;
+    while i < corners.len() {
+        let corner = *corners.at(i);
+        if *current_board_state.at(corner) == MOVE_EMPTY {
+            corner_move = Option::Some(corner);
             break;
         }
-        tensor_data
-            .append(
-                // TODO use enum with Into<u8> and match on it
-                if *board_state.at(i) == MOVE_PLAYER0 {
-                    p0
-                } else if *board_state.at(i) == MOVE_PLAYER1 {
-                    p1
-                } else {
-                    empty
-                }
-            );
+        i += 1;
+    };
+    
+    if corner_move.is_some() {
+        return corner_move;
+    }
+
+    // Take any available edge
+    let edges = array![1, 3, 5, 7];
+    let mut i = 0;
+    let mut edge_move = Option::None;
+    while i < edges.len() {
+        let edge = *edges.at(i);
+        if *current_board_state.at(edge) == MOVE_EMPTY {
+            edge_move = Option::Some(edge);
+            break;
+        }
+        i += 1;
+    };
+    
+    if edge_move.is_some() {
+        return edge_move;
+    }
+
+    // Fallback: take first available spot
+    let mut i = 0;
+    let mut fallback_move = Option::None;
+    while i < 9 {
+        if *current_board_state.at(i) == MOVE_EMPTY {
+            fallback_move = Option::Some(i);
+            break;
+        }
         i += 1;
     };
 
-    Tensor { shape: array![9].span(), data: tensor_data.span() }
+    fallback_move
+}
+
+// Helper function to find winning moves
+fn find_winning_move(board: @Array<u8>, player: u8) -> Option<u32> {
+    // Check all winning combinations
+    let winning_combinations = array![
+        array![0, 1, 2], // Top row
+        array![3, 4, 5], // Middle row
+        array![6, 7, 8], // Bottom row
+        array![0, 3, 6], // Left column
+        array![1, 4, 7], // Middle column
+        array![2, 5, 8], // Right column
+        array![0, 4, 8], // Main diagonal
+        array![2, 4, 6], // Anti-diagonal
+    ];
+
+    let mut combo_idx = 0;
+    let mut winning_move = Option::None;
+    while combo_idx < winning_combinations.len() {
+        let combo = winning_combinations.at(combo_idx);
+        let pos1 = *combo.at(0);
+        let pos2 = *combo.at(1);
+        let pos3 = *combo.at(2);
+
+        // Check if we can win by playing in this combination
+        if can_win_with_combination(board, player, pos1, pos2, pos3) {
+            // Find the empty position
+            if *board.at(pos1) == MOVE_EMPTY {
+                winning_move = Option::Some(pos1);
+                break;
+            } else if *board.at(pos2) == MOVE_EMPTY {
+                winning_move = Option::Some(pos2);
+                break;
+            } else if *board.at(pos3) == MOVE_EMPTY {
+                winning_move = Option::Some(pos3);
+                break;
+            }
+        }
+        combo_idx += 1;
+    };
+
+    winning_move
+}
+
+// Check if a player can win by playing in a specific combination
+fn can_win_with_combination(board: @Array<u8>, player: u8, pos1: u32, pos2: u32, pos3: u32) -> bool {
+    let val1 = *board.at(pos1);
+    let val2 = *board.at(pos2);
+    let val3 = *board.at(pos3);
+
+    // Count player pieces and empty spots in this combination
+    let mut player_count = 0;
+    let mut empty_count = 0;
+
+    if val1 == player {
+        player_count += 1;
+    } else if val1 == MOVE_EMPTY {
+        empty_count += 1;
+    }
+
+    if val2 == player {
+        player_count += 1;
+    } else if val2 == MOVE_EMPTY {
+        empty_count += 1;
+    }
+
+    if val3 == player {
+        player_count += 1;
+    } else if val3 == MOVE_EMPTY {
+        empty_count += 1;
+    }
+
+    // Can win if we have 2 pieces and 1 empty spot
+    player_count == 2 && empty_count == 1
 }
 
 #[cfg(test)]
 mod tests {
-    use debug::PrintTrait;
-    use super::{MOVE_PLAYER0, MOVE_PLAYER1, MOVE_EMPTY, MODEL_MOVE_PLAYER0, MODEL_MOVE_PLAYER1, MODEL_MOVE_EMPTY};
-    use orion::numbers::{FP16x16, FixedTrait};
-    #[test]
-    #[available_gas(2000000000000)]
-    fn test_modify_array_at_index() {
-        let arr = array![1, 2, 3];
-        let new_arr = super::modify_array_at_index(@arr, 1, 5);
-        assert(*new_arr.at(0) == 1, 'wrong value at index 0');
-        assert(*new_arr.at(1) == 5, 'wrong value at index 1');
-        assert(*new_arr.at(2) == 3, 'wrong value at index 2');
-    }
+    use super::{move_selector, MOVE_PLAYER, MOVE_AI, MOVE_EMPTY};
 
     #[test]
-    #[available_gas(2000000000000)]
-    fn test_legal_moves_generator() {
-        let board = array![
-            MOVE_PLAYER0,
-            MOVE_PLAYER0,
-            MOVE_EMPTY,
-            MOVE_PLAYER1,
-            MOVE_PLAYER1,
-            MOVE_PLAYER0,
-            MOVE_PLAYER0,
-            MOVE_EMPTY,
-            MOVE_PLAYER1,
-        ];
-        let moves = super::legal_moves_generator(@board, MOVE_PLAYER0);
-
-        assert(moves.len() == 2, 'wrong moves len');
-
-        let (move0, loc0) = moves.at(0);
-        let (move1, loc1) = moves.at(1);
-
-        assert(*loc0 == 2, 'wrong location 0');
-        assert(*loc1 == 7, 'wrong location 1');
-
-        assert(*move0.at(0) == MOVE_PLAYER0, 'wrong value at move 0 index 0');
-        assert(*move0.at(1) == MOVE_PLAYER0, 'wrong value at move 0 index 1');
-        assert(*move0.at(2) == MOVE_PLAYER0, 'wrong value at move 0 index 2');
-        assert(*move0.at(3) == MOVE_PLAYER1, 'wrong value at move 0 index 3');
-        assert(*move0.at(4) == MOVE_PLAYER1, 'wrong value at move 0 index 4');
-        assert(*move0.at(5) == MOVE_PLAYER0, 'wrong value at move 0 index 5');
-        assert(*move0.at(6) == MOVE_PLAYER0, 'wrong value at move 0 index 6');
-        assert(*move0.at(7) == MOVE_EMPTY, 'wrong value at move 0 index 7');
-        assert(*move0.at(8) == MOVE_PLAYER1, 'wrong value at move 0 index 8');
-
-        assert(*move1.at(0) == MOVE_PLAYER0, 'wrong value at move 1 index 0');
-        assert(*move1.at(1) == MOVE_PLAYER0, 'wrong value at move 1 index 1');
-        assert(*move1.at(2) == MOVE_EMPTY, 'wrong value at move 1 index 2');
-        assert(*move1.at(3) == MOVE_PLAYER1, 'wrong value at move 1 index 3');
-        assert(*move1.at(4) == MOVE_PLAYER1, 'wrong value at move 1 index 4');
-        assert(*move1.at(5) == MOVE_PLAYER0, 'wrong value at move 1 index 5');
-        assert(*move1.at(6) == MOVE_PLAYER0, 'wrong value at move 1 index 6');
-        assert(*move1.at(7) == MOVE_PLAYER0, 'wrong value at move 1 index 7');
-        assert(*move1.at(8) == MOVE_PLAYER1, 'wrong value at move 1 index 8');
-    }
-
-    #[test]
-    #[available_gas(2000000000000)]
-    fn test_board_state_to_tensor() {
-        let board = array![
-            MOVE_PLAYER0,
-            MOVE_PLAYER0,
-            MOVE_EMPTY,
-            MOVE_PLAYER1,
-            MOVE_PLAYER1,
-            MOVE_PLAYER0,
-            MOVE_PLAYER0,
-            MOVE_EMPTY,
-            MOVE_PLAYER1,
-        ];
-        let tensor = super::board_state_to_tensor(@board);
-
-        // TODO
-        // assert(tensor.shape(0) == 9, 'wrong tensor shape');
-
-        let p0 = FixedTrait::<FP16x16>::new_unscaled(MODEL_MOVE_PLAYER0.into(), false);
-        let p1 = FixedTrait::<FP16x16>::new_unscaled(MODEL_MOVE_PLAYER1.into(), false);
-        let empty = FixedTrait::<FP16x16>::new_unscaled(MODEL_MOVE_EMPTY.into(), false);
-
-        assert(*tensor.data.at(0) == p0, 'wrong value at index 0');
-        assert(*tensor.data.at(1) == p0, 'wrong value at index 1');
-        assert(*tensor.data.at(2) == empty, 'wrong value at index 2');
-        assert(*tensor.data.at(3) == p1, 'wrong value at index 3');
-        assert(*tensor.data.at(4) == p1, 'wrong value at index 4');
-        assert(*tensor.data.at(5) == p0, 'wrong value at index 5');
-        assert(*tensor.data.at(6) == p0, 'wrong value at index 6');
-        assert(*tensor.data.at(7) == empty, 'wrong value at index 7');
-        assert(*tensor.data.at(8) == p1, 'wrong value at index 8');
-    }
-
-    #[test]
-    #[available_gas(2000000000000)]
-    fn test_move_selector() {
-        // The state looks like this:
-        // o x o
-        // o x _
-        // x _ o
-        //
-
+    #[available_gas(2000000000)]
+    fn test_winning_move() {
+        // AI can win by playing at position 2
+        // X | O | _
+        // X | O | _  
+        // _ | _ | _
         let state = array![
-            MOVE_PLAYER0,
-            MOVE_PLAYER1,
-            MOVE_PLAYER0,
-            MOVE_PLAYER0,
-            MOVE_PLAYER1,
-            MOVE_EMPTY,
-            MOVE_PLAYER1,
-            MOVE_EMPTY,
-            MOVE_PLAYER0,
+            MOVE_PLAYER, MOVE_AI, MOVE_EMPTY,
+            MOVE_PLAYER, MOVE_AI, MOVE_EMPTY,
+            MOVE_EMPTY, MOVE_EMPTY, MOVE_EMPTY,
         ];
 
-        let move = super::move_selector(state).unwrap();
-
-        assert(move == 7, 'bad move');
+        let ai_move = move_selector(state).unwrap();
+        assert(ai_move == 8, 'AI should win at position 8');
     }
 
     #[test]
-    #[available_gas(2000000000000)]
-    fn test_only_one_move() {
-        // The state looks like this:
-        // o _ _
-        // _ _ _
-        // _ _ _
-        //
-
+    #[available_gas(2000000000)]
+    fn test_blocking_move() {
+        // AI should block player from winning
+        // X | X | _
+        // O | _ | _
+        // _ | _ | _
         let state = array![
-            MOVE_PLAYER0,
-            MOVE_EMPTY,
-            MOVE_EMPTY,
-            MOVE_EMPTY,
-            MOVE_EMPTY,
-            MOVE_EMPTY,
-            MOVE_EMPTY,
-            MOVE_EMPTY,
-            MOVE_EMPTY,
+            MOVE_PLAYER, MOVE_PLAYER, MOVE_EMPTY,
+            MOVE_AI, MOVE_EMPTY, MOVE_EMPTY,
+            MOVE_EMPTY, MOVE_EMPTY, MOVE_EMPTY,
         ];
 
-        let current_player = MOVE_PLAYER1;
+        let ai_move = move_selector(state).unwrap();
+        assert(ai_move == 2, 'AI should block at position 2');
+    }
 
-        let move = super::move_selector(state).unwrap();
+    #[test]
+    #[available_gas(2000000000)]
+    fn test_center_preference() {
+        // AI should prefer center when no immediate threats
+        // X | _ | _
+        // _ | _ | _
+        // _ | _ | _
+        let state = array![
+            MOVE_PLAYER, MOVE_EMPTY, MOVE_EMPTY,
+            MOVE_EMPTY, MOVE_EMPTY, MOVE_EMPTY,
+            MOVE_EMPTY, MOVE_EMPTY, MOVE_EMPTY,
+        ];
 
-        assert(move != 0, 'bad move');
+        let ai_move = move_selector(state).unwrap();
+        assert(ai_move == 4, 'AI should take center');
+    }
+
+    #[test]
+    #[available_gas(2000000000)]
+    fn test_corner_preference() {
+        // AI should prefer corners when center is taken
+        // _ | _ | _
+        // _ | X | _
+        // _ | _ | _
+        let state = array![
+            MOVE_EMPTY, MOVE_EMPTY, MOVE_EMPTY,
+            MOVE_EMPTY, MOVE_PLAYER, MOVE_EMPTY,
+            MOVE_EMPTY, MOVE_EMPTY, MOVE_EMPTY,
+        ];
+
+        let ai_move = move_selector(state).unwrap();
+        // Should be one of the corners: 0, 2, 6, 8
+        assert(
+            ai_move == 0 || ai_move == 2 || ai_move == 6 || ai_move == 8,
+            'AI should take a corner'
+        );
     }
 }

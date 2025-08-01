@@ -1,0 +1,14 @@
+[world]
+name = "pixelaw"
+description = "PixeLAW TicTacToe with AI"
+cover_uri = "file://assets/cover.png"
+icon_uri = "file://assets/icon.png"
+website = "https://github.com/pixelaw/examples"
+socials.x = "https://twitter.com/pixelaw"
+
+[namespace]
+default = "tictactoe"
+
+[[namespace.mappings]]
+namespace = "tictactoe"
+account = "$DOJO_ACCOUNT_ADDRESS"
