@@ -1,7 +1,7 @@
 # How to use this config file: https://book.dojoengine.org/framework/config#dojo_profiletoml
 
 [world]
-name = "pixelaw"
+name = "rps"
 seed = "pixelaw"
 
 [namespace]
@@ -13,17 +13,12 @@ mappings = { "pixelaw" = [
 
 [env]
 rpc_url = "http://localhost:5050/"
-#rpc_url = "https://katana.dev.pixelaw.xyz"
 account_address = "0x127fd5f1fe78a71f8bcd1fec63e3fe2f0486b6ecd5c86a0466c3a21fa5cfcec"
 private_key = "0xc5b2fcab997346f3ea1c00b002ecf6f382c5f9c9659a3894eb783c5320f912"
-world_address = "0x01d09b5e00f376337603943fc12715e439e91c0039f353b1cc48bb278dfa99d5"
 
 [writers]
 "rps-Player" = ["rps-rps_actions"]
 "rps-Game" = ["rps-rps_actions"]
-
-[init_call_args]
-"rps-actions" = []
 
 [migration]
 skip_contracts = [
