@@ -13,12 +13,12 @@ spawn = "sozo execute chest-actions spawn --wait"    # scarb run spawn
 move = "sozo execute chest-actions move -c 1 --wait" # scarb run move
 
 [dependencies]
-pixelaw = { git = "https://github.com/pixelaw/core", tag = "v0.7.8" }
-dojo = { git = "https://github.com/dojoengine/dojo", tag = "v1.5.1" }
+pixelaw = { git = "https://github.com/pixelaw/core", tag = "v0.7.9" }
+dojo = { git = "https://github.com/dojoengine/dojo", tag = "v1.6.2" }
 
 [dev-dependencies]
-dojo_cairo_test = { git = "https://github.com/dojoengine/dojo", tag = "v1.5.1" }
-pixelaw_testing = { git = "https://github.com/pixelaw/core", tag = "v0.7.8" }
+dojo_cairo_test = { git = "https://github.com/dojoengine/dojo", tag = "v1.6.2" }
+pixelaw_testing = { git = "https://github.com/pixelaw/core", tag = "v0.7.9" }
 
 [[target.starknet-contract]]
 sierra = true

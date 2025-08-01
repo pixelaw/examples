@@ -8,12 +8,12 @@ edition = "2024_07"
 sierra-replace-ids = true
 
 [dependencies]
-pixelaw = { git = "https://github.com/pixelaw/core", tag = "v0.7.8" }
-dojo = { git = "https://github.com/dojoengine/dojo", tag = "v1.5.1" }
+pixelaw = { git = "https://github.com/pixelaw/core", tag = "v0.7.9" }
+dojo = { git = "https://github.com/dojoengine/dojo", tag = "v1.6.2" }
 
 [dev-dependencies]
-pixelaw_testing = { git = "https://github.com/pixelaw/core", tag = "v0.7.8" }
-dojo_cairo_test = { git = "https://github.com/dojoengine/dojo", tag = "v1.5.1" }
+pixelaw_testing = { git = "https://github.com/pixelaw/core", tag = "v0.7.9" }
+dojo_cairo_test = { git = "https://github.com/dojoengine/dojo", tag = "v1.6.2" }
 
 [[target.starknet-contract]]
 sierra = true
