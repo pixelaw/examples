@@ -1768,7 +1768,7 @@
     },
     {
       "address": "0x477600ec151cb02548c07d8ff32c24cdc5890b68ddeddb0647a706287a6532d",
-      "class_hash": "0x71b22082a1088e108b2ae7a608ded38e49e79f6f906b5b611f3bd1d37ce6477",
+      "class_hash": "0x3a39a6b1703f538dd5578b268daf9c4465b0026cf301ca226d7144e3c265599",
       "abi": [
         {
           "type": "impl",
@@ -1833,12 +1833,54 @@
           "interface_name": "maze::app::IMazeActions"
         },
         {
+          "type": "struct",
+          "name": "pixelaw::core::utils::Position",
+          "members": [
+            {
+              "name": "x",
+              "type": "core::integer::u16"
+            },
+            {
+              "name": "y",
+              "type": "core::integer::u16"
+            }
+          ]
+        },
+        {
+          "type": "enum",
+          "name": "core::option::Option::<core::integer::u32>",
+          "variants": [
+            {
+              "name": "Some",
+              "type": "core::integer::u32"
+            },
+            {
+              "name": "None",
+              "type": "()"
+            }
+          ]
+        },
+        {
           "type": "enum",
           "name": "core::option::Option::<core::starknet::contract_address::ContractAddress>",
           "variants": [
             {
               "name": "Some",
               "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "None",
+              "type": "()"
+            }
+          ]
+        },
+        {
+          "type": "enum",
+          "name": "core::option::Option::<core::felt252>",
+          "variants": [
+            {
+              "name": "Some",
+              "type": "core::felt252"
             },
             {
               "name": "None",
@@ -1862,15 +1904,71 @@
         },
         {
           "type": "struct",
-          "name": "pixelaw::core::utils::Position",
+          "name": "pixelaw::core::models::pixel::PixelUpdate",
           "members": [
             {
-              "name": "x",
-              "type": "core::integer::u16"
+              "name": "position",
+              "type": "pixelaw::core::utils::Position"
             },
             {
-              "name": "y",
-              "type": "core::integer::u16"
+              "name": "color",
+              "type": "core::option::Option::<core::integer::u32>"
+            },
+            {
+              "name": "owner",
+              "type": "core::option::Option::<core::starknet::contract_address::ContractAddress>"
+            },
+            {
+              "name": "app",
+              "type": "core::option::Option::<core::starknet::contract_address::ContractAddress>"
+            },
+            {
+              "name": "text",
+              "type": "core::option::Option::<core::felt252>"
+            },
+            {
+              "name": "timestamp",
+              "type": "core::option::Option::<core::integer::u64>"
+            },
+            {
+              "name": "action",
+              "type": "core::option::Option::<core::felt252>"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "pixelaw::core::models::registry::App",
+          "members": [
+            {
+              "name": "system",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "name",
+              "type": "core::felt252"
+            },
+            {
+              "name": "icon",
+              "type": "core::felt252"
+            },
+            {
+              "name": "action",
+              "type": "core::felt252"
+            }
+          ]
+        },
+        {
+          "type": "enum",
+          "name": "core::option::Option::<pixelaw::core::models::pixel::PixelUpdate>",
+          "variants": [
+            {
+              "name": "Some",
+              "type": "pixelaw::core::models::pixel::PixelUpdate"
+            },
+            {
+              "name": "None",
+              "type": "()"
             }
           ]
         },
@@ -1904,6 +2002,50 @@
           "type": "interface",
           "name": "maze::app::IMazeActions",
           "items": [
+            {
+              "type": "function",
+              "name": "on_pre_update",
+              "inputs": [
+                {
+                  "name": "pixel_update",
+                  "type": "pixelaw::core::models::pixel::PixelUpdate"
+                },
+                {
+                  "name": "app_caller",
+                  "type": "pixelaw::core::models::registry::App"
+                },
+                {
+                  "name": "player_caller",
+                  "type": "core::starknet::contract_address::ContractAddress"
+                }
+              ],
+              "outputs": [
+                {
+                  "type": "core::option::Option::<pixelaw::core::models::pixel::PixelUpdate>"
+                }
+              ],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "on_post_update",
+              "inputs": [
+                {
+                  "name": "pixel_update",
+                  "type": "pixelaw::core::models::pixel::PixelUpdate"
+                },
+                {
+                  "name": "app_caller",
+                  "type": "pixelaw::core::models::registry::App"
+                },
+                {
+                  "name": "player_caller",
+                  "type": "core::starknet::contract_address::ContractAddress"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
             {
               "type": "function",
               "name": "interact",
@@ -2043,6 +2185,8 @@
       "selector": "0x3dd7d9b4fd592513cc91fbd1d773d971a012dd321f1dd78c78676a9e67e694a",
       "systems": [
         "dojo_init",
+        "on_pre_update",
+        "on_post_update",
         "interact",
         "reveal_cell",
         "upgrade"
