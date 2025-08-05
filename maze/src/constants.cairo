@@ -2,7 +2,7 @@
 pub const APP_KEY: felt252 = 'maze';
 
 /// Core only supports unicode icons for now
-pub const APP_ICON: felt252 = 'U+1F3F0';
+pub const APP_ICON: felt252 = 0xf09f8ca0; // 🌠 (puzzle/maze navigation)
 
 /// Maze dimensions
 pub const MAZE_SIZE: u32 = 5;

@@ -33,7 +33,7 @@ pub trait IPix2048Actions<T> {
 
 /// PIX2048 app constants
 pub const APP_KEY: felt252 = 'pix2048';
-pub const APP_ICON: felt252 = 0x1f3b2; // 🎲 emoji
+pub const APP_ICON: felt252 = 0xf09f94a2; // 🔢 number emoji
 
 /// PIX2048 game contract
 #[dojo::contract]

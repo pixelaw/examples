@@ -47,7 +47,7 @@ pub trait IMinesweeperActions<T> {
 
 /// Minesweeper app constants
 pub const APP_KEY: felt252 = 'minesweeper';
-pub const APP_ICON: felt252 = 0x1F4A5; // 💥 emoji
+pub const APP_ICON: felt252 = 0xf09f92a5; // 💥 emoji
 pub const MAX_SIZE: u32 = 10;
 
 /// Minesweeper game contract

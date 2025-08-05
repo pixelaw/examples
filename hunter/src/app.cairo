@@ -12,7 +12,7 @@ pub struct LastAttempt {
 }
 
 const APP_KEY: felt252 = 'hunter';
-const APP_ICON: felt252 = 'U+27B6';
+const APP_ICON: felt252 = 0xf09f8faf; // 🏯 target/hunter emoji
 /// BASE means using the server's default manifest.json handler
 
 #[starknet::interface]

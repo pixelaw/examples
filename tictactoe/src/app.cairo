@@ -59,15 +59,15 @@ pub trait ITicTacToeActions<T> {
 
 /// TicTacToe app constants
 pub const APP_KEY: felt252 = 'tictactoe';
-pub const APP_ICON: felt252 = 'U+2B55'; // ⭕
+pub const APP_ICON: felt252 = 0xf09f8e96; // 🎖️ game/competition emoji
 pub const GAME_GRIDSIZE: u16 = 3;
 
 // Visual constants
 pub const EMPTY_CELL_COLOR: u32 = 0xFFEEEEEE; // Light gray
 pub const PLAYER_X_COLOR: u32 = 0xFFFF0000; // Red
 pub const AI_O_COLOR: u32 = 0xFF00FF00; // Green
-pub const X_SYMBOL: felt252 = 'U+0058'; // X
-pub const O_SYMBOL: felt252 = 'U+004F'; // O
+pub const X_SYMBOL: felt252 = 0x58; // X
+pub const O_SYMBOL: felt252 = 0x4F; // O
 
 /// TicTacToe actions contract
 #[dojo::contract]
