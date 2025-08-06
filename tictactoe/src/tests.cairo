@@ -133,7 +133,7 @@ fn test_tictactoe_make_move() {
 
     // Check that the pixel was updated with X symbol
     let pixel: Pixel = world.read_model(position);
-    assert(pixel.text == 'U+0058', 'Should show X symbol'); // X symbol
+    assert(pixel.text == 0x58, 'Should show X symbol'); // X symbol
 }
 
 #[test]
@@ -274,5 +274,5 @@ fn test_tictactoe_game_integration() {
 
     assert(origin_pixel.owner == player_1, 'Origin should be owned');
     assert(move_pixel.owner == player_1, 'Move pixel should be owned');
-    assert(move_pixel.text == 'U+0058', 'Should show X symbol');
+    assert(move_pixel.text == 0x58, 'Should show X symbol');
 }
