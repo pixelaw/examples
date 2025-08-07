@@ -1,5 +1,8 @@
 use pixelaw::core::utils::{DefaultParameters, Position};
+use pixelaw::core::models::pixel::{PixelUpdate};
+use pixelaw::core::models::registry::{App};
 use starknet::{ContractAddress};
+
 
 #[derive(Copy, Drop, Serde)]
 #[dojo::model]
@@ -16,6 +19,14 @@ pub struct MazeGame {
 
 #[starknet::interface]
 pub trait IMazeActions<T> {
+    fn on_pre_update(
+        ref self: T, pixel_update: PixelUpdate, app_caller: App, player_caller: ContractAddress,
+    ) -> Option<PixelUpdate>;
+
+    fn on_post_update(
+        ref self: T, pixel_update: PixelUpdate, app_caller: App, player_caller: ContractAddress,
+    );
+
     fn interact(ref self: T, default_params: DefaultParameters);
     fn reveal_cell(ref self: T, default_params: DefaultParameters);
 }
@@ -30,8 +41,9 @@ pub mod maze_actions {
     use pixelaw::apps::player::{Player};
     use pixelaw::core::actions::{IActionsDispatcherTrait as ICoreActionsDispatcherTrait};
     use pixelaw::core::models::pixel::{PixelUpdate, PixelUpdateResultTrait};
+    use pixelaw::core::models::registry::App;
     use pixelaw::core::utils::{DefaultParameters, Position, get_callers, get_core_actions};
-    use starknet::{contract_address_const, get_block_timestamp};
+    use starknet::{contract_address_const, get_block_timestamp, get_contract_address, ContractAddress};
     use super::{IMazeActions, MazeGame};
 
     /// Initialize the Maze App
@@ -44,20 +56,90 @@ pub mod maze_actions {
     // impl: implement functions specified in trait
     #[abi(embed_v0)]
     impl ActionsImpl of IMazeActions<ContractState> {
-        /// Create a new maze or reveal a cell in an existing maze
+        /// Hook called before a pixel update - allows player to move onto and away from maze cells
+        fn on_pre_update(
+            ref self: ContractState,
+            pixel_update: PixelUpdate,
+            app_caller: App,
+            player_caller: ContractAddress,
+        ) -> Option<PixelUpdate> {
+            // Always allow player movements (both onto and away from maze cells)
+            if app_caller.name == 'player' {
+                Option::Some(pixel_update)
+            } else {
+                // Default is to not allow other apps to modify maze pixels
+                Option::None
+            }
+        }
+
+        /// Hook called after a pixel update - reveals maze cell when player moves onto it
+        fn on_post_update(
+            ref self: ContractState,
+            pixel_update: PixelUpdate,
+            app_caller: App,
+            player_caller: ContractAddress,
+        ) {
+            // Only process player movements
+            if app_caller.name == 'player' {
+                let mut core_world = self.world(@"pixelaw");
+                let mut app_world = self.world(@"maze");
+
+                let position = pixel_update.position;
+                let mut game: MazeGame = app_world.read_model(position);
+
+                // Only reveal if this is a valid maze cell and not already revealed
+                if !game.is_revealed && game.id != 0 {
+                    game.is_revealed = true;
+                    app_world.write_model(@game);
+
+                    let (emoji, color) = self.get_cell_display(game.cell_type);
+
+                    // Handle trap effect
+                    if game.cell_type == TRAP {
+                        let mut player_model: Player = core_world.read_model(player_caller);
+                        if player_model.lives > 0 {
+                            player_model.lives -= 1;
+                            core_world.write_model(@player_model);
+                        }
+                    }
+
+                    // Update the pixel to show the revealed cell as background
+                    // But don't change app/owner so player retains control
+                    let core_actions = get_core_actions(ref core_world);
+                    core_actions
+                        .update_pixel(
+                            player_caller,
+                            get_contract_address(),
+                            PixelUpdate {
+                                position,
+                                color: Option::Some(color), // Show maze cell background color
+                                timestamp: Option::None,
+                                text: Option::Some(emoji), // Show maze cell emoji
+                                app: Option::None, // Don't change app - player controls this pixel
+                                owner: Option::None, // Don't change owner - player owns this pixel  
+                                action: Option::None,
+                            },
+                            Option::None,
+                            false,
+                        )
+                        .unwrap();
+                }
+            }
+        }
+        /// Create a new maze at the specified position
         fn interact(ref self: ContractState, default_params: DefaultParameters) {
             let mut core_world = self.world(@"pixelaw");
             let mut app_world = self.world(@"maze");
 
             // Load important variables
-            let (player, system) = get_callers(ref core_world, default_params);
+            let (player, _system) = get_callers(ref core_world, default_params);
 
             let position = default_params.position;
 
             // Load the MazeGame
             let game: MazeGame = app_world.read_model(position);
 
-            // If this is a new maze, create it
+            // Only create maze if this is a new location
             if game.id == 0 {
                 let core_actions = get_core_actions(ref core_world);
                 let timestamp = get_block_timestamp();
@@ -99,18 +181,19 @@ pub mod maze_actions {
 
                         app_world.write_model(@game);
 
-                        // Initialize pixel with hidden state
+                        // Initialize pixel with hidden state, but let player control it
+                        // This is the key fix: use player as the system caller, not maze contract
                         core_actions
                             .update_pixel(
                                 player,
-                                system,
+                                player, // Use player as system caller instead of maze contract
                                 PixelUpdate {
                                     position: cell_position,
                                     color: Option::Some(0x808080), // Gray for hidden
                                     timestamp: Option::None,
-                                    text: Option::Some('U+2753'), // Question mark
-                                    app: Option::Some(system),
-                                    owner: Option::Some(player),
+                                    text: Option::Some(0xe29d93), // ❓ Question mark
+                                    app: Option::None, // Don't claim app ownership
+                                    owner: Option::None, // Let player own it
                                     action: Option::None,
                                 },
                                 Option::None,
@@ -122,9 +205,6 @@ pub mod maze_actions {
                     };
                     i += 1;
                 };
-            } else {
-                // Reveal the cell
-                self.reveal_cell(default_params);
             }
         }
 
@@ -163,8 +243,8 @@ pub mod maze_actions {
                             color: Option::Some(color),
                             timestamp: Option::None,
                             text: Option::Some(emoji),
-                            app: Option::Some(system),
-                            owner: Option::Some(player),
+                            app: Option::None, // Don't change app ownership
+                            owner: Option::None, // Don't change owner
                             action: Option::None,
                         },
                         default_params.area_hint,
@@ -237,13 +317,13 @@ pub mod maze_actions {
         /// Get emoji and color for cell display
         fn get_cell_display(ref self: ContractState, cell_type: felt252) -> (felt252, u32) {
             if cell_type == WALL {
-                ('U+1F9F1', 0x8B4513) // Brick emoji, brown color
+                (0xf09f9fb1, 0x8B4513) // 🧱 Brick emoji, brown color
             } else if cell_type == PATH {
-                ('U+1F7E2', 0x00FF00) // Green circle, green color
+                (0xf09f9fa2, 0x00FF00) // 🟢 Green circle, green color
             } else if cell_type == TRAP {
-                ('U+1F4A5', 0xFF0000) // Explosion emoji, red color
+                (0xf09f92a5, 0xFF0000) // 💥 Explosion emoji, red color
             } else {
-                ('U+1F3C6', 0xFFD700) // Trophy emoji, gold color
+                (0xf09f8f86, 0xFFD700) // 🏆 Trophy emoji, gold color
             }
         }
     }
