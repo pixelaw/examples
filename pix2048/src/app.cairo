@@ -206,7 +206,7 @@ pub mod pix2048_actions {
                         position: Position { x: position.x + 1, y: position.y - 1 },
                         color: Option::Some(0xFF8F7A66),
                         timestamp: Option::None,
-                        text: Option::Some('U+21E7'),
+                        text: Option::Some(0xe287a7), // ⇧ Up arrow
                         app: Option::Some(system),
                         owner: Option::Some(player),
                         action: Option::Some('move_up'),
@@ -225,7 +225,7 @@ pub mod pix2048_actions {
                         position: Position { x: position.x + 1, y: position.y + 4 },
                         color: Option::Some(0xFF8F7A66),
                         timestamp: Option::None,
-                        text: Option::Some('U+21E9'),
+                        text: Option::Some(0xe287a9), // ⇩ Down arrow
                         app: Option::Some(system),
                         owner: Option::Some(player),
                         action: Option::Some('move_down'),
@@ -244,7 +244,7 @@ pub mod pix2048_actions {
                         position: Position { x: position.x - 1, y: position.y + 1 },
                         color: Option::Some(0xFF8F7A66),
                         timestamp: Option::None,
-                        text: Option::Some('U+21E6'),
+                        text: Option::Some(0xe287a6), // ⇦ Left arrow
                         app: Option::Some(system),
                         owner: Option::Some(player),
                         action: Option::Some('move_left'),
@@ -263,7 +263,7 @@ pub mod pix2048_actions {
                         position: Position { x: position.x + 4, y: position.y + 1 },
                         color: Option::Some(0xFF8F7A66),
                         timestamp: Option::None,
-                        text: Option::Some('U+21E8'),
+                        text: Option::Some(0xe287a8), // ⇨ Right arrow
                         app: Option::Some(system),
                         owner: Option::Some(player),
                         action: Option::Some('move_right'),
