@@ -1328,8 +1328,8 @@
   },
   "contracts": [
     {
-      "address": "0x5f72796ff03a7cfa8ccaff4a5682ee48e245c29e1018c51cf2c0735159d7219",
-      "class_hash": "0x1b057eb1e45fd3efd91025384699c5013d47b317597db27d06cc5bea12c2250",
+      "address": "0x3b7dc2165c9d1a0dc2d43e1b3ec17ffea44092409a2a2c2fbb898dc2929bd59",
+      "class_hash": "0x2ae647a5792c98d6c0cd5a8f1c33b6497fe73ffa4a388204b5c2e1b0507f8c2",
       "abi": [
         {
           "type": "impl",
