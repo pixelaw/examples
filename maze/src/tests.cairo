@@ -475,3 +475,131 @@ fn test_maze_cell_revelation_on_player_movement() {
 
     println!("Maze cell revelation test completed successfully!");
 }
+
+#[test]
+fn test_multiple_cell_revelation_and_persistence() {
+    // Test that multiple maze cells can be revealed and stay revealed
+    let (mut world, _core_actions, player_1, _player_2) = setup_core();
+    
+    world.dispatcher.grant_owner(dojo::utils::bytearray_hash(@"pixelaw"), player_1);
+    set_caller(player_1);
+
+    let maze_actions = deploy_app(ref world);
+    let (_paint_actions, _snake_actions, player_actions, _house_actions) = setup_apps(ref world);
+
+    let color = encode_rgba(2, 2, 2, 2);
+    let maze_position = Position { x: 200, y: 200 };
+    let player_start_position = Position { x: 190, y: 190 };
+    let cell1 = Position { x: 200, y: 200 }; // Top-left corner
+    let cell2 = Position { x: 201, y: 201 }; // Adjacent cell
+    let cell3 = Position { x: 202, y: 202 }; // Another cell
+
+    // Create a player
+    player_actions
+        .interact(
+            DefaultParameters {
+                player_override: Option::None,
+                system_override: Option::None,
+                area_hint: Option::None,
+                position: player_start_position,
+                color: color,
+            },
+        );
+
+    // Create the maze
+    maze_actions
+        .interact(
+            DefaultParameters {
+                player_override: Option::None,
+                system_override: Option::None,
+                area_hint: Option::None,
+                position: maze_position,
+                color: color,
+            },
+        );
+
+    println!("Maze created, testing multiple cell revelations");
+
+    // Reveal first cell
+    player_actions
+        .interact(
+            DefaultParameters {
+                player_override: Option::None,
+                system_override: Option::None,
+                area_hint: Option::None,
+                position: cell1,
+                color: color,
+            },
+        );
+
+    // Check first cell is revealed
+    let cell1_pixel: Pixel = world.read_model(cell1);
+    assert(cell1_pixel.text != 0xe29d93, 'Cell1 should be revealed');
+    
+    world.set_namespace(@"maze");
+    let cell1_game: MazeGame = world.read_model(cell1);
+    assert(cell1_game.is_revealed == true, 'Cell1 game should be revealed');
+    world.set_namespace(@"pixelaw");
+
+    println!("First cell revealed successfully");
+
+    // Reveal second cell  
+    player_actions
+        .interact(
+            DefaultParameters {
+                player_override: Option::None,
+                system_override: Option::None,
+                area_hint: Option::None,
+                position: cell2,
+                color: color,
+            },
+        );
+
+    // Check second cell is revealed
+    let cell2_pixel: Pixel = world.read_model(cell2);
+    assert(cell2_pixel.text != 0xe29d93, 'Cell2 should be revealed');
+    
+    world.set_namespace(@"maze");
+    let cell2_game: MazeGame = world.read_model(cell2);
+    assert(cell2_game.is_revealed == true, 'Cell2 game should be revealed');
+    world.set_namespace(@"pixelaw");
+
+    println!("Second cell revealed successfully");
+
+    // IMPORTANT: Verify first cell is still revealed (persistence test)
+    let cell1_pixel_after: Pixel = world.read_model(cell1);
+    assert(cell1_pixel_after.text != 0xe29d93, 'Cell1 should stay revealed');
+    assert(cell1_pixel_after.text == cell1_pixel.text, 'Cell1 should keep same emoji');
+    
+    world.set_namespace(@"maze");
+    let cell1_game_after: MazeGame = world.read_model(cell1);
+    assert(cell1_game_after.is_revealed == true, 'Cell1 game should stay revealed');
+    world.set_namespace(@"pixelaw");
+
+    println!("First cell persistence verified");
+
+    // Test third cell
+    player_actions
+        .interact(
+            DefaultParameters {
+                player_override: Option::None,
+                system_override: Option::None,
+                area_hint: Option::None,
+                position: cell3,
+                color: color,
+            },
+        );
+
+    // Check all three cells are revealed
+    let cell3_pixel: Pixel = world.read_model(cell3);
+    assert(cell3_pixel.text != 0xe29d93, 'Cell3 should be revealed');
+
+    // Final verification - all cells should be revealed and persistent
+    let final_cell1: Pixel = world.read_model(cell1);
+    let final_cell2: Pixel = world.read_model(cell2);
+    assert(final_cell1.text != 0xe29d93, 'Cell1 should remain revealed');
+    assert(final_cell2.text != 0xe29d93, 'Cell2 should remain revealed');
+    assert(cell3_pixel.text != 0xe29d93, 'Cell3 should be revealed');
+
+    println!("Multiple cell revelation and persistence test completed successfully!");
+}
