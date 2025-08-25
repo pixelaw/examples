@@ -42,7 +42,7 @@ pub mod maze_actions {
     use pixelaw::core::actions::{IActionsDispatcherTrait as ICoreActionsDispatcherTrait};
     use pixelaw::core::models::pixel::{PixelUpdate, PixelUpdateResultTrait};
     use pixelaw::core::models::registry::App;
-    use pixelaw::core::utils::{DefaultParameters, Position, get_callers, get_core_actions};
+    use pixelaw::core::utils::{DefaultParameters, Position, get_callers, get_core_actions, is_area_free, panic_at_position};
     use starknet::{contract_address_const, get_block_timestamp, get_contract_address, ContractAddress};
     use super::{IMazeActions, MazeGame};
 
@@ -141,6 +141,12 @@ pub mod maze_actions {
 
             // Only create maze if this is a new location
             if game.id == 0 {
+                // Check if the maze area is free before creating
+                let maze_size_u16: u16 = MAZE_SIZE.try_into().unwrap();
+                if !is_area_free(ref core_world, position, maze_size_u16, maze_size_u16) {
+                    panic_at_position(position, "Area not free for maze");
+                }
+
                 let core_actions = get_core_actions(ref core_world);
                 let timestamp = get_block_timestamp();
 
@@ -181,19 +187,18 @@ pub mod maze_actions {
 
                         app_world.write_model(@game);
 
-                        // Initialize pixel with hidden state, but let player control it
-                        // This is the key fix: use player as the system caller, not maze contract
+                        // Initialize pixel with maze app control but no owner (shared space)
                         core_actions
                             .update_pixel(
                                 player,
-                                player, // Use player as system caller instead of maze contract
+                                get_contract_address(), // Use maze contract as system caller
                                 PixelUpdate {
                                     position: cell_position,
                                     color: Option::Some(0x808080), // Gray for hidden
                                     timestamp: Option::None,
                                     text: Option::Some(0xe29d93), // ❓ Question mark
-                                    app: Option::None, // Don't claim app ownership
-                                    owner: Option::None, // Let player own it
+                                    app: Option::Some(get_contract_address()), // Maze app controls behavior
+                                    owner: Option::None, // Unowned - any player can traverse
                                     action: Option::None,
                                 },
                                 Option::None,
