@@ -368,7 +368,7 @@ fn test_maze_overlap_prevention() {
 fn test_maze_cell_revelation_on_player_movement() {
     // Test that maze cells are revealed when player moves over them
     let (mut world, _core_actions, player_1, _player_2) = setup_core();
-    
+
     world.dispatcher.grant_owner(dojo::utils::bytearray_hash(@"pixelaw"), player_1);
     set_caller(player_1);
 
@@ -407,8 +407,13 @@ fn test_maze_cell_revelation_on_player_movement() {
 
     // Check initial state of maze cell - should be hidden
     let initial_pixel: Pixel = world.read_model(maze_cell_to_test);
-    println!("Initial maze cell - color: {}, text: {}, app: {:?}, owner: {:?}", 
-        initial_pixel.color, initial_pixel.text, initial_pixel.app, initial_pixel.owner);
+    println!(
+        "Initial maze cell - color: {}, text: {}, app: {:?}, owner: {:?}",
+        initial_pixel.color,
+        initial_pixel.text,
+        initial_pixel.app,
+        initial_pixel.owner,
+    );
     assert(initial_pixel.text == 0xe29d93, 'Should start with question mark'); // ❓
     assert(initial_pixel.color == 0x808080, 'Should start gray');
 
@@ -422,7 +427,9 @@ fn test_maze_cell_revelation_on_player_movement() {
     println!("Initial state verified - maze cell is hidden");
 
     // Move player to the maze cell
-    println!("About to move player to maze cell at ({}, {})", maze_cell_to_test.x, maze_cell_to_test.y);
+    println!(
+        "About to move player to maze cell at ({}, {})", maze_cell_to_test.x, maze_cell_to_test.y,
+    );
     player_actions
         .interact(
             DefaultParameters {
@@ -434,17 +441,17 @@ fn test_maze_cell_revelation_on_player_movement() {
             },
         );
     println!("First player movement completed");
-    
+
     player_actions
-            .interact(
-                DefaultParameters {
-                    player_override: Option::None,
-                    system_override: Option::None,
-                    area_hint: Option::None,
-                    position: second_move,
-                    color: color,
-                },
-            );
+        .interact(
+            DefaultParameters {
+                player_override: Option::None,
+                system_override: Option::None,
+                area_hint: Option::None,
+                position: second_move,
+                color: color,
+            },
+        );
     println!("Second player movement completed");
 
     println!("Player moved to maze cell");
@@ -465,12 +472,14 @@ fn test_maze_cell_revelation_on_player_movement() {
 
     // Verify the revealed cell shows the correct maze content
     // The exact emoji/color depends on the cell type, but it should be one of the maze symbols
-    let is_valid_maze_emoji = 
-        revealed_pixel.text == 0xf09f9fb1 || // 🧱 Brick (wall)
-        revealed_pixel.text == 0xf09f9fa2 || // 🟢 Green circle (path) 
-        revealed_pixel.text == 0xf09f92a5 || // 💥 Explosion (trap)
-        revealed_pixel.text == 0xf09f8f86;   // 🏆 Trophy (center)
-    
+    let is_valid_maze_emoji = revealed_pixel.text == 0xf09f9fb1
+        || // 🧱 Brick (wall)
+        revealed_pixel.text == 0xf09f9fa2
+        || // 🟢 Green circle (path) 
+        revealed_pixel.text == 0xf09f92a5
+        || // 💥 Explosion (trap)
+        revealed_pixel.text == 0xf09f8f86; // 🏆 Trophy (center)
+
     assert(is_valid_maze_emoji, 'Should show valid maze emoji');
 
     println!("Maze cell revelation test completed successfully!");
@@ -480,7 +489,7 @@ fn test_maze_cell_revelation_on_player_movement() {
 fn test_multiple_cell_revelation_and_persistence() {
     // Test that multiple maze cells can be revealed and stay revealed
     let (mut world, _core_actions, player_1, _player_2) = setup_core();
-    
+
     world.dispatcher.grant_owner(dojo::utils::bytearray_hash(@"pixelaw"), player_1);
     set_caller(player_1);
 
@@ -535,7 +544,7 @@ fn test_multiple_cell_revelation_and_persistence() {
     // Check first cell is revealed
     let cell1_pixel: Pixel = world.read_model(cell1);
     assert(cell1_pixel.text != 0xe29d93, 'Cell1 should be revealed');
-    
+
     world.set_namespace(@"maze");
     let cell1_game: MazeGame = world.read_model(cell1);
     assert(cell1_game.is_revealed == true, 'Cell1 game should be revealed');
@@ -543,7 +552,7 @@ fn test_multiple_cell_revelation_and_persistence() {
 
     println!("First cell revealed successfully");
 
-    // Reveal second cell  
+    // Reveal second cell
     player_actions
         .interact(
             DefaultParameters {
@@ -558,7 +567,7 @@ fn test_multiple_cell_revelation_and_persistence() {
     // Check second cell is revealed
     let cell2_pixel: Pixel = world.read_model(cell2);
     assert(cell2_pixel.text != 0xe29d93, 'Cell2 should be revealed');
-    
+
     world.set_namespace(@"maze");
     let cell2_game: MazeGame = world.read_model(cell2);
     assert(cell2_game.is_revealed == true, 'Cell2 game should be revealed');
@@ -570,7 +579,7 @@ fn test_multiple_cell_revelation_and_persistence() {
     let cell1_pixel_after: Pixel = world.read_model(cell1);
     assert(cell1_pixel_after.text != 0xe29d93, 'Cell1 should stay revealed');
     assert(cell1_pixel_after.text == cell1_pixel.text, 'Cell1 should keep same emoji');
-    
+
     world.set_namespace(@"maze");
     let cell1_game_after: MazeGame = world.read_model(cell1);
     assert(cell1_game_after.is_revealed == true, 'Cell1 game should stay revealed');

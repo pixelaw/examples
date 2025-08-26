@@ -1,6 +1,6 @@
-use pixelaw::core::utils::{DefaultParameters, Position};
 use pixelaw::core::models::pixel::{PixelUpdate};
 use pixelaw::core::models::registry::{App};
+use pixelaw::core::utils::{DefaultParameters, Position};
 use starknet::{ContractAddress};
 
 
@@ -42,8 +42,12 @@ pub mod maze_actions {
     use pixelaw::core::actions::{IActionsDispatcherTrait as ICoreActionsDispatcherTrait};
     use pixelaw::core::models::pixel::{PixelUpdate, PixelUpdateResultTrait};
     use pixelaw::core::models::registry::App;
-    use pixelaw::core::utils::{DefaultParameters, Position, get_callers, get_core_actions, is_area_free, panic_at_position};
-    use starknet::{contract_address_const, get_block_timestamp, get_contract_address, ContractAddress};
+    use pixelaw::core::utils::{
+        DefaultParameters, Position, get_callers, get_core_actions, is_area_free, panic_at_position,
+    };
+    use starknet::{
+        ContractAddress, contract_address_const, get_block_timestamp, get_contract_address,
+    };
     use super::{IMazeActions, MazeGame};
 
     /// Initialize the Maze App
@@ -56,7 +60,8 @@ pub mod maze_actions {
     // impl: implement functions specified in trait
     #[abi(embed_v0)]
     impl ActionsImpl of IMazeActions<ContractState> {
-        /// Hook called before a pixel update - reveals maze cell when player is about to move onto it
+        /// Hook called before a pixel update - reveals maze cell when player is about to move onto
+        /// it
         fn on_pre_update(
             ref self: ContractState,
             pixel_update: PixelUpdate,
@@ -65,7 +70,6 @@ pub mod maze_actions {
         ) -> Option<PixelUpdate> {
             // Always allow player movements (both onto and away from maze cells)
             if app_caller.name == 'player' {
-                
                 // Reveal the maze cell BEFORE the player takes over
                 let mut app_world = self.world(@"maze");
                 let position = pixel_update.position;
@@ -74,17 +78,18 @@ pub mod maze_actions {
                 // Only reveal if this is a valid maze cell and not already revealed
                 if !game.is_revealed && game.id != 0 {
                     // Call the dedicated reveal_cell function
-                    self.reveal_cell(
-                        DefaultParameters {
-                            player_override: Option::Some(player_caller),
-                            system_override: Option::Some(get_contract_address()),
-                            area_hint: Option::None,
-                            position: position,
-                            color: 0x000000, // Color doesn't matter for reveal
-                        }
-                    );
+                    self
+                        .reveal_cell(
+                            DefaultParameters {
+                                player_override: Option::Some(player_caller),
+                                system_override: Option::Some(get_contract_address()),
+                                area_hint: Option::None,
+                                position: position,
+                                color: 0x000000 // Color doesn't matter for reveal
+                            },
+                        );
                 }
-                
+
                 Option::Some(pixel_update)
             } else {
                 // Default is to not allow other apps to modify maze pixels
@@ -98,11 +103,10 @@ pub mod maze_actions {
             pixel_update: PixelUpdate,
             app_caller: App,
             player_caller: ContractAddress,
-        ) {
-            // Revelation is now handled in on_pre_update
-            // This hook is kept for potential future use
+        ) {// Revelation is now handled in on_pre_update
+        // This hook is kept for potential future use
         }
-        
+
         /// Create a new maze at the specified position
         fn interact(ref self: ContractState, default_params: DefaultParameters) {
             let mut core_world = self.world(@"pixelaw");
@@ -174,7 +178,9 @@ pub mod maze_actions {
                                     color: Option::Some(0x808080), // Gray for hidden
                                     timestamp: Option::None,
                                     text: Option::Some(0xe29d93), // ❓ Question mark
-                                    app: Option::Some(get_contract_address()), // Maze app controls behavior
+                                    app: Option::Some(
+                                        get_contract_address(),
+                                    ), // Maze app controls behavior
                                     owner: Option::None, // Unowned - any player can traverse
                                     action: Option::None,
                                 },
