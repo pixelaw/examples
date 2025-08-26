@@ -8,12 +8,12 @@ edition = "2024_07"
 sierra-replace-ids = true
 
 [dependencies]
-pixelaw = { git = "https://github.com/pixelaw/core", tag = "v0.7.9" }
+pixelaw = { git = "https://github.com/pixelaw/core", branch = "main" }
 dojo = { git = "https://github.com/dojoengine/dojo", tag = "v1.6.2" }
 #pixelaw = { path = "../core/contracts" }
 
 [dev-dependencies]
-pixelaw_testing = { git = "https://github.com/pixelaw/core", tag = "v0.7.9" }
+pixelaw_testing = { git = "https://github.com/pixelaw/core", branch = "main" }
 dojo_cairo_test = { git = "https://github.com/dojoengine/dojo", tag = "v1.6.2" }
 #pixelaw_testing = { path = "../core/pixelaw_testing" }
 
@@ -49,4 +49,3 @@ sort-module-level-items = true
 
 
 [profile.sepolia]
-
