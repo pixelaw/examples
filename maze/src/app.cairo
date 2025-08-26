@@ -56,7 +56,7 @@ pub mod maze_actions {
     // impl: implement functions specified in trait
     #[abi(embed_v0)]
     impl ActionsImpl of IMazeActions<ContractState> {
-        /// Hook called before a pixel update - allows player to move onto and away from maze cells
+        /// Hook called before a pixel update - reveals maze cell when player is about to move onto it
         fn on_pre_update(
             ref self: ContractState,
             pixel_update: PixelUpdate,
@@ -65,6 +65,26 @@ pub mod maze_actions {
         ) -> Option<PixelUpdate> {
             // Always allow player movements (both onto and away from maze cells)
             if app_caller.name == 'player' {
+                
+                // Reveal the maze cell BEFORE the player takes over
+                let mut app_world = self.world(@"maze");
+                let position = pixel_update.position;
+                let game: MazeGame = app_world.read_model(position);
+
+                // Only reveal if this is a valid maze cell and not already revealed
+                if !game.is_revealed && game.id != 0 {
+                    // Call the dedicated reveal_cell function
+                    self.reveal_cell(
+                        DefaultParameters {
+                            player_override: Option::Some(player_caller),
+                            system_override: Option::Some(get_contract_address()),
+                            area_hint: Option::None,
+                            position: position,
+                            color: 0x000000, // Color doesn't matter for reveal
+                        }
+                    );
+                }
+                
                 Option::Some(pixel_update)
             } else {
                 // Default is to not allow other apps to modify maze pixels
@@ -72,60 +92,17 @@ pub mod maze_actions {
             }
         }
 
-        /// Hook called after a pixel update - reveals maze cell when player moves onto it
+        /// Hook called after a pixel update - no longer needed since we reveal in pre_update
         fn on_post_update(
             ref self: ContractState,
             pixel_update: PixelUpdate,
             app_caller: App,
             player_caller: ContractAddress,
         ) {
-            // Only process player movements
-            if app_caller.name == 'player' {
-                let mut core_world = self.world(@"pixelaw");
-                let mut app_world = self.world(@"maze");
-
-                let position = pixel_update.position;
-                let mut game: MazeGame = app_world.read_model(position);
-
-                // Only reveal if this is a valid maze cell and not already revealed
-                if !game.is_revealed && game.id != 0 {
-                    game.is_revealed = true;
-                    app_world.write_model(@game);
-
-                    let (emoji, color) = self.get_cell_display(game.cell_type);
-
-                    // Handle trap effect
-                    if game.cell_type == TRAP {
-                        let mut player_model: Player = core_world.read_model(player_caller);
-                        if player_model.lives > 0 {
-                            player_model.lives -= 1;
-                            core_world.write_model(@player_model);
-                        }
-                    }
-
-                    // Update the pixel to show the revealed cell as background
-                    // But don't change app/owner so player retains control
-                    let core_actions = get_core_actions(ref core_world);
-                    core_actions
-                        .update_pixel(
-                            player_caller,
-                            get_contract_address(),
-                            PixelUpdate {
-                                position,
-                                color: Option::Some(color), // Show maze cell background color
-                                timestamp: Option::None,
-                                text: Option::Some(emoji), // Show maze cell emoji
-                                app: Option::None, // Don't change app - player controls this pixel
-                                owner: Option::None, // Don't change owner - player owns this pixel  
-                                action: Option::None,
-                            },
-                            Option::None,
-                            false,
-                        )
-                        .unwrap();
-                }
-            }
+            // Revelation is now handled in on_pre_update
+            // This hook is kept for potential future use
         }
+        
         /// Create a new maze at the specified position
         fn interact(ref self: ContractState, default_params: DefaultParameters) {
             let mut core_world = self.world(@"pixelaw");
