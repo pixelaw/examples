@@ -103,7 +103,7 @@ pub mod maze_actions {
             pixel_update: PixelUpdate,
             app_caller: App,
             player_caller: ContractAddress,
-        ) {// Revelation is now handled in on_pre_update
+        ) { // Revelation is now handled in on_pre_update
         // This hook is kept for potential future use
         }
 
