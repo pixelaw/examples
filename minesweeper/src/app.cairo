@@ -30,6 +30,13 @@ pub struct MineCell {
     pub adjacent_mines: u8,
 }
 
+#[derive(Debug, PartialEq, Serde, Copy, Drop, Introspect)]
+pub enum Difficulty {
+    Easy,
+    Medium,
+    Hard,
+}
+
 #[starknet::interface]
 pub trait IMinesweeperActions<T> {
     fn on_pre_update(
@@ -40,7 +47,7 @@ pub trait IMinesweeperActions<T> {
         ref self: T, pixel_update: PixelUpdate, app_caller: App, player_caller: ContractAddress,
     );
 
-    fn interact(ref self: T, default_params: DefaultParameters, size: u32, mines_amount: u32);
+    fn interact(ref self: T, default_params: DefaultParameters, difficulty: Difficulty);
     fn reveal(ref self: T, default_params: DefaultParameters);
     fn flag(ref self: T, default_params: DefaultParameters);
 }
@@ -61,7 +68,7 @@ pub mod minesweeper_actions {
     use starknet::{
         ContractAddress, contract_address_const, get_block_timestamp, get_contract_address,
     };
-    use super::{APP_ICON, APP_KEY, IMinesweeperActions, MAX_SIZE, MineCell, MinesweeperGame};
+    use super::{APP_ICON, APP_KEY, IMinesweeperActions, MAX_SIZE, MineCell, Difficulty, MinesweeperGame};
 
     /// Initialize the Minesweeper App
     fn dojo_init(ref self: ContractState) {
@@ -93,8 +100,7 @@ pub mod minesweeper_actions {
         fn interact(
             ref self: ContractState,
             default_params: DefaultParameters,
-            size: u32,
-            mines_amount: u32,
+            difficulty: Difficulty,
         ) {
             let mut core_world = self.world(@"pixelaw");
             let mut _app_world = self.world(@"minesweeper");
@@ -102,6 +108,13 @@ pub mod minesweeper_actions {
             let _core_actions = get_core_actions(ref core_world);
             let (_player, _system) = get_callers(ref core_world, default_params);
             let position = default_params.position;
+
+            // Determine field size and mine count based on difficulty
+            let (size, mines_amount) = match difficulty {
+                Difficulty::Easy => (4_u32, 3_u32),     // 4x4 grid with 3 mines
+                Difficulty::Medium => (5_u32, 6_u32),   // 5x5 grid with 6 mines
+                Difficulty::Hard => (7_u32, 12_u32),    // 7x7 grid with 12 mines
+            };
 
             // Validate input
             assert(size > 0 && size <= MAX_SIZE, 'Invalid size');

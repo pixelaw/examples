@@ -1329,7 +1329,7 @@
   "contracts": [
     {
       "address": "0x1439e20429a45ab0dd7c0bc94a9d86345978c861baaecb411cef6be5ef401ea",
-      "class_hash": "0x2ba615548a8ac78f45820df9a5991eb058a23c83b43fe109e5c9bf2138fef39",
+      "class_hash": "0x5e0174c708f18746831efb8bff7698a476efd4631cdbc4400098c80523fe986",
       "abi": [
         {
           "type": "impl",
@@ -1560,6 +1560,24 @@
           ]
         },
         {
+          "type": "enum",
+          "name": "minesweeper::app::Difficulty",
+          "variants": [
+            {
+              "name": "Easy",
+              "type": "()"
+            },
+            {
+              "name": "Medium",
+              "type": "()"
+            },
+            {
+              "name": "Hard",
+              "type": "()"
+            }
+          ]
+        },
+        {
           "type": "interface",
           "name": "minesweeper::app::IMinesweeperActions",
           "items": [
@@ -1616,12 +1634,8 @@
                   "type": "pixelaw::core::utils::DefaultParameters"
                 },
                 {
-                  "name": "size",
-                  "type": "core::integer::u32"
-                },
-                {
-                  "name": "mines_amount",
-                  "type": "core::integer::u32"
+                  "name": "difficulty",
+                  "type": "minesweeper::app::Difficulty"
                 }
               ],
               "outputs": [],

@@ -6,7 +6,7 @@ use dojo_cairo_test::{
 
 use minesweeper::app::{
     IMinesweeperActionsDispatcher, IMinesweeperActionsDispatcherTrait, MineCell, MinesweeperGame,
-    m_MineCell, m_MinesweeperGame, minesweeper_actions,
+    m_MineCell, m_MinesweeperGame, minesweeper_actions, Difficulty,
 };
 use pixelaw::core::models::pixel::{PixelUpdate};
 use pixelaw::core::models::registry::App;
@@ -54,7 +54,7 @@ fn test_game_initialization() {
     let position = Position { x: 10, y: 10 };
     let color = encode_rgba(255, 0, 0, 255);
 
-    // Interact to initialize game
+    // Interact to initialize game with Easy difficulty
     app_actions
         .interact(
             DefaultParameters {
@@ -64,8 +64,7 @@ fn test_game_initialization() {
                 position,
                 color,
             },
-            3, // size
-            2 // mines_amount
+            Difficulty::Easy
         );
 
     // Verify game state was created
@@ -73,8 +72,8 @@ fn test_game_initialization() {
     let game_state: MinesweeperGame = world.read_model(position);
     assert(game_state.creator == player_1, 'Player mismatch');
     assert(game_state.state == 1, 'Game state should be Open');
-    assert(game_state.size == 3, 'Size should be 3');
-    assert(game_state.mines_amount == 2, 'Mines should be 2');
+    assert(game_state.size == 4, 'Size should be 4 for Easy');
+    assert(game_state.mines_amount == 3, 'Mines should be 3 for Easy');
 
     world.set_namespace(@"pixelaw");
 
@@ -98,7 +97,7 @@ fn test_flag_operations() {
     let position = Position { x: 10, y: 10 };
     let color = encode_rgba(255, 0, 0, 255);
 
-    // Initialize game first
+    // Initialize game first with Medium difficulty
     app_actions
         .interact(
             DefaultParameters {
@@ -108,8 +107,7 @@ fn test_flag_operations() {
                 position,
                 color,
             },
-            3,
-            2,
+            Difficulty::Medium
         );
 
     // Test flagging a cell
@@ -164,4 +162,72 @@ fn test_hook_functions() {
 
     // Test post_update hook (should not panic)
     app_actions.on_post_update(pixel_update, test_app, player_1);
+}
+
+#[test]
+#[available_gas(3000000000)]
+fn test_difficulty_levels() {
+    let (mut world, _core_actions, player_1, _player_2) = setup_core();
+    let app_actions = deploy_app(ref world);
+
+    set_caller(player_1);
+
+    let color = encode_rgba(255, 0, 0, 255);
+
+    // Test Easy difficulty
+    let easy_position = Position { x: 10, y: 10 };
+    app_actions
+        .interact(
+            DefaultParameters {
+                player_override: Option::None,
+                system_override: Option::None,
+                area_hint: Option::None,
+                position: easy_position,
+                color,
+            },
+            Difficulty::Easy
+        );
+
+    world.set_namespace(@"minesweeper");
+    let easy_game: MinesweeperGame = world.read_model(easy_position);
+    assert(easy_game.size == 4, 'Easy size should be 4');
+    assert(easy_game.mines_amount == 3, 'Easy mines should be 3');
+
+    // Test Medium difficulty
+    let medium_position = Position { x: 20, y: 20 };
+    app_actions
+        .interact(
+            DefaultParameters {
+                player_override: Option::None,
+                system_override: Option::None,
+                area_hint: Option::None,
+                position: medium_position,
+                color,
+            },
+            Difficulty::Medium
+        );
+
+    let medium_game: MinesweeperGame = world.read_model(medium_position);
+    assert(medium_game.size == 5, 'Medium size should be 5');
+    assert(medium_game.mines_amount == 6, 'Medium mines should be 6');
+
+    // Test Hard difficulty
+    let hard_position = Position { x: 30, y: 30 };
+    app_actions
+        .interact(
+            DefaultParameters {
+                player_override: Option::None,
+                system_override: Option::None,
+                area_hint: Option::None,
+                position: hard_position,
+                color,
+            },
+            Difficulty::Hard
+        );
+
+    let hard_game: MinesweeperGame = world.read_model(hard_position);
+    assert(hard_game.size == 7, 'Hard size should be 7');
+    assert(hard_game.mines_amount == 12, 'Hard mines should be 12');
+
+    world.set_namespace(@"pixelaw");
 }
