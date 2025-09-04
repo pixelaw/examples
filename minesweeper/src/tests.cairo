@@ -5,8 +5,8 @@ use dojo_cairo_test::{
 };
 
 use minesweeper::app::{
-    IMinesweeperActionsDispatcher, IMinesweeperActionsDispatcherTrait, MineCell, MinesweeperGame,
-    m_MineCell, m_MinesweeperGame, minesweeper_actions, Difficulty,
+    Difficulty, IMinesweeperActionsDispatcher, IMinesweeperActionsDispatcherTrait, MineCell,
+    MinesweeperGame, m_MineCell, m_MinesweeperGame, minesweeper_actions,
 };
 use pixelaw::core::models::pixel::{PixelUpdate};
 use pixelaw::core::models::registry::App;
@@ -64,7 +64,7 @@ fn test_game_initialization() {
                 position,
                 color,
             },
-            Difficulty::Easy
+            Difficulty::Easy,
         );
 
     // Verify game state was created
@@ -107,7 +107,7 @@ fn test_flag_operations() {
                 position,
                 color,
             },
-            Difficulty::Medium
+            Difficulty::Medium,
         );
 
     // Test flagging a cell
@@ -185,7 +185,7 @@ fn test_difficulty_levels() {
                 position: easy_position,
                 color,
             },
-            Difficulty::Easy
+            Difficulty::Easy,
         );
 
     world.set_namespace(@"minesweeper");
@@ -204,7 +204,7 @@ fn test_difficulty_levels() {
                 position: medium_position,
                 color,
             },
-            Difficulty::Medium
+            Difficulty::Medium,
         );
 
     let medium_game: MinesweeperGame = world.read_model(medium_position);
@@ -222,7 +222,7 @@ fn test_difficulty_levels() {
                 position: hard_position,
                 color,
             },
-            Difficulty::Hard
+            Difficulty::Hard,
         );
 
     let hard_game: MinesweeperGame = world.read_model(hard_position);

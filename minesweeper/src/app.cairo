@@ -68,7 +68,9 @@ pub mod minesweeper_actions {
     use starknet::{
         ContractAddress, contract_address_const, get_block_timestamp, get_contract_address,
     };
-    use super::{APP_ICON, APP_KEY, IMinesweeperActions, MAX_SIZE, MineCell, Difficulty, MinesweeperGame};
+    use super::{
+        APP_ICON, APP_KEY, Difficulty, IMinesweeperActions, MAX_SIZE, MineCell, MinesweeperGame,
+    };
 
     /// Initialize the Minesweeper App
     fn dojo_init(ref self: ContractState) {
@@ -98,9 +100,7 @@ pub mod minesweeper_actions {
         }
 
         fn interact(
-            ref self: ContractState,
-            default_params: DefaultParameters,
-            difficulty: Difficulty,
+            ref self: ContractState, default_params: DefaultParameters, difficulty: Difficulty,
         ) {
             let mut core_world = self.world(@"pixelaw");
             let mut _app_world = self.world(@"minesweeper");
@@ -111,9 +111,9 @@ pub mod minesweeper_actions {
 
             // Determine field size and mine count based on difficulty
             let (size, mines_amount) = match difficulty {
-                Difficulty::Easy => (4_u32, 3_u32),     // 4x4 grid with 3 mines
-                Difficulty::Medium => (5_u32, 6_u32),   // 5x5 grid with 6 mines
-                Difficulty::Hard => (7_u32, 12_u32),    // 7x7 grid with 12 mines
+                Difficulty::Easy => (4_u32, 3_u32), // 4x4 grid with 3 mines
+                Difficulty::Medium => (5_u32, 6_u32), // 5x5 grid with 6 mines
+                Difficulty::Hard => (7_u32, 12_u32) // 7x7 grid with 12 mines
             };
 
             // Validate input
