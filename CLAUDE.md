@@ -77,6 +77,8 @@ Within each app directory:
 # Quick syntax check
 scarb build
 
+# IMPORTANT: For PixeLAW apps, always use sozo build instead of scarb build for proper Dojo compilation
+
 # Format code
 scarb fmt
 
