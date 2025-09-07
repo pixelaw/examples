@@ -1329,7 +1329,7 @@
   "contracts": [
     {
       "address": "0x7ad748cf0d65035f846c14c76bb90b7358a1c946660fd3bf35694a157403f2d",
-      "class_hash": "0x1f2e17b3579f511e063618ca3d63aead5e8f52fdfe346ea8e8ed21eafe38fbb",
+      "class_hash": "0x4d735f91e911acf14bf9b2c39607071bccdbe9481530c6b41847a0e9d4374f2",
       "abi": [
         {
           "type": "impl",
@@ -1391,7 +1391,7 @@
         {
           "type": "impl",
           "name": "ActionsImpl",
-          "interface_name": "tictactoe::app::ITicTacToeActions"
+          "interface_name": "tictactoe::app::ITictactoeActions"
         },
         {
           "type": "struct",
@@ -1561,7 +1561,7 @@
         },
         {
           "type": "interface",
-          "name": "tictactoe::app::ITicTacToeActions",
+          "name": "tictactoe::app::ITictactoeActions",
           "items": [
             {
               "type": "function",

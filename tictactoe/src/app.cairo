@@ -44,7 +44,7 @@ pub struct TicTacToeCell {
 }
 
 #[starknet::interface]
-pub trait ITicTacToeActions<T> {
+pub trait ITictactoeActions<T> {
     fn on_pre_update(
         ref self: T, pixel_update: PixelUpdate, app_caller: App, player_caller: ContractAddress,
     ) -> Option<PixelUpdate>;
@@ -79,7 +79,7 @@ pub mod tictactoe_actions {
     use pixelaw::core::utils::{DefaultParameters, Position, get_callers, get_core_actions};
     use starknet::{ContractAddress, contract_address_const, get_block_timestamp};
     use super::{
-        APP_ICON, APP_KEY, ITicTacToeActions, TicTacToeGame, TicTacToeCell, GameState, CellState,
+        APP_ICON, APP_KEY, ITictactoeActions, TicTacToeGame, TicTacToeCell, GameState, CellState,
         GAME_GRIDSIZE, EMPTY_CELL_COLOR, PLAYER_X_COLOR, AI_O_COLOR, X_SYMBOL, O_SYMBOL,
     };
 
@@ -94,7 +94,7 @@ pub mod tictactoe_actions {
     }
 
     #[abi(embed_v0)]
-    impl ActionsImpl of ITicTacToeActions<ContractState> {
+    impl ActionsImpl of ITictactoeActions<ContractState> {
         fn on_pre_update(
             ref self: ContractState,
             pixel_update: PixelUpdate,
@@ -309,7 +309,7 @@ pub mod tictactoe_actions {
                                 text: Option::None,
                                 app: Option::Some(system),
                                 owner: Option::Some(player),
-                                action: Option::Some('play'),
+                                action: Option::Some('make_move'),
                             },
                             Option::None,
                             false,
