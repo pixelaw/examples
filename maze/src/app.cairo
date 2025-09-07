@@ -68,31 +68,49 @@ pub mod maze_actions {
             app_caller: App,
             player_caller: ContractAddress,
         ) -> Option<PixelUpdate> {
-            // Always allow player movements (both onto and away from maze cells)
             if app_caller.name == 'player' {
-                // Reveal the maze cell BEFORE the player takes over
                 let mut app_world = self.world(@"maze");
+                let mut core_world = self.world(@"core");
                 let position = pixel_update.position;
                 let game: MazeGame = app_world.read_model(position);
+                let core_actions = get_core_actions(ref core_world);
 
-                // Only reveal if this is a valid maze cell and not already revealed
-                if !game.is_revealed && game.id != 0 {
-                    // Call the dedicated reveal_cell function
-                    self
-                        .reveal_cell(
-                            DefaultParameters {
-                                player_override: Option::Some(player_caller),
-                                system_override: Option::Some(get_contract_address()),
-                                area_hint: Option::None,
-                                position: position,
-                                color: 0x000000 // Color doesn't matter for reveal
-                            },
-                        );
+                core_actions
+                    .notification(
+                        position,
+                        pixel_update.color.unwrap(),
+                        Option::None,
+                        Option::None,
+                        'Life collected!',
+                    );
+
+                // Only process if this is a valid maze cell
+                if game.id != 0 {
+                    // Always reveal the cell when player approaches
+                    if !game.is_revealed {
+                        self
+                            .reveal_cell(
+                                DefaultParameters {
+                                    player_override: Option::Some(player_caller),
+                                    system_override: Option::Some(get_contract_address()),
+                                    area_hint: Option::None,
+                                    position: position,
+                                    color: 0x000000 // Color doesn't matter for reveal
+                                },
+                            );
+                    }
+
+                    // Check if player can actually move onto this cell
+                    if game.cell_type == WALL {
+                        // Reveal the wall but don't allow player to move onto it
+                        return Option::None;
+                    }
                 }
 
+                // Allow player to move onto non-wall cells
                 Option::Some(pixel_update)
             } else {
-                // Default is to not allow other apps to modify maze pixels
+                // Don't allow other apps to modify maze pixels
                 Option::None
             }
         }
