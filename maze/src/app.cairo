@@ -211,6 +211,8 @@ pub mod maze_actions {
                     };
                     i += 1;
                 };
+            } else {
+                self.reveal_cell(default_params);
             }
         }
 
