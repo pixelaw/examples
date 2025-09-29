@@ -32,6 +32,7 @@ pub struct MineCell {
 
 #[derive(Debug, PartialEq, Serde, Copy, Drop, Introspect)]
 pub enum Difficulty {
+    None,
     Easy,
     Medium,
     Hard,
@@ -108,25 +109,14 @@ pub mod minesweeper_actions {
             let _core_actions = get_core_actions(ref core_world);
             let (_player, _system) = get_callers(ref core_world, default_params);
             let position = default_params.position;
-
-            // Determine field size and mine count based on difficulty
-            let (size, mines_amount) = match difficulty {
-                Difficulty::Easy => (4_u32, 3_u32), // 4x4 grid with 3 mines
-                Difficulty::Medium => (5_u32, 6_u32), // 5x5 grid with 6 mines
-                Difficulty::Hard => (7_u32, 12_u32) // 7x7 grid with 12 mines
-            };
-
-            // Validate input
-            assert(size > 0 && size <= MAX_SIZE, 'Invalid size');
-            assert(mines_amount > 0 && mines_amount < (size * size), 'Invalid mines amount');
-
-            // Check if there's already a game at this position
             let pixel: Pixel = core_world.read_model(position);
 
+            // Check if there's already a game at this position
             if pixel.app == get_contract_address() { // Game exists, just show current state
+                self.reveal(default_params);
             } else {
                 // Initialize new game
-                self.init_game(default_params, size, mines_amount);
+                self.init_game(default_params, difficulty);
             }
         }
 
@@ -240,9 +230,13 @@ pub mod minesweeper_actions {
         fn init_game(
             ref self: ContractState,
             default_params: DefaultParameters,
-            size: u32,
-            mines_amount: u32,
+            difficulty: Difficulty,
         ) {
+            // Early return for None difficulty - no game initialization needed
+            if difficulty == Difficulty::None {
+                return;
+            }
+
             let mut core_world = self.world(@"pixelaw");
             let mut app_world = self.world(@"minesweeper");
 
@@ -250,6 +244,18 @@ pub mod minesweeper_actions {
             let (player, system) = get_callers(ref core_world, default_params);
             let position = default_params.position;
             let current_timestamp = get_block_timestamp();
+
+            // Determine field size and mine count based on difficulty
+            let (size, mines_amount) = match difficulty {
+                Difficulty::None => panic!("None difficulty should have been handled by early return"),
+                Difficulty::Easy => (4_u32, 3_u32), // 4x4 grid with 3 mines
+                Difficulty::Medium => (5_u32, 6_u32), // 5x5 grid with 6 mines
+                Difficulty::Hard => (7_u32, 12_u32) // 7x7 grid with 12 mines
+            };
+
+            // Validate input
+            assert(size > 0 && size <= MAX_SIZE, 'Invalid size');
+            assert(mines_amount > 0 && mines_amount < (size * size), 'Invalid mines amount');
 
             // Create game state
             let game_state = MinesweeperGame {
