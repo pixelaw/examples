@@ -594,7 +594,7 @@ mod tests;
 ### Build and Test Commands
 ```bash
 # Quick syntax validation
-scarb build
+sozo build
 
 # Format code (always do this)
 scarb fmt
