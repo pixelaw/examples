@@ -75,9 +75,9 @@ make stop
 Within each app directory:
 ```bash
 # Quick syntax check
-scarb build
+sozo build
 
-# IMPORTANT: For PixeLAW apps, always use sozo build instead of scarb build for proper Dojo compilation
+# IMPORTANT: For PixeLAW apps, always use sozo build instead of sozo build for proper Dojo compilation
 
 # Format code
 scarb fmt
