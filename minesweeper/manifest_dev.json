@@ -1329,7 +1329,7 @@
   "contracts": [
     {
       "address": "0x1439e20429a45ab0dd7c0bc94a9d86345978c861baaecb411cef6be5ef401ea",
-      "class_hash": "0x5e0174c708f18746831efb8bff7698a476efd4631cdbc4400098c80523fe986",
+      "class_hash": "0x3d046ce07e9e1d5999570d8891db694fe75bf8a6728e78383b226b9bbbc6f35",
       "abi": [
         {
           "type": "impl",
@@ -1563,6 +1563,10 @@
           "type": "enum",
           "name": "minesweeper::app::Difficulty",
           "variants": [
+            {
+              "name": "None",
+              "type": "()"
+            },
             {
               "name": "Easy",
               "type": "()"
