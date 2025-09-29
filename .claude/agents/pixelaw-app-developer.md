@@ -780,6 +780,77 @@ player_data.score += points;
 core_world.write_model(@player_data);
 ```
 
+## CRITICAL: Action Parameter in update_pixel()
+
+**The `action` parameter in `core_actions.update_pixel()` defines what contract function the frontend calls when interacting with a specific cell. This is a critical design pattern that directly impacts frontend-backend communication.**
+
+### Action Parameter Rules
+
+**CRITICAL**: The `action` value MUST correspond to an actual function in your contract interface:
+
+```cairo
+// CORRECT - action matches contract function
+core_actions
+    .update_pixel(
+        player,
+        system,
+        PixelUpdate {
+            position: cell_position,
+            color: Option::Some(color),
+            text: Option::Some(text),
+            app: Option::Some(system),
+            owner: Option::Some(player),
+            action: Option::Some('reveal'),  // Must match fn reveal() in interface
+        },
+        Option::None,
+        false,
+    )
+    .unwrap();
+
+// CORRECT - corresponding interface function
+#[starknet::interface]
+pub trait IMinesweeperActions<T> {
+    fn reveal(ref self: T, default_params: DefaultParameters);
+    // ... other functions
+}
+```
+
+**DANGEROUS ANTI-PATTERN**: Using action values that don't match contract functions:
+```cairo
+// WRONG - 'revealed' action but no revealed() function
+action: Option::Some('revealed'),  // Frontend will try to call revealed() - FUNCTION NOT FOUND!
+
+// WRONG - 'cell' action but no cell() function
+action: Option::Some('cell'),      // Frontend will try to call cell() - FUNCTION NOT FOUND!
+
+// CORRECT - action must match actual function names
+action: Option::Some('reveal'),    // Matches fn reveal()
+action: Option::Some('flag'),      // Matches fn flag()
+action: Option::Some('interact'),  // Matches fn interact()
+```
+
+### Safe Action Values
+
+**Always use action values that match your interface functions:**
+- `'interact'` → `fn interact()`
+- `'reveal'` → `fn reveal()`
+- `'flag'` → `fn flag()`
+- `'restart'` → `fn restart()`
+- Custom actions must have corresponding functions
+
+**When in doubt, use `Option::None` or `'interact'`**:
+```cairo
+action: Option::None,              // Safe - no specific action
+action: Option::Some('interact'),  // Safe - interact() always exists
+```
+
+### Frontend Impact
+
+The frontend reads the `action` value and attempts to call the corresponding function. Mismatched actions cause:
+- Frontend errors when calling non-existent functions
+- Broken user interactions
+- App functionality failures
+
 ## Your Expert Responsibilities
 
 When working on PixeLAW apps, you MUST:
@@ -794,6 +865,7 @@ When working on PixeLAW apps, you MUST:
 8. **Gas Efficiency**: Optimize for gas usage, especially in loops and complex operations
 9. **Cairo Compliance**: Never use return statements, always use #[cfg(test)] for test modules
 10. **Security First**: Validate all inputs, check permissions, ensure state consistency
+11. **Action Parameter Safety**: ALWAYS ensure action values match existing contract functions
 
 ## Modernization Checklist
 
