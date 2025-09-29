@@ -6,14 +6,14 @@ use dojo_cairo_test::{
 };
 
 use tictactoe::app::{
-    ITicTacToeActionsDispatcher, ITicTacToeActionsDispatcherTrait, tictactoe_actions, TicTacToeGame,
+    ITictactoeActionsDispatcher, ITictactoeActionsDispatcherTrait, tictactoe_actions, TicTacToeGame,
     TicTacToeCell, m_TicTacToeGame, m_TicTacToeCell, GameState, CellState,
 };
 use pixelaw::core::models::pixel::{Pixel, PixelUpdate, PixelUpdateResultTrait};
 use pixelaw::core::utils::{DefaultParameters, Position, encode_rgba};
 use pixelaw_testing::helpers::{set_caller, setup_core, update_test_world};
 
-fn deploy_app(ref world: WorldStorage) -> ITicTacToeActionsDispatcher {
+fn deploy_app(ref world: WorldStorage) -> ITictactoeActionsDispatcher {
     let namespace = "tictactoe";
 
     world.dispatcher.register_namespace(namespace.clone());
@@ -40,7 +40,7 @@ fn deploy_app(ref world: WorldStorage) -> ITicTacToeActionsDispatcher {
     let tictactoe_actions_address = world.dns_address(@"tictactoe_actions").unwrap();
     world.set_namespace(@"pixelaw");
 
-    ITicTacToeActionsDispatcher { contract_address: tictactoe_actions_address }
+    ITictactoeActionsDispatcher { contract_address: tictactoe_actions_address }
 }
 
 #[test]
