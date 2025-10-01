@@ -153,7 +153,8 @@ fn test_hook_functions() {
 
 //    // Test Medium difficulty
 //    let medium_position = Position { x: 20, y: 20 };
-//    println!("Testing Medium difficulty at position: {}, {}", medium_position.x, medium_position.y);
+//    println!("Testing Medium difficulty at position: {}, {}", medium_position.x,
+//    medium_position.y);
 //    app_actions
 //        .interact(
 //            DefaultParameters {
@@ -233,8 +234,7 @@ fn test_mine_placement() {
         let mut y: u32 = 0;
         while y < game_state.size {
             let cell_position = Position {
-                x: position.x + x.try_into().unwrap(),
-                y: position.y + y.try_into().unwrap(),
+                x: position.x + x.try_into().unwrap(), y: position.y + y.try_into().unwrap(),
             };
             let cell: MineCell = world.read_model(cell_position);
             if cell.is_mine {
@@ -281,8 +281,7 @@ fn test_simple_reveal_mechanics() {
         let mut y = 0_u32;
         while y < 4_u32 && revealed_count < 3_u32 {
             let cell_position = Position {
-                x: position.x + x.try_into().unwrap(),
-                y: position.y + y.try_into().unwrap(),
+                x: position.x + x.try_into().unwrap(), y: position.y + y.try_into().unwrap(),
             };
 
             // Try to reveal this cell

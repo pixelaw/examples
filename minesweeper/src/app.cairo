@@ -166,15 +166,12 @@ pub mod minesweeper_actions {
                 }
             }
         }
-
     }
 
     #[generate_trait]
     impl InternalImpl of InternalTrait {
         fn init_game(
-            ref self: ContractState,
-            default_params: DefaultParameters,
-            difficulty: Difficulty,
+            ref self: ContractState, default_params: DefaultParameters, difficulty: Difficulty,
         ) {
             // Early return for None difficulty - no game initialization needed
             if difficulty == Difficulty::None {
@@ -191,11 +188,16 @@ pub mod minesweeper_actions {
 
             // Check if there's already a game at this position
             let pixel: Pixel = core_world.read_model(position);
-            assert!(pixel.app == contract_address_const::<0>() || pixel.app == get_contract_address(), "Position occupied");
+            assert!(
+                pixel.app == contract_address_const::<0>() || pixel.app == get_contract_address(),
+                "Position occupied",
+            );
 
             // Determine field size and mine count based on difficulty
             let (size, mines_amount) = match difficulty {
-                Difficulty::None => panic!("None difficulty should have been handled by early return"),
+                Difficulty::None => panic!(
+                    "None difficulty should have been handled by early return",
+                ),
                 Difficulty::Easy => (4_u32, 3_u32), // 4x4 grid with 3 mines
                 Difficulty::Medium => (5_u32, 6_u32), // 5x5 grid with 6 mines
                 Difficulty::Hard => (7_u32, 12_u32) // 7x7 grid with 12 mines
@@ -299,7 +301,7 @@ pub mod minesweeper_actions {
             };
         }
 
-  
+
         fn explode_game(ref self: ContractState, mine_position: Position, game_position: Position) {
             let mut core_world = self.world(@"pixelaw");
             let mut app_world = self.world(@"minesweeper");
