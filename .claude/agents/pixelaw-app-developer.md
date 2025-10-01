@@ -539,12 +539,12 @@ fn test_basic_interaction() {
 
 #[test]
 #[available_gas(3000000000)]
-#[should_panic(expected: ('Expected error message', 'ENTRYPOINT_FAILED'))]
+#[should_panic(expected: ("Expected error message", 'ENTRYPOINT_FAILED'))]
 fn test_failure_case() {
     // Test expected failures
     let (mut world, _core_actions, player_1, _player_2) = setup_core();
     let app_actions = deploy_app(ref world);
-    
+
     // Set up conditions that should cause failure
     // ... test code that should panic
 }
@@ -589,6 +589,19 @@ mod tests;
 - **Statement** (with semicolon): Doesn't return value
 - Last expression in function is automatically returned
 
+### 4. should_panic Test Attribute Format
+When using `#[should_panic]` for testing expected failures, the expected error message MUST use double quotes:
+
+```cairo
+// CORRECT - Double quotes for expected error message
+#[should_panic(expected: ("Game not active", 'ENTRYPOINT_FAILED'))]
+
+// WRONG - Single quotes will not work
+#[should_panic(expected: ('Game not active', 'ENTRYPOINT_FAILED'))]
+```
+
+The error message inside `expected:` must be in double quotes to match the Cairo testing framework's expected panic message format.
+
 ## Development Workflow
 
 ### Build and Test Commands
@@ -604,6 +617,9 @@ sozo build
 
 # Run comprehensive tests
 sozo test
+
+# Run specific test with filter
+sozo test --filter test_name
 
 # Deploy to local development environment
 sozo migrate
