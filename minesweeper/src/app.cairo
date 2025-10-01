@@ -13,7 +13,6 @@ pub struct MinesweeperGame {
     pub size: u32,
     pub mines_amount: u32,
     pub started_timestamp: u64,
-    pub flags: u32,
     pub revealed: u32,
 }
 
@@ -26,8 +25,6 @@ pub struct MineCell {
     pub game_position: Position, // Reference to game origin
     pub is_mine: bool,
     pub is_revealed: bool,
-    pub is_flagged: bool,
-    pub adjacent_mines: u8,
 }
 
 #[derive(Debug, PartialEq, Serde, Copy, Drop, Introspect)]
@@ -50,7 +47,6 @@ pub trait IMinesweeperActions<T> {
 
     fn interact(ref self: T, default_params: DefaultParameters, difficulty: Difficulty);
     fn reveal(ref self: T, default_params: DefaultParameters);
-    fn flag(ref self: T, default_params: DefaultParameters);
 }
 
 /// Minesweeper app constants
@@ -131,7 +127,12 @@ pub mod minesweeper_actions {
             // Find the cell to reveal
             let mut cell: MineCell = app_world.read_model(position);
 
-            if cell.is_revealed || cell.is_flagged { // Already revealed or flagged, can't reveal
+            // Check if cell exists and is part of a game
+            let game: MinesweeperGame = app_world.read_model(cell.game_position);
+            assert!(game.state == 1_u8, "Game not active");
+
+            if cell.is_revealed { // Already revealed, can't reveal
+                return;
             } else {
                 // Reveal the cell
                 cell.is_revealed = true;
@@ -141,30 +142,19 @@ pub mod minesweeper_actions {
                     // Game over - mine hit
                     self.explode_game(position, cell.game_position);
                 } else {
-                    // Update pixel display
-                    let color = if cell.adjacent_mines == 0 {
-                        0xFFFFFFFF
-                    } else {
-                        0xFFAAFFAA
-                    };
-                    let text = if cell.adjacent_mines == 0 {
-                        ''
-                    } else {
-                        cell.adjacent_mines.into()
-                    };
-
+                    // Update pixel display for safe cell
                     core_actions
                         .update_pixel(
                             player,
                             system,
                             PixelUpdate {
                                 position,
-                                color: Option::Some(color),
+                                color: Option::Some(0xFFAAFFAA), // Light green
                                 timestamp: Option::None,
-                                text: Option::Some(text),
+                                text: Option::Some('v'), // Check mark (v for safe)
                                 app: Option::Some(system),
                                 owner: Option::Some(player),
-                                action: Option::Some('revealed'),
+                                action: Option::None,
                             },
                             Option::None,
                             false,
@@ -177,52 +167,6 @@ pub mod minesweeper_actions {
             }
         }
 
-        fn flag(ref self: ContractState, default_params: DefaultParameters) {
-            let mut core_world = self.world(@"pixelaw");
-            let mut app_world = self.world(@"minesweeper");
-
-            let core_actions = get_core_actions(ref core_world);
-            let (player, system) = get_callers(ref core_world, default_params);
-            let position = default_params.position;
-
-            // Toggle flag on cell
-            let mut cell: MineCell = app_world.read_model(position);
-
-            if !cell.is_revealed {
-                cell.is_flagged = !cell.is_flagged;
-                app_world.write_model(@cell);
-
-                // Update pixel display
-                let color = if cell.is_flagged {
-                    0xFFFF0000
-                } else {
-                    0xFF888888
-                };
-                let text = if cell.is_flagged {
-                    0x1F6A9
-                } else {
-                    '?'
-                }; // 🚩 flag or ?
-
-                core_actions
-                    .update_pixel(
-                        player,
-                        system,
-                        PixelUpdate {
-                            position,
-                            color: Option::Some(color),
-                            timestamp: Option::None,
-                            text: Option::Some(text),
-                            app: Option::Some(system),
-                            owner: Option::Some(player),
-                            action: Option::Some('flag'),
-                        },
-                        Option::None,
-                        false,
-                    )
-                    .unwrap();
-            }
-        }
     }
 
     #[generate_trait]
@@ -245,6 +189,10 @@ pub mod minesweeper_actions {
             let position = default_params.position;
             let current_timestamp = get_block_timestamp();
 
+            // Check if there's already a game at this position
+            let pixel: Pixel = core_world.read_model(position);
+            assert!(pixel.app == contract_address_const::<0>() || pixel.app == get_contract_address(), "Position occupied");
+
             // Determine field size and mine count based on difficulty
             let (size, mines_amount) = match difficulty {
                 Difficulty::None => panic!("None difficulty should have been handled by early return"),
@@ -265,7 +213,6 @@ pub mod minesweeper_actions {
                 size,
                 mines_amount,
                 started_timestamp: current_timestamp,
-                flags: 0,
                 revealed: 0,
             };
             app_world.write_model(@game_state);
@@ -285,8 +232,6 @@ pub mod minesweeper_actions {
                         game_position: position,
                         is_mine: false, // Will be set randomly later
                         is_revealed: false,
-                        is_flagged: false,
-                        adjacent_mines: 0,
                     };
                     app_world.write_model(@cell);
 
@@ -302,7 +247,7 @@ pub mod minesweeper_actions {
                                 text: Option::Some('?'),
                                 app: Option::Some(system),
                                 owner: Option::Some(player),
-                                action: Option::Some('cell'),
+                                action: Option::Some('reveal'),
                             },
                             Option::None,
                             false,
@@ -316,9 +261,6 @@ pub mod minesweeper_actions {
 
             // Place mines randomly (simplified random placement)
             self.place_mines_randomly(position, size, mines_amount);
-
-            // Calculate adjacent mine counts
-            self.calculate_adjacent_mines(position, size);
 
             // Send notification
             core_actions
@@ -357,46 +299,7 @@ pub mod minesweeper_actions {
             };
         }
 
-        fn calculate_adjacent_mines(ref self: ContractState, game_position: Position, size: u32) {
-            let mut app_world = self.world(@"minesweeper");
-
-            let mut x = 0;
-            while x < size {
-                let mut y = 0;
-                while y < size {
-                    let cell_position = Position {
-                        x: game_position.x + x.try_into().unwrap(),
-                        y: game_position.y + y.try_into().unwrap(),
-                    };
-
-                    let mut cell: MineCell = app_world.read_model(cell_position);
-
-                    if !cell.is_mine {
-                        // Count adjacent mines
-                        let mut adjacent_count = 0;
-
-                        // Check all 8 adjacent positions (simplified)
-                        if x > 0 && y > 0 {
-                            let adj_pos = Position {
-                                x: cell_position.x - 1, y: cell_position.y - 1,
-                            };
-                            let adj_cell: MineCell = app_world.read_model(adj_pos);
-                            if adj_cell.is_mine {
-                                adjacent_count += 1;
-                            }
-                        }
-                        // ... (would implement all 8 directions in full version)
-
-                        cell.adjacent_mines = adjacent_count;
-                        app_world.write_model(@cell);
-                    }
-
-                    y += 1;
-                };
-                x += 1;
-            };
-        }
-
+  
         fn explode_game(ref self: ContractState, mine_position: Position, game_position: Position) {
             let mut core_world = self.world(@"pixelaw");
             let mut app_world = self.world(@"minesweeper");
@@ -421,7 +324,7 @@ pub mod minesweeper_actions {
                         text: Option::Some(APP_ICON), // 💥
                         app: Option::Some(get_contract_address()),
                         owner: Option::Some(pixel.owner),
-                        action: Option::Some('exploded'),
+                        action: Option::None,
                     },
                     Option::None,
                     false,
@@ -441,17 +344,17 @@ pub mod minesweeper_actions {
 
         fn check_win_condition(ref self: ContractState, game_position: Position) {
             let mut app_world = self.world(@"minesweeper");
+            let mut core_world = self.world(@"pixelaw");
 
             let game: MinesweeperGame = app_world.read_model(game_position);
-            let total_cells = game.size * game.size;
-            let safe_cells = total_cells - game.mines_amount;
+            let safe_cells = (game.size * game.size) - game.mines_amount;
 
-            // Count revealed safe cells
+            // Count revealed safe cells and stop early if all found
             let mut revealed_safe = 0;
             let mut x = 0;
-            while x < game.size {
+            while x < game.size && revealed_safe < safe_cells {
                 let mut y = 0;
-                while y < game.size {
+                while y < game.size && revealed_safe < safe_cells {
                     let cell_position = Position {
                         x: game_position.x + x.try_into().unwrap(),
                         y: game_position.y + y.try_into().unwrap(),
@@ -467,20 +370,18 @@ pub mod minesweeper_actions {
                 x += 1;
             };
 
+            // Check win condition
             if revealed_safe == safe_cells {
-                // Win condition met
+                // Update game state to finished
                 let mut game_state = game;
                 game_state.state = 2; // Finished
                 app_world.write_model(@game_state);
 
-                let _core_world = self.world(@"pixelaw");
-                let mut core_world_mutable = self.world(@"pixelaw");
-                let core_actions = get_core_actions(ref core_world_mutable);
-
+                let core_actions = get_core_actions(ref core_world);
                 core_actions
                     .notification(
                         game_position,
-                        0xFF00FF00,
+                        0xFF00FF00, // Green
                         Option::Some(game.creator),
                         Option::None,
                         'You won!',
