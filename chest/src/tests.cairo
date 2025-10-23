@@ -8,7 +8,7 @@ use dojo_cairo_test::{
 };
 
 use pixelaw::{core::{models::pixel::Pixel, utils::{DefaultParameters, Position}}};
-use pixelaw_testing::helpers::{set_caller, setup_core, update_test_world};
+use pixelaw_test_utils::{set_caller, setup_core, update_test_world};
 use starknet::{testing::{set_block_timestamp}};
 
 

@@ -37,6 +37,7 @@ pub const COOLDOWN_SECONDS: u64 = 86400; // 24 hours
 /// Chest actions contract
 #[dojo::contract]
 pub mod chest_actions {
+    use core::num::traits::Zero;
     use dojo::model::{ModelStorage};
     // use pixelaw::apps::player::{Player}; // TODO: Re-enable when Player model is properly set up
     use pixelaw::core::actions::{IActionsDispatcherTrait as ICoreActionsDispatcherTrait};
@@ -44,7 +45,7 @@ pub mod chest_actions {
     use pixelaw::core::models::registry::App;
     use pixelaw::core::utils::{DefaultParameters, get_callers, get_core_actions};
     use starknet::{
-        ContractAddress, contract_address_const, get_block_timestamp, get_contract_address,
+        ContractAddress, get_block_timestamp, get_contract_address,
     };
     use super::{APP_ICON, APP_KEY, COOLDOWN_SECONDS};
     use super::{Chest, IChestActions};
@@ -53,7 +54,7 @@ pub mod chest_actions {
     fn dojo_init(ref self: ContractState) {
         let mut world = self.world(@"pixelaw");
         let core_actions = get_core_actions(ref world);
-        core_actions.new_app(contract_address_const::<0>(), APP_KEY, APP_ICON);
+        core_actions.new_app(0.try_into().unwrap(), APP_KEY, APP_ICON);
     }
 
     // impl: implement functions specified in trait
@@ -133,7 +134,7 @@ pub mod chest_actions {
 
             // Check if position is empty
             let pixel: Pixel = core_world.read_model(position);
-            assert!(pixel.app == contract_address_const::<0>(), "Position is not empty");
+            assert!(pixel.app.is_zero(), "Position is not empty");
 
             // Create chest record
             let chest = Chest {

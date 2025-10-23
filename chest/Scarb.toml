@@ -1,5 +1,5 @@
 [package]
-cairo-version = "=2.10.1"
+cairo-version = "2.12.2"
 name = "chest"
 version = "0.0.0"
 edition = "2024_07"
@@ -13,12 +13,17 @@ spawn = "sozo execute chest-actions spawn --wait"    # scarb run spawn
 move = "sozo execute chest-actions move -c 1 --wait" # scarb run move
 
 [dependencies]
-pixelaw = { git = "https://github.com/pixelaw/core", tag = "v0.7.9" }
-dojo = { git = "https://github.com/dojoengine/dojo", tag = "v1.6.2" }
+pixelaw = { path = "../../core/contracts" }
+dojo = "1.7.1"
+starknet = "2.12.2"
 
 [dev-dependencies]
-dojo_cairo_test = { git = "https://github.com/dojoengine/dojo", tag = "v1.6.2" }
-pixelaw_testing = { git = "https://github.com/pixelaw/core", tag = "v0.7.9" }
+pixelaw_test_utils = { path = "../../core/pixelaw_test_utils" }
+cairo_test = "2.12.2"
+dojo_cairo_test = "1.7.1"
+
+[tool.scarb]
+allow-prebuilt-plugins = ["dojo_cairo_macros"]
 
 [[target.starknet-contract]]
 sierra = true
