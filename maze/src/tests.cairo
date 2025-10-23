@@ -1,16 +1,14 @@
-use dojo::model::{ModelStorage};
+use dojo::model::ModelStorage;
 use dojo::world::{IWorldDispatcherTrait, WorldStorage, WorldStorageTrait};
-use dojo_cairo_test::{
-    ContractDef, ContractDefTrait, NamespaceDef, TestResource, WorldStorageTestTrait,
-};
+use dojo_cairo_test::{ContractDef, ContractDefTrait, NamespaceDef, TestResource, WorldStorageTestTrait};
+
 use maze::app::{
     IMazeActionsDispatcher, IMazeActionsDispatcherTrait, MazeGame, m_MazeGame, maze_actions,
 };
 use pixelaw::apps::player::{IPlayerActionsDispatcherTrait, Player};
-use pixelaw::core::models::pixel::{Pixel};
-
+use pixelaw::core::models::pixel::Pixel;
 use pixelaw::core::utils::{DefaultParameters, Position, encode_rgba};
-use pixelaw_testing::helpers::{set_caller, setup_apps, setup_core, update_test_world};
+use pixelaw_test_utils::{set_caller, setup_apps, setup_core, update_test_world};
 
 fn deploy_app(ref world: WorldStorage) -> IMazeActionsDispatcher {
     let namespace = "maze";

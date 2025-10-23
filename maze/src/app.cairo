@@ -45,16 +45,14 @@ pub mod maze_actions {
     use pixelaw::core::utils::{
         DefaultParameters, Position, get_callers, get_core_actions, is_area_free, panic_at_position,
     };
-    use starknet::{
-        ContractAddress, contract_address_const, get_block_timestamp, get_contract_address,
-    };
+    use starknet::{ContractAddress, get_block_timestamp, get_contract_address};
     use super::{IMazeActions, MazeGame};
 
     /// Initialize the Maze App
     fn dojo_init(ref self: ContractState) {
         let mut world = self.world(@"pixelaw");
         let core_actions = pixelaw::core::utils::get_core_actions(ref world);
-        core_actions.new_app(contract_address_const::<0>(), APP_KEY, APP_ICON);
+        core_actions.new_app(0.try_into().unwrap(), APP_KEY, APP_ICON);
     }
 
     // impl: implement functions specified in trait
