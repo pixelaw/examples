@@ -21,7 +21,7 @@ jobs:
           scarb-version: "2.10.1"
       - run: |
           make fmt_check
-  
+
   apps-test:
     runs-on: ubuntu-latest
     steps:
@@ -29,6 +29,6 @@ jobs:
       - uses: asdf-vm/actions/setup@v3
       - run: |
           asdf plugin add dojo https://github.com/dojoengine/asdf-dojo
-          asdf install dojo 1.6.2
-          asdf global dojo 1.6.2
+          asdf install dojo 1.7.1
+          asdf global dojo 1.7.1
           make test_all
