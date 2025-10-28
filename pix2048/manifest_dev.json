@@ -1,7 +1,7 @@
 {
   "world": {
-    "class_hash": "0x13d92333361bb7049c1232c0a5404e2c19082ededc3a73d75cb33fa952adec7",
-    "address": "0x548b7044c88b3338e88e3c0ea356eb9dcf65388c90ec7c9d9031547af30d1d1",
+    "class_hash": "0x57994b6a75fad550ca18b41ee82e2110e158c59028c4478109a67965a0e5b1e",
+    "address": "0x22b2a8f75422d28500cb40b8b8f49f761f8a9206a870e22c3b1859cd4f07bed",
     "seed": "pixelaw",
     "name": "pix2048",
     "entrypoints": [
@@ -11,11 +11,13 @@
       "register_event",
       "register_model",
       "register_contract",
+      "register_external_contract",
       "register_library",
       "init_contract",
       "upgrade_event",
       "upgrade_model",
       "upgrade_contract",
+      "upgrade_external_contract",
       "emit_event",
       "emit_events",
       "set_entity",
@@ -83,6 +85,10 @@
           {
             "name": "Library",
             "type": "(core::starknet::class_hash::ClassHash, core::felt252)"
+          },
+          {
+            "name": "ExternalContract",
+            "type": "(core::starknet::contract_address::ContractAddress, core::felt252)"
           }
         ]
       },
@@ -213,6 +219,10 @@
           {
             "name": "Enum",
             "type": "core::array::Span::<dojo::meta::layout::FieldLayout>"
+          },
+          {
+            "name": "FixedArray",
+            "type": "(core::array::Span::<dojo::meta::layout::Layout>, core::integer::u32)"
           }
         ]
       },
@@ -369,6 +379,34 @@
           },
           {
             "type": "function",
+            "name": "register_external_contract",
+            "inputs": [
+              {
+                "name": "namespace",
+                "type": "core::byte_array::ByteArray"
+              },
+              {
+                "name": "contract_name",
+                "type": "core::byte_array::ByteArray"
+              },
+              {
+                "name": "instance_name",
+                "type": "core::byte_array::ByteArray"
+              },
+              {
+                "name": "contract_address",
+                "type": "core::starknet::contract_address::ContractAddress"
+              },
+              {
+                "name": "block_number",
+                "type": "core::integer::u64"
+              }
+            ],
+            "outputs": [],
+            "state_mutability": "external"
+          },
+          {
+            "type": "function",
             "name": "register_library",
             "inputs": [
               {
@@ -461,6 +499,30 @@
                 "type": "core::starknet::class_hash::ClassHash"
               }
             ],
+            "state_mutability": "external"
+          },
+          {
+            "type": "function",
+            "name": "upgrade_external_contract",
+            "inputs": [
+              {
+                "name": "namespace",
+                "type": "core::byte_array::ByteArray"
+              },
+              {
+                "name": "instance_name",
+                "type": "core::byte_array::ByteArray"
+              },
+              {
+                "name": "contract_address",
+                "type": "core::starknet::contract_address::ContractAddress"
+              },
+              {
+                "name": "block_number",
+                "type": "core::integer::u64"
+              }
+            ],
+            "outputs": [],
             "state_mutability": "external"
           },
           {
@@ -928,6 +990,85 @@
       },
       {
         "type": "event",
+        "name": "dojo::world::world_contract::world::ExternalContractRegistered",
+        "kind": "struct",
+        "members": [
+          {
+            "name": "namespace",
+            "type": "core::byte_array::ByteArray",
+            "kind": "key"
+          },
+          {
+            "name": "contract_name",
+            "type": "core::byte_array::ByteArray",
+            "kind": "key"
+          },
+          {
+            "name": "instance_name",
+            "type": "core::byte_array::ByteArray",
+            "kind": "key"
+          },
+          {
+            "name": "contract_selector",
+            "type": "core::felt252",
+            "kind": "key"
+          },
+          {
+            "name": "class_hash",
+            "type": "core::starknet::class_hash::ClassHash",
+            "kind": "data"
+          },
+          {
+            "name": "contract_address",
+            "type": "core::starknet::contract_address::ContractAddress",
+            "kind": "data"
+          },
+          {
+            "name": "block_number",
+            "type": "core::integer::u64",
+            "kind": "data"
+          }
+        ]
+      },
+      {
+        "type": "event",
+        "name": "dojo::world::world_contract::world::ExternalContractUpgraded",
+        "kind": "struct",
+        "members": [
+          {
+            "name": "namespace",
+            "type": "core::byte_array::ByteArray",
+            "kind": "key"
+          },
+          {
+            "name": "instance_name",
+            "type": "core::byte_array::ByteArray",
+            "kind": "key"
+          },
+          {
+            "name": "contract_selector",
+            "type": "core::felt252",
+            "kind": "key"
+          },
+          {
+            "name": "class_hash",
+            "type": "core::starknet::class_hash::ClassHash",
+            "kind": "data"
+          },
+          {
+            "name": "contract_address",
+            "type": "core::starknet::contract_address::ContractAddress",
+            "kind": "data"
+          },
+          {
+            "name": "block_number",
+            "type": "core::integer::u64",
+            "kind": "data"
+          }
+        ]
+      },
+      {
+        "type": "event",
         "name": "dojo::world::world_contract::world::ModelUpgraded",
         "kind": "struct",
         "members": [
@@ -1258,6 +1399,16 @@
             "kind": "nested"
           },
           {
+            "name": "ExternalContractRegistered",
+            "type": "dojo::world::world_contract::world::ExternalContractRegistered",
+            "kind": "nested"
+          },
+          {
+            "name": "ExternalContractUpgraded",
+            "type": "dojo::world::world_contract::world::ExternalContractUpgraded",
+            "kind": "nested"
+          },
+          {
             "name": "ModelUpgraded",
             "type": "dojo::world::world_contract::world::ModelUpgraded",
             "kind": "nested"
@@ -1328,8 +1479,8 @@
   },
   "contracts": [
     {
-      "address": "0x3b7dc2165c9d1a0dc2d43e1b3ec17ffea44092409a2a2c2fbb898dc2929bd59",
-      "class_hash": "0x2ae647a5792c98d6c0cd5a8f1c33b6497fe73ffa4a388204b5c2e1b0507f8c2",
+      "address": "0x2d35e54d5d56b7486f7d8c690a5f2c38583c5ae0efcd254f2168450b5460a50",
+      "class_hash": "0x52fa7a7b5374f399b4ea465c9c1519e9c03d93ecd2518f49859204b3a359",
       "abi": [
         {
           "type": "impl",
@@ -1343,7 +1494,7 @@
         },
         {
           "type": "impl",
-          "name": "pix2048_actions__DeployedContractImpl",
+          "name": "DojoDeployedContractImpl",
           "interface_name": "dojo::meta::interface::IDeployedResource"
         },
         {
@@ -1797,7 +1948,7 @@
   "models": [
     {
       "members": [],
-      "class_hash": "0x4e1d301e9c24379c9b6bc9d10cbf04b88ad3c2348990bdf203cf584a08c8678",
+      "class_hash": "0x4aedea11342f673b33e6c6d5e21321c565ac538ddb3b297e790bd4757f93dae",
       "tag": "pix2048-GameState",
       "selector": "0x662e33dea4e04bee7f30bf96287587b12004ef1c0cf15ffe79e3a18d3deead6"
     }

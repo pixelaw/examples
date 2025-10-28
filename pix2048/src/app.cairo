@@ -38,19 +38,20 @@ pub const APP_ICON: felt252 = 0xf09f94a2; // 🔢 number emoji
 /// PIX2048 game contract
 #[dojo::contract]
 pub mod pix2048_actions {
+    use core::num::traits::Zero;
     use dojo::model::{ModelStorage};
     use pixelaw::core::actions::{IActionsDispatcherTrait as ICoreActionsDispatcherTrait};
     use pixelaw::core::models::pixel::{Pixel, PixelUpdate, PixelUpdateResultTrait};
     use pixelaw::core::models::registry::App;
     use pixelaw::core::utils::{DefaultParameters, Position, get_callers, get_core_actions};
-    use starknet::{ContractAddress, contract_address_const, get_block_timestamp};
+    use starknet::{ContractAddress, get_block_timestamp};
     use super::{APP_ICON, APP_KEY, GameState, IPix2048Actions};
 
     /// Initialize the PIX2048 App
     fn dojo_init(ref self: ContractState) {
         let mut world = self.world(@"pixelaw");
         let core_actions = get_core_actions(ref world);
-        core_actions.new_app(contract_address_const::<0>(), APP_KEY, APP_ICON);
+        core_actions.new_app(0.try_into().unwrap(), APP_KEY, APP_ICON);
     }
 
     #[abi(embed_v0)]
@@ -82,7 +83,7 @@ pub mod pix2048_actions {
             // Check if game exists at this position
             let mut game_state: GameState = app_world.read_model(position);
 
-            if game_state.player == contract_address_const::<0>() {
+            if game_state.player.is_zero() {
                 // Initialize new game
                 let timestamp = get_block_timestamp();
 

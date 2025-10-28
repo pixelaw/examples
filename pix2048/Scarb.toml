@@ -1,5 +1,5 @@
 [package]
-cairo-version = "=2.10.1"
+cairo-version = "2.12.2"
 name = "pix2048"
 version = "0.0.0"
 edition = "2024_07"
@@ -8,12 +8,17 @@ edition = "2024_07"
 sierra-replace-ids = true
 
 [dependencies]
-pixelaw = { git = "https://github.com/pixelaw/core", tag = "v0.7.9" }
-dojo = { git = "https://github.com/dojoengine/dojo", tag = "v1.6.2" }
+pixelaw = { path = "../../core/contracts" }
+dojo = "1.7.1"
+starknet = "2.12.2"
 
 [dev-dependencies]
-pixelaw_testing = { git = "https://github.com/pixelaw/core", tag = "v0.7.9" }
-dojo_cairo_test = { git = "https://github.com/dojoengine/dojo", tag = "v1.6.2" }
+pixelaw_test_utils = { path = "../../core/pixelaw_test_utils" }
+cairo_test = "2.12.2"
+dojo_cairo_test = "1.7.1"
+
+[tool.scarb]
+allow-prebuilt-plugins = ["dojo_cairo_macros"]
 
 [[target.starknet-contract]]
 sierra = true
