@@ -55,7 +55,7 @@ DEPLOY_TYPE=$2
 wait_for_local_katana
 
 if [ "$DEPLOY_TYPE" = "vanilla" ]; then
-    VANILLA_WORLD="0x548b7044c88b3338e88e3c0ea356eb9dcf65388c90ec7c9d9031547af30d1d1"
+    VANILLA_WORLD="0x022b2a8f75422d28500cb40b8b8f49f761f8a9206a870e22c3b1859cd4f07bed"
     deploy_app $APP_NAME $VANILLA_WORLD
 else
     deploy_app $APP_NAME
