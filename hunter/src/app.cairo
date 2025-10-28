@@ -31,20 +31,21 @@ pub trait IHunterActions<T> {
 
 #[dojo::contract]
 pub mod hunter_actions {
+    use core::num::traits::Zero;
     use core::poseidon::poseidon_hash_span;
     use dojo::model::{ModelStorage};
     use pixelaw::core::actions::{IActionsDispatcherTrait as ICoreActionsDispatcherTrait};
     use pixelaw::core::models::pixel::{Pixel, PixelUpdate, PixelUpdateResultTrait};
     use pixelaw::core::models::registry::App;
     use pixelaw::core::utils::{DefaultParameters, get_callers, get_core_actions};
-    use starknet::{ContractAddress, contract_address_const, get_block_timestamp};
+    use starknet::{ContractAddress, get_block_timestamp};
     use super::{APP_ICON, APP_KEY, IHunterActions, LastAttempt};
 
     fn dojo_init(ref self: ContractState) {
         // Try to get pixelaw world first, fallback to default namespace if not available
         let mut world = self.world(@"pixelaw");
         let core_actions = get_core_actions(ref world);
-        core_actions.new_app(contract_address_const::<0>(), APP_KEY, APP_ICON);
+        core_actions.new_app(0.try_into().unwrap(), APP_KEY, APP_ICON);
     }
 
 
@@ -75,7 +76,7 @@ pub mod hunter_actions {
             let pixel: Pixel = world.read_model(position);
             let timestamp = get_block_timestamp();
 
-            assert(pixel.owner == contract_address_const::<0>(), 'Hunt only empty pixels');
+            assert(pixel.owner.is_zero(), 'Hunt only empty pixels');
 
             let timestamp_felt252: felt252 = timestamp.into();
             let x_felt252: felt252 = position.x.into();

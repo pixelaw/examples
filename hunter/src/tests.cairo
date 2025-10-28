@@ -10,7 +10,7 @@ use hunter::app::{
 use pixelaw::core::models::pixel::{Pixel};
 
 use pixelaw::core::utils::{DefaultParameters, Position, encode_rgba};
-use pixelaw_testing::helpers::{set_caller, setup_core, update_test_world};
+use pixelaw_test_utils::{set_caller, setup_core, update_test_world};
 
 fn deploy_app(ref world: WorldStorage) -> IHunterActionsDispatcher {
     let namespace = "hunter";
