@@ -16,10 +16,11 @@ A collection of game and application examples demonstrating PixeLAW's capabiliti
 
 ## Framework Versions
 
-- **Dojo Framework**: v1.6.2
-- **PixeLAW Core**: v0.7.9  
-- **Cairo**: v2.10.1
-- **Starknet**: Latest
+- **Dojo Framework**: v1.7.1
+- **PixeLAW Core**: v0.7.9
+- **Cairo**: v2.12.2
+- **Scarb**: v2.12.2
+- **Starknet**: v2.12.2
 
 ## Prerequisites
 
@@ -60,7 +61,7 @@ docker compose up -d
 
 Services will be available at:
 - **Katana** (blockchain): http://localhost:5050
-- **Torii** (indexer): http://localhost:8080  
+- **Torii** (indexer): http://localhost:8080
 - **Dashboard**: http://localhost:3000
 
 #### 2. Deploy Apps
@@ -83,7 +84,7 @@ Available apps: `chest`, `hunter`, `maze`, `minesweeper`, `pix2048`, `rps`, `tic
 
 ```shell
 make reset           # Reset with volume cleanup
-make shell           # Access container shell  
+make shell           # Access container shell
 make build_all       # Build all apps
 make test_all        # Test all apps
 make log_katana      # View blockchain logs
@@ -95,7 +96,7 @@ make log_torii       # View indexer logs
 Each app demonstrates different PixeLAW development patterns:
 
 - **Simple Single-Pixel** (chest, hunter): Direct pixel interaction with state management
-- **Complex Grid Games** (maze, minesweeper, pix2048): Multi-pixel coordination and game boards  
+- **Complex Grid Games** (maze, minesweeper, pix2048): Multi-pixel coordination and game boards
 - **Player vs Player** (rps): Turn-based competition with cryptographic security
 - **AI Integration** (tictactoe): Machine learning opponent integration
 
@@ -117,7 +118,7 @@ For development guidance, see the technical documentation in the repository.
 
 ---
 
-**Learn More**: 
+**Learn More**:
 - [PixeLAW Core](https://github.com/pixelaw/core)
 - [Dojo Engine](https://dojoengine.org)
 - [Starknet](https://starknet.io)

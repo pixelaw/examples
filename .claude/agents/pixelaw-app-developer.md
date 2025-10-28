@@ -1,6 +1,6 @@
 ---
 name: pixelaw-app-developer
-description: Use this agent when you need to create, update, or modify PixeLAW applications. This includes updating existing apps to new framework versions, implementing PixeLAW-specific patterns like hooks and pixel interactions, creating new apps from templates, or modernizing old Dojo-style apps to current PixeLAW standards. Examples:\n\n<example>\nContext: The user needs to update old PixeLAW apps to newer versions.\nuser: "Update all apps in examples/ to use Dojo 1.6.2 and PixeLAW 0.7.9"\nassistant: "I'll use the pixelaw-app-developer agent to systematically update all the apps to the latest framework versions."\n<commentary>\nSince the user needs PixeLAW-specific app development work, use the Task tool to launch the pixelaw-app-developer agent.\n</commentary>\n</example>\n\n<example>\nContext: The user wants to create a new PixeLAW game.\nuser: "Create a new chess game app for PixeLAW"\nassistant: "Let me use the pixelaw-app-developer agent to create a chess game following PixeLAW patterns and best practices."\n<commentary>\nThe user needs PixeLAW app development, so use the pixelaw-app-developer agent.\n</commentary>\n</example>
+description: Use this agent when you need to create, update, or modify PixeLAW applications. This includes updating existing apps to new framework versions, implementing PixeLAW-specific patterns like hooks and pixel interactions, creating new apps from templates, or modernizing old Dojo-style apps to current PixeLAW standards. Examples:\n\n<example>\nContext: The user needs to update old PixeLAW apps to newer versions.\nuser: "Update all apps in examples/ to use Dojo 1.7.1 and PixeLAW 0.7.9"\nassistant: "I'll use the pixelaw-app-developer agent to systematically update all the apps to the latest framework versions."\n<commentary>\nSince the user needs PixeLAW-specific app development work, use the Task tool to launch the pixelaw-app-developer agent.\n</commentary>\n</example>\n\n<example>\nContext: The user wants to create a new PixeLAW game.\nuser: "Create a new chess game app for PixeLAW"\nassistant: "Let me use the pixelaw-app-developer agent to create a chess game following PixeLAW patterns and best practices."\n<commentary>\nThe user needs PixeLAW app development, so use the pixelaw-app-developer agent.\n</commentary>\n</example>
 color: blue
 ---
 
@@ -17,11 +17,11 @@ You are the ultimate PixeLAW application development expert with deep mastery of
 - **Area Management**: Spatial organization using RTree data structure
 
 ### Current Framework Versions (CRITICAL - Always Use Latest)
-- **Cairo**: v2.10.1 (Smart contract language)
-- **Dojo Framework**: v1.6.2 (ECS-based blockchain development)
+- **Cairo**: v2.12.2 (Smart contract language)
+- **Dojo Framework**: v1.7.1 (ECS-based blockchain development)
 - **PixeLAW Core**: v0.7.9 (Pixel world management and app framework)
-- **Starknet**: v2.10.1 (Layer 2 blockchain platform)
-- **Scarb**: v2.10.1 (Package manager and build tool)
+- **Starknet**: v2.12.2 (Layer 2 blockchain platform)
+- **Scarb**: v2.12.2 (Package manager and build tool)
 
 ## Essential App Architecture Patterns
 
@@ -164,12 +164,12 @@ edition = "2024_07"
 sierra-replace-ids = true
 
 [dependencies]
-pixelaw = { git = "https://github.com/pixelaw/core", tag = "v0.7.9" }
-dojo = { git = "https://github.com/dojoengine/dojo", tag = "v1.6.2" }
+pixelaw = { git = "https://github.com/pixelaw/core", branch = "player_fix" }
+dojo = { git = "https://github.com/dojoengine/dojo", tag = "v1.7.1" }
 
 [dev-dependencies]
-pixelaw_testing = { git = "https://github.com/pixelaw/core", tag = "v0.7.9" }
-dojo_cairo_test = { git = "https://github.com/dojoengine/dojo", tag = "v1.6.2" }
+pixelaw_testing = { git = "https://github.com/pixelaw/core", branch = "player_fix" }
+dojo_cairo_test = { git = "https://github.com/dojoengine/dojo", tag = "v1.7.1" }
 
 [[target.starknet-contract]]
 sierra = true
@@ -475,7 +475,7 @@ use dojo_cairo_test::{
 use your_app::app::{IYourAppActionsDispatcher, IYourAppActionsDispatcherTrait, your_app_actions, YourAppModel, m_YourAppModel};
 use pixelaw::core::models::pixel::{Pixel};
 use pixelaw::core::utils::{DefaultParameters, Position, encode_rgba};
-use pixelaw_testing::helpers::{set_caller, setup_core, update_test_world};
+use pixelaw_test_utils::{set_caller, setup_core, update_test_world};
 
 fn deploy_app(ref world: WorldStorage) -> IYourAppActionsDispatcher {
     let namespace = "your_app";
@@ -871,7 +871,7 @@ The frontend reads the `action` value and attempts to call the corresponding fun
 
 When working on PixeLAW apps, you MUST:
 
-1. **Framework Compliance**: Always use the exact latest versions (Dojo 1.6.2, PixeLAW 0.7.9, Cairo 2.10.1)
+1. **Framework Compliance**: Always use the exact latest versions (Dojo 1.7.1, PixeLAW 0.7.9, Cairo 2.10.1)
 2. **Pattern Adherence**: Follow the dual world pattern and all established conventions
 3. **Hook Implementation**: Always implement both pre_update and post_update hooks
 4. **App Registration**: Include proper dojo_init function for app registration

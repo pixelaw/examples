@@ -8,10 +8,11 @@ This is the **PixeLAW Examples Repository** containing multiple game/app example
 
 ## Current Framework Versions
 
-- **Dojo Framework**: v1.6.2 
+- **Dojo Framework**: v1.7.1
 - **PixeLAW Core**: v0.7.9
-- **Cairo**: v2.10.1 
-- **Scarb**: v2.10.1
+- **Cairo**: v2.12.2
+- **Scarb**: v2.12.2
+- **Starknet**: v2.12.2
 
 ## Repository Structure
 
@@ -26,7 +27,7 @@ Each app follows a consistent structure:
 ## Available Apps
 
 - **chest**: Cooldown-based treasure chest system
-- **hunter**: Cryptographic randomness-based chance game  
+- **hunter**: Cryptographic randomness-based chance game
 - **maze**: Multi-pixel maze navigation with predefined layouts
 - **minesweeper**: Classic minesweeper with complex grid state
 - **pix2048**: 2048 game with control buttons and multi-pixel coordination
@@ -42,7 +43,7 @@ make start_core
 # or
 docker compose up -d
 
-# Stop core infrastructure  
+# Stop core infrastructure
 make stop_core
 # or
 docker compose down
@@ -58,7 +59,7 @@ make start
 
 # Deploy specific app
 ./deploy_apps.sh <app_name>
-# or  
+# or
 make deploy_app APP=<app_name>
 
 # Build all apps
@@ -74,22 +75,31 @@ make stop
 ### Individual App Development
 Within each app directory:
 ```bash
-# Quick syntax check
+# Build the app
 sozo build
 
-# IMPORTANT: For PixeLAW apps, always use sozo build instead of sozo build for proper Dojo compilation
+# IMPORTANT: Always use 'sozo build' (not 'scarb build') for proper Dojo compilation
 
 # Format code
 scarb fmt
-
-# Full Dojo build
-sozo build
 
 # Run tests
 sozo test
 
 # Deploy to local environment
 sozo migrate
+```
+
+### Format and Quality
+```bash
+# Format all apps
+make fmt_all
+
+# Check formatting without modifying
+make fmt_check
+
+# Clean Scarb.lock files
+make clean_locks
 ```
 
 ### Debugging and Monitoring
@@ -99,7 +109,7 @@ make shell
 
 # View logs
 make log_katana    # Blockchain logs
-make log_torii     # Indexer logs  
+make log_torii     # Indexer logs
 make log_bots      # Bot logs
 ```
 
@@ -114,23 +124,41 @@ make log_bots      # Bot logs
 ## Key Services
 
 - **Katana** (Starknet node): `http://localhost:5050`
-- **Torii** (indexer): `http://localhost:8080`  
+- **Torii** (indexer): `http://localhost:8080`
 - **Dashboard**: `http://localhost:3000`
 
 ## Configuration Files
 
-- `docker-compose.yml` - Core PixeLAW infrastructure setup
+- `docker-compose.yml` - Core PixeLAW infrastructure setup (uses pixelaw/core image)
 - `Makefile` - Development workflow commands
-- `deploy_apps.sh` - App deployment script with automatic permissions
-- `dojo_dev.toml` files - Modern Dojo configuration for each app
+- `deploy_apps.sh` - App deployment script that waits for Katana and handles migrations
+- `dojo_dev.toml` - Per-app Dojo configuration (world name, namespace mappings, skip_contracts)
+- `Scarb.toml` - Per-app package configuration with dependencies and build settings
+- `.tool-versions` - Per-app asdf tool versions (Scarb 2.12.2, Dojo 1.7.1)
 
 ## Development Notes
 
+### Deployment and Infrastructure
 - System automatically handles contract permissions during deployment
-- Apps integrate with PixeLAW core for pixel updates and notifications  
-- Each app uses dual world pattern (pixelaw + app-specific worlds)
+- Apps integrate with PixeLAW core for pixel updates and notifications
+- Each app uses dual namespace pattern (pixelaw + app-specific namespace)
 - Local development uses predefined account addresses and private keys
 - All apps support both individual and collective deployment
+- Modern Dojo configuration uses `dojo_init` function for automatic initialization
+
+### Dojo 1.7.1 Breaking Changes
+**CRITICAL**: All apps have been upgraded to Dojo 1.7.1. Key changes:
+- **Enums in models MUST derive `Default` trait** and have `#[default]` attribute on one variant
+- **Scarb.toml requires** `allow-prebuilt-plugins = ["dojo_cairo_macros"]`
+- **Testing**: `spawn_test_world` now requires `world::TEST_CLASS_HASH` as second argument
+- **Cairo version**: Must use 2.12.2 or higher
+- See `DOJO_1.7.1_UPGRADE_GUIDE.md` for complete migration instructions
+
+### App Development Patterns
+- Use `pixelaw_test_utils` for comprehensive testing helpers
+- Reference core models via `build-external-contracts` in Scarb.toml
+- Skip core contracts in migration via `skip_contracts` in dojo_dev.toml
+- Use proper namespace mappings to avoid conflicts with core contracts
 
 ## When to Use the PixeLAW App Developer Agent
 
