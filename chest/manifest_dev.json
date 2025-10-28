@@ -1,7 +1,7 @@
 {
   "world": {
     "class_hash": "0x57994b6a75fad550ca18b41ee82e2110e158c59028c4478109a67965a0e5b1e",
-    "address": "0x548b7044c88b3338e88e3c0ea356eb9dcf65388c90ec7c9d9031547af30d1d1",
+    "address": "0x22b2a8f75422d28500cb40b8b8f49f761f8a9206a870e22c3b1859cd4f07bed",
     "seed": "pixelaw",
     "name": "chest",
     "entrypoints": [
@@ -1479,8 +1479,8 @@
   },
   "contracts": [
     {
-      "address": "0xb15e246aebb3f8a43a2bd6c115d861660495ab45cca6be6dfae65ce191b64",
-      "class_hash": "0x2c023d65b682e292e6c1700b20e8f80dea949ae68b72066b40b742cb9522253",
+      "address": "0x5e8533bd17f56acd1f7c2eb28a1ec0984389b8b44574a8fbca8ee2e84f105fe",
+      "class_hash": "0x36eec8420d9a4b9c32b0d9093c2b31b0a3d1160877b368a465b944c5852e4f0",
       "abi": [
         {
           "type": "impl",
