@@ -40,7 +40,7 @@ pub fn move_selector(current_board_state: Array<u8>) -> Option<u32> {
             break;
         }
         i += 1;
-    };
+    }
 
     if corner_move.is_some() {
         return corner_move;
@@ -57,7 +57,7 @@ pub fn move_selector(current_board_state: Array<u8>) -> Option<u32> {
             break;
         }
         i += 1;
-    };
+    }
 
     if edge_move.is_some() {
         return edge_move;
@@ -72,7 +72,7 @@ pub fn move_selector(current_board_state: Array<u8>) -> Option<u32> {
             break;
         }
         i += 1;
-    };
+    }
 
     fallback_move
 }
@@ -114,7 +114,7 @@ fn find_winning_move(board: @Array<u8>, player: u8) -> Option<u32> {
             }
         }
         combo_idx += 1;
-    };
+    }
 
     winning_move
 }
@@ -155,7 +155,7 @@ fn can_win_with_combination(
 
 #[cfg(test)]
 mod tests {
-    use super::{move_selector, MOVE_PLAYER, MOVE_AI, MOVE_EMPTY};
+    use super::{MOVE_AI, MOVE_EMPTY, MOVE_PLAYER, move_selector};
 
     #[test]
     #[available_gas(2000000000)]
@@ -165,15 +165,8 @@ mod tests {
         // X | O | _
         // _ | _ | _
         let state = array![
-            MOVE_PLAYER,
-            MOVE_AI,
-            MOVE_EMPTY,
-            MOVE_PLAYER,
-            MOVE_AI,
-            MOVE_EMPTY,
-            MOVE_EMPTY,
-            MOVE_EMPTY,
-            MOVE_EMPTY,
+            MOVE_PLAYER, MOVE_AI, MOVE_EMPTY, MOVE_PLAYER, MOVE_AI, MOVE_EMPTY, MOVE_EMPTY,
+            MOVE_EMPTY, MOVE_EMPTY,
         ];
 
         let ai_move = move_selector(state).unwrap();
@@ -188,15 +181,8 @@ mod tests {
         // O | _ | _
         // _ | _ | _
         let state = array![
-            MOVE_PLAYER,
-            MOVE_PLAYER,
-            MOVE_EMPTY,
-            MOVE_AI,
-            MOVE_EMPTY,
-            MOVE_EMPTY,
-            MOVE_EMPTY,
-            MOVE_EMPTY,
-            MOVE_EMPTY,
+            MOVE_PLAYER, MOVE_PLAYER, MOVE_EMPTY, MOVE_AI, MOVE_EMPTY, MOVE_EMPTY, MOVE_EMPTY,
+            MOVE_EMPTY, MOVE_EMPTY,
         ];
 
         let ai_move = move_selector(state).unwrap();
@@ -211,15 +197,8 @@ mod tests {
         // _ | _ | _
         // _ | _ | _
         let state = array![
-            MOVE_PLAYER,
-            MOVE_EMPTY,
-            MOVE_EMPTY,
-            MOVE_EMPTY,
-            MOVE_EMPTY,
-            MOVE_EMPTY,
-            MOVE_EMPTY,
-            MOVE_EMPTY,
-            MOVE_EMPTY,
+            MOVE_PLAYER, MOVE_EMPTY, MOVE_EMPTY, MOVE_EMPTY, MOVE_EMPTY, MOVE_EMPTY, MOVE_EMPTY,
+            MOVE_EMPTY, MOVE_EMPTY,
         ];
 
         let ai_move = move_selector(state).unwrap();
@@ -234,15 +213,8 @@ mod tests {
         // _ | X | _
         // _ | _ | _
         let state = array![
-            MOVE_EMPTY,
-            MOVE_EMPTY,
-            MOVE_EMPTY,
-            MOVE_EMPTY,
-            MOVE_PLAYER,
-            MOVE_EMPTY,
-            MOVE_EMPTY,
-            MOVE_EMPTY,
-            MOVE_EMPTY,
+            MOVE_EMPTY, MOVE_EMPTY, MOVE_EMPTY, MOVE_EMPTY, MOVE_PLAYER, MOVE_EMPTY, MOVE_EMPTY,
+            MOVE_EMPTY, MOVE_EMPTY,
         ];
 
         let ai_move = move_selector(state).unwrap();

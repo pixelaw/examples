@@ -1,7 +1,7 @@
-use pixelaw::core::models::pixel::{PixelUpdate};
+use pixelaw::core::models::pixel::PixelUpdate;
 use pixelaw::core::models::registry::App;
-use pixelaw::core::utils::{DefaultParameters};
-use starknet::{ContractAddress};
+use pixelaw::core::utils::DefaultParameters;
+use starknet::ContractAddress;
 
 #[derive(Copy, Drop, Serde)]
 #[dojo::model]
@@ -33,8 +33,8 @@ pub trait IHunterActions<T> {
 pub mod hunter_actions {
     use core::num::traits::Zero;
     use core::poseidon::poseidon_hash_span;
-    use dojo::model::{ModelStorage};
-    use pixelaw::core::actions::{IActionsDispatcherTrait as ICoreActionsDispatcherTrait};
+    use dojo::model::ModelStorage;
+    use pixelaw::core::actions::IActionsDispatcherTrait as ICoreActionsDispatcherTrait;
     use pixelaw::core::models::pixel::{Pixel, PixelUpdate, PixelUpdateResultTrait};
     use pixelaw::core::models::registry::App;
     use pixelaw::core::utils::{DefaultParameters, get_callers, get_core_actions};

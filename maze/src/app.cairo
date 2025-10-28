@@ -1,7 +1,7 @@
-use pixelaw::core::models::pixel::{PixelUpdate};
-use pixelaw::core::models::registry::{App};
+use pixelaw::core::models::pixel::PixelUpdate;
+use pixelaw::core::models::registry::App;
 use pixelaw::core::utils::{DefaultParameters, Position};
-use starknet::{ContractAddress};
+use starknet::ContractAddress;
 
 
 #[derive(Copy, Drop, Serde)]
@@ -35,11 +35,13 @@ pub trait IMazeActions<T> {
 #[dojo::contract]
 pub mod maze_actions {
     use core::poseidon::poseidon_hash_span;
-    use dojo::model::{ModelStorage};
-    use maze::constants::{APP_ICON, APP_KEY, CENTER, MAZE_SIZE, PATH, TRAP, WALL};
-    use maze::constants::{MAZE_1, MAZE_2, MAZE_3, MAZE_4, MAZE_5};
-    use pixelaw::apps::player::{Player};
-    use pixelaw::core::actions::{IActionsDispatcherTrait as ICoreActionsDispatcherTrait};
+    use dojo::model::ModelStorage;
+    use maze::constants::{
+        APP_ICON, APP_KEY, CENTER, MAZE_1, MAZE_2, MAZE_3, MAZE_4, MAZE_5, MAZE_SIZE, PATH, TRAP,
+        WALL,
+    };
+    use pixelaw::apps::player::Player;
+    use pixelaw::core::actions::IActionsDispatcherTrait as ICoreActionsDispatcherTrait;
     use pixelaw::core::models::pixel::{PixelUpdate, PixelUpdateResultTrait};
     use pixelaw::core::models::registry::App;
     use pixelaw::core::utils::{
@@ -206,7 +208,7 @@ pub mod maze_actions {
                             .unwrap();
 
                         j += 1;
-                    };
+                    }
                     i += 1;
                 };
             } else {

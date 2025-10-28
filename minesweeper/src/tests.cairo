@@ -1,7 +1,8 @@
 use dojo::model::ModelStorage;
 use dojo::world::{IWorldDispatcherTrait, WorldStorage, WorldStorageTrait};
-use dojo_cairo_test::{ContractDef, ContractDefTrait, NamespaceDef, TestResource, WorldStorageTestTrait};
-
+use dojo_cairo_test::{
+    ContractDef, ContractDefTrait, NamespaceDef, TestResource, WorldStorageTestTrait,
+};
 use minesweeper::app::{
     Difficulty, IMinesweeperActionsDispatcher, IMinesweeperActionsDispatcherTrait, MineCell,
     MinesweeperGame, m_MineCell, m_MinesweeperGame, minesweeper_actions,
@@ -104,10 +105,7 @@ fn test_hook_functions() {
     };
 
     let test_app = App {
-        system: 0x123.try_into().unwrap(),
-        name: 'test',
-        icon: 0x1F4A0,
-        action: 'test_action',
+        system: 0x123.try_into().unwrap(), name: 'test', icon: 0x1F4A0, action: 'test_action',
     };
 
     let result = app_actions.on_pre_update(pixel_update, test_app, player_1);
@@ -239,9 +237,9 @@ fn test_mine_placement() {
                 mine_count += 1;
             }
             y += 1_u32;
-        };
+        }
         x += 1_u32;
-    };
+    }
 
     assert(mine_count == 3, 'Should have exactly 3 mines');
     world.set_namespace(@"pixelaw");
@@ -309,9 +307,9 @@ fn test_simple_reveal_mechanics() {
                 }
             }
             y += 1_u32;
-        };
+        }
         x += 1_u32;
-    };
+    }
     world.set_namespace(@"pixelaw");
 }
 

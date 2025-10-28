@@ -1,6 +1,7 @@
-use pixelaw::core::models::{pixel::{PixelUpdate}, registry::{App}};
+use pixelaw::core::models::pixel::PixelUpdate;
+use pixelaw::core::models::registry::App;
 use pixelaw::core::utils::{DefaultParameters, Position};
-use starknet::{ContractAddress};
+use starknet::ContractAddress;
 
 /// Simple game state tracking for 2048 game
 #[derive(Copy, Drop, Serde)]
@@ -39,8 +40,8 @@ pub const APP_ICON: felt252 = 0xf09f94a2; // 🔢 number emoji
 #[dojo::contract]
 pub mod pix2048_actions {
     use core::num::traits::Zero;
-    use dojo::model::{ModelStorage};
-    use pixelaw::core::actions::{IActionsDispatcherTrait as ICoreActionsDispatcherTrait};
+    use dojo::model::ModelStorage;
+    use pixelaw::core::actions::IActionsDispatcherTrait as ICoreActionsDispatcherTrait;
     use pixelaw::core::models::pixel::{Pixel, PixelUpdate, PixelUpdateResultTrait};
     use pixelaw::core::models::registry::App;
     use pixelaw::core::utils::{DefaultParameters, Position, get_callers, get_core_actions};
@@ -181,9 +182,9 @@ pub mod pix2048_actions {
                         .unwrap();
 
                     j += 1;
-                };
+                }
                 i += 1;
-            };
+            }
 
             // Create control buttons
             self.create_control_buttons(ref core_world, player, system, position);

@@ -1,6 +1,7 @@
-use pixelaw::core::models::{pixel::{PixelUpdate}, registry::{App}};
+use pixelaw::core::models::pixel::PixelUpdate;
+use pixelaw::core::models::registry::App;
 use pixelaw::core::utils::{DefaultParameters, Position};
-use starknet::{ContractAddress};
+use starknet::ContractAddress;
 
 /// Game states for TicTacToe
 #[derive(Serde, Copy, Drop, PartialEq, Introspect, Default)]
@@ -75,19 +76,19 @@ pub const O_SYMBOL: felt252 = 0x4F; // O
 #[dojo::contract]
 pub mod tictactoe_actions {
     use core::num::traits::Zero;
-    use dojo::model::{ModelStorage};
-    use pixelaw::core::actions::{IActionsDispatcherTrait as ICoreActionsDispatcherTrait};
+    use dojo::model::ModelStorage;
+    use pixelaw::core::actions::IActionsDispatcherTrait as ICoreActionsDispatcherTrait;
     use pixelaw::core::models::pixel::{Pixel, PixelUpdate, PixelUpdateResultTrait};
     use pixelaw::core::models::registry::App;
     use pixelaw::core::utils::{DefaultParameters, Position, get_callers, get_core_actions};
     use starknet::{ContractAddress, get_block_timestamp};
-    use super::{
-        APP_ICON, APP_KEY, ITictactoeActions, TicTacToeGame, TicTacToeCell,
-        GAME_GRIDSIZE, EMPTY_CELL_COLOR, PLAYER_X_COLOR, AI_O_COLOR, X_SYMBOL, O_SYMBOL,
-    };
 
     // Import ML inference
     use tictactoe::inference::move_selector;
+    use super::{
+        AI_O_COLOR, APP_ICON, APP_KEY, EMPTY_CELL_COLOR, GAME_GRIDSIZE, ITictactoeActions, O_SYMBOL,
+        PLAYER_X_COLOR, TicTacToeCell, TicTacToeGame, X_SYMBOL,
+    };
 
     /// Initialize the TicTacToe App
     fn dojo_init(ref self: ContractState) {
@@ -321,9 +322,9 @@ pub mod tictactoe_actions {
 
                     index += 1;
                     y += 1;
-                };
+                }
                 x += 1;
-            };
+            }
 
             // Send notification
             core_actions
@@ -347,7 +348,7 @@ pub mod tictactoe_actions {
                     let pixel: Pixel = core_world.read_model(check_position);
                     assert!(pixel.owner.is_zero(), "Need 3x3 empty area");
                     y += 1;
-                };
+                }
                 x += 1;
             };
         }
@@ -366,9 +367,9 @@ pub mod tictactoe_actions {
                     // cell_state is already u8: 0=Empty, 1=Player, 2=AI
                     board.append(cell.cell_state);
                     y += 1;
-                };
+                }
                 x += 1;
-            };
+            }
             board
         }
 
@@ -398,7 +399,7 @@ pub mod tictactoe_actions {
                     break;
                 }
                 index += 1;
-            };
+            }
             result
         }
 
@@ -421,7 +422,7 @@ pub mod tictactoe_actions {
                     break;
                 }
                 row += 1;
-            };
+            }
 
             if winner != 0 {
                 winner
@@ -436,7 +437,7 @@ pub mod tictactoe_actions {
                         break;
                     }
                     col += 1;
-                };
+                }
 
                 if winner != 0 {
                     winner

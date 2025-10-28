@@ -1,15 +1,15 @@
 use chest::app::{
     Chest, IChestActionsDispatcher, IChestActionsDispatcherTrait, chest_actions, m_Chest,
 };
-use dojo::model::{ModelStorage};
+use dojo::model::ModelStorage;
 use dojo::world::{IWorldDispatcherTrait, WorldStorage, WorldStorageTrait};
 use dojo_cairo_test::{
     ContractDef, ContractDefTrait, NamespaceDef, TestResource, WorldStorageTestTrait,
 };
-
-use pixelaw::{core::{models::pixel::Pixel, utils::{DefaultParameters, Position}}};
+use pixelaw::core::models::pixel::Pixel;
+use pixelaw::core::utils::{DefaultParameters, Position};
 use pixelaw_test_utils::{set_caller, setup_core, update_test_world};
-use starknet::{testing::{set_block_timestamp}};
+use starknet::testing::set_block_timestamp;
 
 
 // Chest app test constants

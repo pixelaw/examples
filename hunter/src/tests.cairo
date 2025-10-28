@@ -1,4 +1,4 @@
-use dojo::model::{ModelStorage};
+use dojo::model::ModelStorage;
 use dojo::world::{IWorldDispatcherTrait, WorldStorage, WorldStorageTrait};
 use dojo_cairo_test::{
     ContractDef, ContractDefTrait, NamespaceDef, TestResource, WorldStorageTestTrait,
@@ -7,8 +7,7 @@ use hunter::app::{
     IHunterActionsDispatcher, IHunterActionsDispatcherTrait, LastAttempt, hunter_actions,
     m_LastAttempt,
 };
-use pixelaw::core::models::pixel::{Pixel};
-
+use pixelaw::core::models::pixel::Pixel;
 use pixelaw::core::utils::{DefaultParameters, Position, encode_rgba};
 use pixelaw_test_utils::{set_caller, setup_core, update_test_world};
 

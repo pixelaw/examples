@@ -1,7 +1,8 @@
 // use pixelaw::apps::player::{Player}; // TODO: Re-enable when Player model is properly set up
-use pixelaw::core::models::{pixel::{PixelUpdate}, registry::{App}};
+use pixelaw::core::models::pixel::PixelUpdate;
+use pixelaw::core::models::registry::App;
 use pixelaw::core::utils::{DefaultParameters, Position};
-use starknet::{ContractAddress};
+use starknet::ContractAddress;
 
 /// Chest Model to keep track of chests and their collection status
 #[derive(Copy, Drop, Serde)]
@@ -38,17 +39,14 @@ pub const COOLDOWN_SECONDS: u64 = 86400; // 24 hours
 #[dojo::contract]
 pub mod chest_actions {
     use core::num::traits::Zero;
-    use dojo::model::{ModelStorage};
+    use dojo::model::ModelStorage;
     // use pixelaw::apps::player::{Player}; // TODO: Re-enable when Player model is properly set up
     use pixelaw::core::actions::{IActionsDispatcherTrait as ICoreActionsDispatcherTrait};
     use pixelaw::core::models::pixel::{Pixel, PixelUpdate, PixelUpdateResultTrait};
     use pixelaw::core::models::registry::App;
     use pixelaw::core::utils::{DefaultParameters, get_callers, get_core_actions};
-    use starknet::{
-        ContractAddress, get_block_timestamp, get_contract_address,
-    };
-    use super::{APP_ICON, APP_KEY, COOLDOWN_SECONDS};
-    use super::{Chest, IChestActions};
+    use starknet::{ContractAddress, get_block_timestamp, get_contract_address};
+    use super::{APP_ICON, APP_KEY, COOLDOWN_SECONDS, Chest, IChestActions};
 
     /// Initialize the Chest App
     fn dojo_init(ref self: ContractState) {

@@ -2,14 +2,9 @@ use dojo::world::{IWorldDispatcherTrait, WorldStorage, WorldStorageTrait};
 use dojo_cairo_test::{
     ContractDef, ContractDefTrait, NamespaceDef, TestResource, WorldStorageTestTrait,
 };
-
 use pixelaw::core::utils::{DefaultParameters, Position};
-
 use pixelaw_test_utils::{set_caller, setup_core, update_test_world};
-
-
-use rps::app::{IRpsActionsDispatcher, IRpsActionsDispatcherTrait, rps_actions};
-use rps::app::{m_Game, m_Player};
+use rps::app::{IRpsActionsDispatcher, IRpsActionsDispatcherTrait, m_Game, m_Player, rps_actions};
 
 
 fn deploy_app(ref world: WorldStorage) -> IRpsActionsDispatcher {
@@ -137,7 +132,6 @@ fn test_playthrough() {
             },
         );
 }
-
 use core::poseidon::poseidon_hash_span;
 // TODO: implement proper psuedo random number generator
 fn random(seed: felt252, min: u128, max: u128) -> u128 {

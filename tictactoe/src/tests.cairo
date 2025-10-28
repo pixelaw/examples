@@ -1,17 +1,16 @@
-use dojo::model::{ModelStorage};
+use dojo::model::ModelStorage;
 use dojo::world::{IWorldDispatcherTrait, WorldStorage, WorldStorageTrait};
-use pixelaw::core::actions::{IActionsDispatcherTrait};
 use dojo_cairo_test::{
     ContractDef, ContractDefTrait, NamespaceDef, TestResource, WorldStorageTestTrait,
 };
-
-use tictactoe::app::{
-    ITictactoeActionsDispatcher, ITictactoeActionsDispatcherTrait, tictactoe_actions, TicTacToeGame,
-    TicTacToeCell, m_TicTacToeGame, m_TicTacToeCell,
-};
+use pixelaw::core::actions::IActionsDispatcherTrait;
 use pixelaw::core::models::pixel::{Pixel, PixelUpdate, PixelUpdateResultTrait};
 use pixelaw::core::utils::{DefaultParameters, Position, encode_rgba};
 use pixelaw_test_utils::{set_caller, setup_core, update_test_world};
+use tictactoe::app::{
+    ITictactoeActionsDispatcher, ITictactoeActionsDispatcherTrait, TicTacToeCell, TicTacToeGame,
+    m_TicTacToeCell, m_TicTacToeGame, tictactoe_actions,
+};
 
 fn deploy_app(ref world: WorldStorage) -> ITictactoeActionsDispatcher {
     let namespace = "tictactoe";

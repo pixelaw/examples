@@ -1,7 +1,7 @@
-use pixelaw::core::models::{pixel::{PixelUpdate}, registry::{App}};
-
+use pixelaw::core::models::pixel::PixelUpdate;
+use pixelaw::core::models::registry::App;
 use pixelaw::core::utils::{DefaultParameters, Position};
-use starknet::{ContractAddress};
+use starknet::ContractAddress;
 
 const APP_KEY: felt252 = 'rps';
 const APP_ICON: felt252 = 0xf09f918a; // 👊
@@ -81,21 +81,14 @@ pub trait IRpsActions<T> {
 pub mod rps_actions {
     use core::num::traits::Zero;
     use core::poseidon::poseidon_hash_span;
-
-    use dojo::model::{ModelStorage};
-    use dojo::world::{IWorldDispatcherTrait};
-
-    use pixelaw::core::actions::{IActionsDispatcherTrait};
-    use pixelaw::core::models::pixel::PixelUpdateResultTrait;
-
-    use pixelaw::core::models::pixel::{Pixel, PixelUpdate};
+    use dojo::model::ModelStorage;
+    use dojo::world::IWorldDispatcherTrait;
+    use pixelaw::core::actions::IActionsDispatcherTrait;
+    use pixelaw::core::models::pixel::{Pixel, PixelUpdate, PixelUpdateResultTrait};
     use pixelaw::core::models::registry::App;
     use pixelaw::core::utils::{DefaultParameters, get_callers, get_core_actions};
     use starknet::{ContractAddress, get_contract_address};
-
-    use super::IRpsActions;
-    use super::{APP_ICON, APP_KEY};
-    use super::{Game};
+    use super::{APP_ICON, APP_KEY, Game, IRpsActions};
 
     const ICON_QUESTIONMARK: felt252 = 0xe29d93efb88f; // ❓
     const ICON_EXCLAMATION_MARK: felt252 = 0xe29d97; // ❗
@@ -292,10 +285,8 @@ pub mod rps_actions {
             assert!(game.id != 0, "{:?}_{:?} No game to finish", position.x, position.y);
 
             // Bail if wrong gamestate
-            assert!(
-                game.state == 2, // Joined
-                "{:?}_{:?} Wrong gamestate", position.x, position.y,
-            );
+            assert!(game.state == 2, // Joined
+            "{:?}_{:?} Wrong gamestate", position.x, position.y);
 
             // Bail if another player is finishing (has to be player1)
             assert!(
