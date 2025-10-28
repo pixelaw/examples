@@ -7,11 +7,11 @@ use dojo_cairo_test::{
 
 use tictactoe::app::{
     ITictactoeActionsDispatcher, ITictactoeActionsDispatcherTrait, tictactoe_actions, TicTacToeGame,
-    TicTacToeCell, m_TicTacToeGame, m_TicTacToeCell, GameState, CellState,
+    TicTacToeCell, m_TicTacToeGame, m_TicTacToeCell,
 };
 use pixelaw::core::models::pixel::{Pixel, PixelUpdate, PixelUpdateResultTrait};
 use pixelaw::core::utils::{DefaultParameters, Position, encode_rgba};
-use pixelaw_testing::helpers::{set_caller, setup_core, update_test_world};
+use pixelaw_test_utils::{set_caller, setup_core, update_test_world};
 
 fn deploy_app(ref world: WorldStorage) -> ITictactoeActionsDispatcher {
     let namespace = "tictactoe";
@@ -72,7 +72,7 @@ fn test_tictactoe_game_creation() {
     world.set_namespace(@"tictactoe");
     let game: TicTacToeGame = world.read_model(position);
     assert(game.player == player_1, 'Game creator mismatch');
-    assert(game.state == GameState::Active, 'Game should be active');
+    assert(game.state == 1, 'Game should be active'); // 1 = Active
     assert(game.moves_left == 9, 'Should have 9 moves left');
     world.set_namespace(@"pixelaw");
 
@@ -124,7 +124,7 @@ fn test_tictactoe_make_move() {
     // Check that the cell was updated
     world.set_namespace(@"tictactoe");
     let cell: TicTacToeCell = world.read_model(position);
-    assert(cell.cell_state == CellState::Player, 'Cell should be Player');
+    assert(cell.cell_state == 1, 'Cell should be Player'); // 1 = Player
 
     // Check that game moves were decremented (player + AI move)
     let game: TicTacToeGame = world.read_model(position);

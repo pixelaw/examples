@@ -3,8 +3,9 @@ use pixelaw::core::utils::{DefaultParameters, Position};
 use starknet::{ContractAddress};
 
 /// Game states for TicTacToe
-#[derive(Serde, Copy, Drop, PartialEq, Introspect)]
+#[derive(Serde, Copy, Drop, PartialEq, Introspect, Default)]
 pub enum GameState {
+    #[default]
     None: (),
     Active: (),
     PlayerWon: (),
@@ -13,8 +14,9 @@ pub enum GameState {
 }
 
 /// Cell states for TicTacToe grid
-#[derive(Serde, Copy, Drop, PartialEq, Introspect)]
+#[derive(Serde, Copy, Drop, PartialEq, Introspect, Default)]
 pub enum CellState {
+    #[default]
     Empty: (),
     Player: (), // X
     AI: (),
@@ -27,7 +29,7 @@ pub struct TicTacToeGame {
     #[key]
     pub position: Position,
     pub player: ContractAddress,
-    pub state: GameState,
+    pub state: u8, // 0=None, 1=Active, 2=PlayerWon, 3=AIWon, 4=Tie
     pub started_timestamp: u64,
     pub moves_left: u8,
 }
@@ -39,7 +41,7 @@ pub struct TicTacToeCell {
     #[key]
     pub position: Position,
     pub game_position: Position, // Reference to game origin
-    pub cell_state: CellState,
+    pub cell_state: u8, // 0=Empty, 1=Player, 2=AI
     pub grid_index: u8,
 }
 
@@ -72,14 +74,15 @@ pub const O_SYMBOL: felt252 = 0x4F; // O
 /// TicTacToe actions contract
 #[dojo::contract]
 pub mod tictactoe_actions {
+    use core::num::traits::Zero;
     use dojo::model::{ModelStorage};
     use pixelaw::core::actions::{IActionsDispatcherTrait as ICoreActionsDispatcherTrait};
     use pixelaw::core::models::pixel::{Pixel, PixelUpdate, PixelUpdateResultTrait};
     use pixelaw::core::models::registry::App;
     use pixelaw::core::utils::{DefaultParameters, Position, get_callers, get_core_actions};
-    use starknet::{ContractAddress, contract_address_const, get_block_timestamp};
+    use starknet::{ContractAddress, get_block_timestamp};
     use super::{
-        APP_ICON, APP_KEY, ITictactoeActions, TicTacToeGame, TicTacToeCell, GameState, CellState,
+        APP_ICON, APP_KEY, ITictactoeActions, TicTacToeGame, TicTacToeCell,
         GAME_GRIDSIZE, EMPTY_CELL_COLOR, PLAYER_X_COLOR, AI_O_COLOR, X_SYMBOL, O_SYMBOL,
     };
 
@@ -90,7 +93,7 @@ pub mod tictactoe_actions {
     fn dojo_init(ref self: ContractState) {
         let mut world = self.world(@"pixelaw");
         let core_actions = get_core_actions(ref world);
-        core_actions.new_app(contract_address_const::<0>(), APP_KEY, APP_ICON);
+        core_actions.new_app(0.try_into().unwrap(), APP_KEY, APP_ICON);
     }
 
     #[abi(embed_v0)]
@@ -144,15 +147,15 @@ pub mod tictactoe_actions {
 
             // Get the cell
             let mut cell: TicTacToeCell = app_world.read_model(position);
-            assert!(cell.cell_state == CellState::Empty, "Cell already occupied");
+            assert!(cell.cell_state == 0, "Cell already occupied"); // Empty
 
             // Get the game
             let mut game: TicTacToeGame = app_world.read_model(cell.game_position);
-            assert!(game.state == GameState::Active, "Game not active");
+            assert!(game.state == 1, "Game not active"); // Active
             assert!(game.player == player, "Not your game");
 
             // Make player move
-            cell.cell_state = CellState::Player;
+            cell.cell_state = 1; // Player
             app_world.write_model(@cell);
 
             // Update pixel
@@ -179,8 +182,8 @@ pub mod tictactoe_actions {
 
             // Check for win/tie
             let winner = self.check_winner(game.position);
-            if winner == CellState::Player {
-                game.state = GameState::PlayerWon;
+            if winner == 1 { // Player
+                game.state = 2; // PlayerWon
                 app_world.write_model(@game);
 
                 core_actions
@@ -189,7 +192,7 @@ pub mod tictactoe_actions {
                     );
                 return;
             } else if game.moves_left == 0 {
-                game.state = GameState::Tie;
+                game.state = 4; // Tie
                 app_world.write_model(@game);
 
                 core_actions
@@ -205,7 +208,7 @@ pub mod tictactoe_actions {
                 let ai_position = self.index_to_position(game.position, ai_move_index);
                 let mut ai_cell: TicTacToeCell = app_world.read_model(ai_position);
 
-                ai_cell.cell_state = CellState::AI;
+                ai_cell.cell_state = 2; // AI
                 app_world.write_model(@ai_cell);
 
                 core_actions
@@ -231,8 +234,8 @@ pub mod tictactoe_actions {
 
                 // Check AI win
                 let winner = self.check_winner(game.position);
-                if winner == CellState::AI {
-                    game.state = GameState::AIWon;
+                if winner == 2 { // AI
+                    game.state = 3; // AIWon
                     app_world.write_model(@game);
 
                     core_actions
@@ -240,7 +243,7 @@ pub mod tictactoe_actions {
                             position, AI_O_COLOR, Option::Some(player), Option::None, 'AI won!',
                         );
                 } else if game.moves_left == 0 {
-                    game.state = GameState::Tie;
+                    game.state = 4; // Tie
                     app_world.write_model(@game);
 
                     core_actions
@@ -274,7 +277,7 @@ pub mod tictactoe_actions {
             let game = TicTacToeGame {
                 position,
                 player,
-                state: GameState::Active,
+                state: 1, // Active
                 started_timestamp: current_timestamp,
                 moves_left: 9,
             };
@@ -292,7 +295,7 @@ pub mod tictactoe_actions {
                     let cell = TicTacToeCell {
                         position: cell_position,
                         game_position: position,
-                        cell_state: CellState::Empty,
+                        cell_state: 0, // Empty
                         grid_index: index,
                     };
                     app_world.write_model(@cell);
@@ -342,7 +345,7 @@ pub mod tictactoe_actions {
                 while y < GAME_GRIDSIZE {
                     let check_position = Position { x: position.x + x, y: position.y + y };
                     let pixel: Pixel = core_world.read_model(check_position);
-                    assert!(pixel.owner == contract_address_const::<0>(), "Need 3x3 empty area");
+                    assert!(pixel.owner.is_zero(), "Need 3x3 empty area");
                     y += 1;
                 };
                 x += 1;
@@ -360,12 +363,8 @@ pub mod tictactoe_actions {
                     let cell_position = Position { x: game_position.x + x, y: game_position.y + y };
                     let cell: TicTacToeCell = app_world.read_model(cell_position);
 
-                    let state_value = match cell.cell_state {
-                        CellState::Empty => 0_u8,
-                        CellState::Player => 1_u8,
-                        CellState::AI => 2_u8,
-                    };
-                    board.append(state_value);
+                    // cell_state is already u8: 0=Empty, 1=Player, 2=AI
+                    board.append(cell.cell_state);
                     y += 1;
                 };
                 x += 1;
@@ -407,9 +406,9 @@ pub mod tictactoe_actions {
             Position { x: origin.x + (index % 3).into(), y: origin.y + (index / 3).into() }
         }
 
-        fn check_winner(ref self: ContractState, game_position: Position) -> CellState {
+        fn check_winner(ref self: ContractState, game_position: Position) -> u8 {
             let board = self.get_board_state(game_position);
-            let mut winner = CellState::Empty;
+            let mut winner = 0_u8; // Empty
 
             // Check rows
             let mut row = 0;
@@ -418,13 +417,13 @@ pub mod tictactoe_actions {
                 if *board.at(start_idx) != 0
                     && *board.at(start_idx) == *board.at(start_idx + 1)
                     && *board.at(start_idx) == *board.at(start_idx + 2) {
-                    winner = self.u8_to_cell_state(*board.at(start_idx));
+                    winner = *board.at(start_idx);
                     break;
                 }
                 row += 1;
             };
 
-            if winner != CellState::Empty {
+            if winner != 0 {
                 winner
             } else {
                 // Check columns
@@ -433,38 +432,28 @@ pub mod tictactoe_actions {
                     if *board.at(col) != 0
                         && *board.at(col) == *board.at(col + 3)
                         && *board.at(col) == *board.at(col + 6) {
-                        winner = self.u8_to_cell_state(*board.at(col));
+                        winner = *board.at(col);
                         break;
                     }
                     col += 1;
                 };
 
-                if winner != CellState::Empty {
+                if winner != 0 {
                     winner
                 } else {
                     // Check diagonals
                     if *board.at(0) != 0
                         && *board.at(0) == *board.at(4)
                         && *board.at(0) == *board.at(8) {
-                        self.u8_to_cell_state(*board.at(0))
+                        *board.at(0)
                     } else if *board.at(2) != 0
                         && *board.at(2) == *board.at(4)
                         && *board.at(2) == *board.at(6) {
-                        self.u8_to_cell_state(*board.at(2))
+                        *board.at(2)
                     } else {
-                        CellState::Empty // No winner
+                        0 // No winner
                     }
                 }
-            }
-        }
-
-        fn u8_to_cell_state(ref self: ContractState, value: u8) -> CellState {
-            if value == 1 {
-                CellState::Player
-            } else if value == 2 {
-                CellState::AI
-            } else {
-                CellState::Empty
             }
         }
     }
