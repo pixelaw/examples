@@ -1,7 +1,7 @@
 {
   "world": {
-    "class_hash": "0x13d92333361bb7049c1232c0a5404e2c19082ededc3a73d75cb33fa952adec7",
-    "address": "0x548b7044c88b3338e88e3c0ea356eb9dcf65388c90ec7c9d9031547af30d1d1",
+    "class_hash": "0x57994b6a75fad550ca18b41ee82e2110e158c59028c4478109a67965a0e5b1e",
+    "address": "0x22b2a8f75422d28500cb40b8b8f49f761f8a9206a870e22c3b1859cd4f07bed",
     "seed": "pixelaw",
     "name": "minesweeper",
     "entrypoints": [
@@ -11,11 +11,13 @@
       "register_event",
       "register_model",
       "register_contract",
+      "register_external_contract",
       "register_library",
       "init_contract",
       "upgrade_event",
       "upgrade_model",
       "upgrade_contract",
+      "upgrade_external_contract",
       "emit_event",
       "emit_events",
       "set_entity",
@@ -83,6 +85,10 @@
           {
             "name": "Library",
             "type": "(core::starknet::class_hash::ClassHash, core::felt252)"
+          },
+          {
+            "name": "ExternalContract",
+            "type": "(core::starknet::contract_address::ContractAddress, core::felt252)"
           }
         ]
       },
@@ -213,6 +219,10 @@
           {
             "name": "Enum",
             "type": "core::array::Span::<dojo::meta::layout::FieldLayout>"
+          },
+          {
+            "name": "FixedArray",
+            "type": "(core::array::Span::<dojo::meta::layout::Layout>, core::integer::u32)"
           }
         ]
       },
@@ -369,6 +379,34 @@
           },
           {
             "type": "function",
+            "name": "register_external_contract",
+            "inputs": [
+              {
+                "name": "namespace",
+                "type": "core::byte_array::ByteArray"
+              },
+              {
+                "name": "contract_name",
+                "type": "core::byte_array::ByteArray"
+              },
+              {
+                "name": "instance_name",
+                "type": "core::byte_array::ByteArray"
+              },
+              {
+                "name": "contract_address",
+                "type": "core::starknet::contract_address::ContractAddress"
+              },
+              {
+                "name": "block_number",
+                "type": "core::integer::u64"
+              }
+            ],
+            "outputs": [],
+            "state_mutability": "external"
+          },
+          {
+            "type": "function",
             "name": "register_library",
             "inputs": [
               {
@@ -461,6 +499,30 @@
                 "type": "core::starknet::class_hash::ClassHash"
               }
             ],
+            "state_mutability": "external"
+          },
+          {
+            "type": "function",
+            "name": "upgrade_external_contract",
+            "inputs": [
+              {
+                "name": "namespace",
+                "type": "core::byte_array::ByteArray"
+              },
+              {
+                "name": "instance_name",
+                "type": "core::byte_array::ByteArray"
+              },
+              {
+                "name": "contract_address",
+                "type": "core::starknet::contract_address::ContractAddress"
+              },
+              {
+                "name": "block_number",
+                "type": "core::integer::u64"
+              }
+            ],
+            "outputs": [],
             "state_mutability": "external"
           },
           {
@@ -928,6 +990,85 @@
       },
       {
         "type": "event",
+        "name": "dojo::world::world_contract::world::ExternalContractRegistered",
+        "kind": "struct",
+        "members": [
+          {
+            "name": "namespace",
+            "type": "core::byte_array::ByteArray",
+            "kind": "key"
+          },
+          {
+            "name": "contract_name",
+            "type": "core::byte_array::ByteArray",
+            "kind": "key"
+          },
+          {
+            "name": "instance_name",
+            "type": "core::byte_array::ByteArray",
+            "kind": "key"
+          },
+          {
+            "name": "contract_selector",
+            "type": "core::felt252",
+            "kind": "key"
+          },
+          {
+            "name": "class_hash",
+            "type": "core::starknet::class_hash::ClassHash",
+            "kind": "data"
+          },
+          {
+            "name": "contract_address",
+            "type": "core::starknet::contract_address::ContractAddress",
+            "kind": "data"
+          },
+          {
+            "name": "block_number",
+            "type": "core::integer::u64",
+            "kind": "data"
+          }
+        ]
+      },
+      {
+        "type": "event",
+        "name": "dojo::world::world_contract::world::ExternalContractUpgraded",
+        "kind": "struct",
+        "members": [
+          {
+            "name": "namespace",
+            "type": "core::byte_array::ByteArray",
+            "kind": "key"
+          },
+          {
+            "name": "instance_name",
+            "type": "core::byte_array::ByteArray",
+            "kind": "key"
+          },
+          {
+            "name": "contract_selector",
+            "type": "core::felt252",
+            "kind": "key"
+          },
+          {
+            "name": "class_hash",
+            "type": "core::starknet::class_hash::ClassHash",
+            "kind": "data"
+          },
+          {
+            "name": "contract_address",
+            "type": "core::starknet::contract_address::ContractAddress",
+            "kind": "data"
+          },
+          {
+            "name": "block_number",
+            "type": "core::integer::u64",
+            "kind": "data"
+          }
+        ]
+      },
+      {
+        "type": "event",
         "name": "dojo::world::world_contract::world::ModelUpgraded",
         "kind": "struct",
         "members": [
@@ -1258,6 +1399,16 @@
             "kind": "nested"
           },
           {
+            "name": "ExternalContractRegistered",
+            "type": "dojo::world::world_contract::world::ExternalContractRegistered",
+            "kind": "nested"
+          },
+          {
+            "name": "ExternalContractUpgraded",
+            "type": "dojo::world::world_contract::world::ExternalContractUpgraded",
+            "kind": "nested"
+          },
+          {
             "name": "ModelUpgraded",
             "type": "dojo::world::world_contract::world::ModelUpgraded",
             "kind": "nested"
@@ -1328,8 +1479,8 @@
   },
   "contracts": [
     {
-      "address": "0x1439e20429a45ab0dd7c0bc94a9d86345978c861baaecb411cef6be5ef401ea",
-      "class_hash": "0x3d046ce07e9e1d5999570d8891db694fe75bf8a6728e78383b226b9bbbc6f35",
+      "address": "0x2c2baa5c709661b579b0765af4b45519d7dd9059db5a7bdde0c7959c65aba24",
+      "class_hash": "0x6e3f732edd90cdd19bb1804cb073b456049979b300d498c7bc6352e1d591ee7",
       "abi": [
         {
           "type": "impl",
@@ -1343,7 +1494,7 @@
         },
         {
           "type": "impl",
-          "name": "minesweeper_actions__DeployedContractImpl",
+          "name": "DojoDeployedContractImpl",
           "interface_name": "dojo::meta::interface::IDeployedResource"
         },
         {
@@ -1659,11 +1810,63 @@
             },
             {
               "type": "function",
-              "name": "flag",
+              "name": "init_game",
               "inputs": [
                 {
                   "name": "default_params",
                   "type": "pixelaw::core::utils::DefaultParameters"
+                },
+                {
+                  "name": "difficulty",
+                  "type": "minesweeper::app::Difficulty"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "place_mines_randomly",
+              "inputs": [
+                {
+                  "name": "game_position",
+                  "type": "pixelaw::core::utils::Position"
+                },
+                {
+                  "name": "size",
+                  "type": "core::integer::u32"
+                },
+                {
+                  "name": "mines_amount",
+                  "type": "core::integer::u32"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "explode_game",
+              "inputs": [
+                {
+                  "name": "mine_position",
+                  "type": "pixelaw::core::utils::Position"
+                },
+                {
+                  "name": "game_position",
+                  "type": "pixelaw::core::utils::Position"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "check_win_condition",
+              "inputs": [
+                {
+                  "name": "game_position",
+                  "type": "pixelaw::core::utils::Position"
                 }
               ],
               "outputs": [],
@@ -1788,7 +1991,10 @@
         "on_post_update",
         "interact",
         "reveal",
-        "flag",
+        "init_game",
+        "place_mines_randomly",
+        "explode_game",
+        "check_win_condition",
         "upgrade"
       ]
     }
@@ -1797,13 +2003,13 @@
   "models": [
     {
       "members": [],
-      "class_hash": "0x17a78d9542d47e320c877046c82b56c24d35dcda1571980c138a5d9a586dff2",
+      "class_hash": "0x770d6ca33207d97c2eece5f464f12cc4f5b2c83441a553f32dafcce1b8645f8",
       "tag": "minesweeper-MineCell",
       "selector": "0x7195c8c84048a7bdba35956e88ff85e68486c61d4d7637bc0b751f64fa6d109"
     },
     {
       "members": [],
-      "class_hash": "0x492217cd76e6e48cebcae12dab0a5452bba7cb3d635061b1f8e405954d94471",
+      "class_hash": "0x7fdfcc55020f34ea6675485705b63270925488c0a6a9b9ac266666cbace7a4a",
       "tag": "minesweeper-MinesweeperGame",
       "selector": "0x5b4c37068117ea246f95ae190b099556ed4921122467a94afd14b087b5bb9a0"
     }

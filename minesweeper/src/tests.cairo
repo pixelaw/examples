@@ -1,17 +1,15 @@
-use dojo::model::{ModelStorage};
+use dojo::model::ModelStorage;
 use dojo::world::{IWorldDispatcherTrait, WorldStorage, WorldStorageTrait};
-use dojo_cairo_test::{
-    ContractDef, ContractDefTrait, NamespaceDef, TestResource, WorldStorageTestTrait,
-};
+use dojo_cairo_test::{ContractDef, ContractDefTrait, NamespaceDef, TestResource, WorldStorageTestTrait};
 
 use minesweeper::app::{
     Difficulty, IMinesweeperActionsDispatcher, IMinesweeperActionsDispatcherTrait, MineCell,
     MinesweeperGame, m_MineCell, m_MinesweeperGame, minesweeper_actions,
 };
-use pixelaw::core::models::pixel::{PixelUpdate};
+use pixelaw::core::models::pixel::PixelUpdate;
 use pixelaw::core::models::registry::App;
 use pixelaw::core::utils::{DefaultParameters, Position, encode_rgba};
-use pixelaw_testing::helpers::{set_caller, setup_core, update_test_world};
+use pixelaw_test_utils::{set_caller, setup_core, update_test_world};
 
 fn deploy_app(ref world: WorldStorage) -> IMinesweeperActionsDispatcher {
     let namespace = "minesweeper";
@@ -106,7 +104,7 @@ fn test_hook_functions() {
     };
 
     let test_app = App {
-        system: starknet::contract_address_const::<0x123>(),
+        system: 0x123.try_into().unwrap(),
         name: 'test',
         icon: 0x1F4A0,
         action: 'test_action',
