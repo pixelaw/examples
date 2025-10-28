@@ -9,16 +9,18 @@ const APP_ICON: felt252 = 0xf09f918a; // 👊
 const GAME_MAX_DURATION: u64 = 20000;
 
 
-#[derive(Serde, Copy, Drop, PartialEq, Introspect)]
+#[derive(Serde, Copy, Drop, PartialEq, Introspect, Default)]
 pub enum State {
+    #[default]
     None: (),
     Created: (),
     Joined: (),
     Finished: (),
 }
 
-#[derive(Serde, Copy, Drop, PartialEq, Introspect)]
+#[derive(Serde, Copy, Drop, PartialEq, Introspect, Default)]
 pub enum Move {
+    #[default]
     None: (),
     Rock: (),
     Paper: (),
@@ -42,12 +44,12 @@ pub struct Game {
     #[key]
     position: Position,
     id: u32,
-    state: State,
+    state: u8, // 0=None, 1=Created, 2=Joined, 3=Finished
     player1: ContractAddress,
     player2: ContractAddress,
     player1_commit: felt252,
-    player1_move: Move,
-    player2_move: Move,
+    player1_move: u8, // 0=None, 1=Rock, 2=Paper, 3=Scissors
+    player2_move: u8, // 0=None, 1=Rock, 2=Paper, 3=Scissors
     started_timestamp: u64,
 }
 
@@ -64,8 +66,8 @@ pub struct Player {
 pub trait IRpsActions<T> {
     fn secondary(ref self: T, default_params: DefaultParameters);
     fn interact(ref self: T, default_params: DefaultParameters, crc_move_Move: felt252);
-    fn join(ref self: T, default_params: DefaultParameters, player2_move: Move);
-    fn finish(ref self: T, default_params: DefaultParameters, crv_move: Move, crs_move: felt252);
+    fn join(ref self: T, default_params: DefaultParameters, player2_move: u8);
+    fn finish(ref self: T, default_params: DefaultParameters, crv_move: u8, crs_move: felt252);
     fn on_pre_update(
         ref self: T, pixel_update: PixelUpdate, app_caller: App, player_caller: ContractAddress,
     ) -> Option<PixelUpdate>;
@@ -90,10 +92,9 @@ pub mod rps_actions {
     use pixelaw::core::models::registry::App;
     use pixelaw::core::utils::{DefaultParameters, get_callers, get_core_actions};
     use starknet::{ContractAddress, get_contract_address};
-    use starknet::{contract_address_const};
 
     use super::IRpsActions;
-    use super::{APP_ICON, APP_KEY, Move, State};
+    use super::{APP_ICON, APP_KEY};
     use super::{Game};
 
     const ICON_QUESTIONMARK: felt252 = 0xe29d93efb88f; // ❓
@@ -106,7 +107,7 @@ pub mod rps_actions {
         let mut world = self.world(@"pixelaw");
         let core_actions = get_core_actions(ref world);
 
-        core_actions.new_app(contract_address_const::<0>(), APP_KEY, APP_ICON);
+        core_actions.new_app(0.try_into().unwrap(), APP_KEY, APP_ICON);
     }
 
     // impl: implement functions specified in trait
@@ -165,7 +166,7 @@ pub mod rps_actions {
             if game.id != 0 {
                 // Bail if we're waiting for other player
                 assert!(
-                    game.state == State::Created,
+                    game.state == 1, // Created
                     "{:?}_{:?} Cannot reset rps game",
                     position.x,
                     position.y,
@@ -183,12 +184,12 @@ pub mod rps_actions {
                     Game {
                         position,
                         id,
-                        state: State::Created,
+                        state: 1, // Created
                         player1: player,
                         player2: Zero::<ContractAddress>::zero(),
                         player1_commit: crc_move_Move,
-                        player1_move: Move::None,
-                        player2_move: Move::None,
+                        player1_move: 0, // None
+                        player2_move: 0, // None
                         started_timestamp: starknet::get_block_timestamp(),
                     };
                 // TODO Emit event
@@ -218,7 +219,7 @@ pub mod rps_actions {
         }
 
 
-        fn join(ref self: ContractState, default_params: DefaultParameters, player2_move: Move) {
+        fn join(ref self: ContractState, default_params: DefaultParameters, player2_move: u8) {
             let mut core_world = self.world(@"pixelaw");
             let mut rps_world = self.world(@"rps");
 
@@ -234,7 +235,8 @@ pub mod rps_actions {
 
             // Bail if wrong gamestate
             assert!(
-                game.state == State::Created, "{:?}_{:?} Wrong gamestate", position.x, position.y,
+                game.state == 1, // Created
+                "{:?}_{:?} Wrong gamestate", position.x, position.y,
             );
 
             // Bail if the player is joining their own game
@@ -245,7 +247,7 @@ pub mod rps_actions {
             // Update the game
             game.player2 = player;
             game.player2_move = player2_move;
-            game.state = State::Joined;
+            game.state = 2; // Joined
 
             // game entity
             rps_world.write_model(@game);
@@ -273,7 +275,7 @@ pub mod rps_actions {
         fn finish(
             ref self: ContractState,
             default_params: DefaultParameters,
-            crv_move: Move,
+            crv_move: u8,
             crs_move: felt252,
         ) {
             let mut core_world = self.world(@"pixelaw");
@@ -291,7 +293,8 @@ pub mod rps_actions {
 
             // Bail if wrong gamestate
             assert!(
-                game.state == State::Joined, "{:?}_{:?} Wrong gamestate", position.x, position.y,
+                game.state == 2, // Joined
+                "{:?}_{:?} Wrong gamestate", position.x, position.y,
             );
 
             // Bail if another player is finishing (has to be player1)
@@ -332,7 +335,7 @@ pub mod rps_actions {
             } else {
                 // Update the game
                 game.player1_move = crv_move;
-                game.state = State::Finished;
+                game.state = 3; // Finished
 
                 if winner == 2 {
                     // Change ownership of Pixel to player2
@@ -423,16 +426,19 @@ pub mod rps_actions {
     }
 
 
-    fn get_unicode_for_rps(move: Move) -> felt252 {
-        match move {
-            Move::None => 0x00,
-            Move::Rock => ICON_FIST,
-            Move::Paper => ICON_PAPER,
-            Move::Scissors => ICON_SCISSOR,
+    fn get_unicode_for_rps(move: u8) -> felt252 {
+        if move == 0 { // None
+            0x00
+        } else if move == 1 { // Rock
+            ICON_FIST
+        } else if move == 2 { // Paper
+            ICON_PAPER
+        } else { // Scissors
+            ICON_SCISSOR
         }
     }
 
-    fn validate_commit(committed_hash: felt252, move: Move, salt: felt252) -> bool {
+    fn validate_commit(committed_hash: felt252, move: u8, salt: felt252) -> bool {
         let mut hash_span = ArrayTrait::<felt252>::new();
         hash_span.append(move.into());
         hash_span.append(salt.into());
@@ -443,18 +449,19 @@ pub mod rps_actions {
     }
 
 
-    fn decide(player1_commit: Move, player2_commit: Move) -> u8 {
-        if player1_commit == Move::Rock && player2_commit == Move::Paper {
+    fn decide(player1_commit: u8, player2_commit: u8) -> u8 {
+        // 0=None, 1=Rock, 2=Paper, 3=Scissors
+        if player1_commit == 1 && player2_commit == 2 { // Rock vs Paper
             2
-        } else if player1_commit == Move::Paper && player2_commit == Move::Rock {
+        } else if player1_commit == 2 && player2_commit == 1 { // Paper vs Rock
             1
-        } else if player1_commit == Move::Rock && player2_commit == Move::Scissors {
+        } else if player1_commit == 1 && player2_commit == 3 { // Rock vs Scissors
             1
-        } else if player1_commit == Move::Scissors && player2_commit == Move::Rock {
+        } else if player1_commit == 3 && player2_commit == 1 { // Scissors vs Rock
             2
-        } else if player1_commit == Move::Scissors && player2_commit == Move::Paper {
+        } else if player1_commit == 3 && player2_commit == 2 { // Scissors vs Paper
             1
-        } else if player1_commit == Move::Paper && player2_commit == Move::Scissors {
+        } else if player1_commit == 2 && player2_commit == 3 { // Paper vs Scissors
             2
         } else {
             0

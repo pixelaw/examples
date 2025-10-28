@@ -5,11 +5,11 @@ use dojo_cairo_test::{
 
 use pixelaw::core::utils::{DefaultParameters, Position};
 
-use pixelaw_testing::helpers::{set_caller, setup_core, update_test_world};
+use pixelaw_test_utils::{set_caller, setup_core, update_test_world};
 
 
 use rps::app::{IRpsActionsDispatcher, IRpsActionsDispatcherTrait, rps_actions};
-use rps::app::{Move, m_Game, m_Player};
+use rps::app::{m_Game, m_Player};
 
 
 fn deploy_app(ref world: WorldStorage) -> IRpsActionsDispatcher {
@@ -59,9 +59,9 @@ fn test_playthrough() {
 
     set_caller(player_1);
 
-    // Set the players commitments
-    let player_1_commit: Move = Move::Scissors;
-    let player_2_commit: Move = Move::Paper;
+    // Set the players commitments (0=None, 1=Rock, 2=Paper, 3=Scissors)
+    let player_1_commit: u8 = 3; // Scissors
+    let player_2_commit: u8 = 2; // Paper
 
     // Set the player's secret salt. For the test its just different, client will send truly random
     let player_1_salt = '1';
@@ -147,7 +147,7 @@ fn random(seed: felt252, min: u128, max: u128) -> u128 {
     (seed.low % range) + min
 }
 
-fn hash_commit(commit: Move, salt: felt252) -> felt252 {
+fn hash_commit(commit: u8, salt: felt252) -> felt252 {
     let mut hash_span = ArrayTrait::<felt252>::new();
     hash_span.append(commit.into());
     hash_span.append(salt.into());
