@@ -160,6 +160,17 @@ make log_bots      # Bot logs
 - Skip core contracts in migration via `skip_contracts` in dojo_dev.toml
 - Use proper namespace mappings to avoid conflicts with core contracts
 
+### Dependencies Configuration
+**IMPORTANT**: All apps use git dependencies for PixeLAW core, NOT relative paths:
+```toml
+[dependencies]
+pixelaw = { git = "https://github.com/pixelaw/core", branch = "main" }
+
+[dev-dependencies]
+pixelaw_test_utils = { git = "https://github.com/pixelaw/core", branch = "main" }
+```
+This ensures apps always use the latest stable core version from the repository.
+
 ## When to Use the PixeLAW App Developer Agent
 
 For any PixeLAW-specific development work, use the specialized agent:
