@@ -1,5 +1,5 @@
 [package]
-cairo-version = "2.13.0"
+cairo-version = "2.13.1"
 name = "minesweeper"
 version = "0.0.0"
 edition = "2024_07"
