@@ -15,11 +15,11 @@ move = "sozo execute chest-actions move -c 1 --wait" # scarb run move
 [dependencies]
 pixelaw = { git = "https://github.com/pixelaw/core", branch = "main" }
 dojo = "=1.8.0"
-starknet = "=2.13.0"
+starknet = "=2.13.1"
 
 [dev-dependencies]
 pixelaw_test_utils = { git = "https://github.com/pixelaw/core", branch = "main" }
-cairo_test = "=2.13.0"
+cairo_test = "=2.13.1"
 dojo_cairo_test = "=1.8.0"
 
 [tool.scarb]
